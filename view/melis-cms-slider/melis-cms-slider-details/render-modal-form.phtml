@@ -1,0 +1,60 @@
+<?php 
+$id = '';
+if (!empty($this->zoneconfig['conf']['id']))
+    $id = $this->zoneconfig['conf']['id'];
+    $data_melisKey = $this->melisKey;
+?>
+
+<div class="modal-content">
+	<div class="modal-body padding-none">
+		<div class="wizard">
+			<div class="widget widget-tabs widget-tabs-double widget-tabs-responsive margin-none border-none">
+                <div class="widget-head">
+                	<ul class="nav nav-tabs">
+                		<li class="active"><a href="#<?php echo $this->zoneconfig['conf']['id'] ?>" class="glyphicons notes" data-toggle="tab" aria-expanded="true"><i></i> 
+                		</a></li>
+            		</ul>
+        		</div>
+        		<div class="widget-body innerAll inner-2x">
+        			<div class="tab-content">
+        				<div class="tab-pane active" id="<?= $id ?>">
+                            <div class="row">
+                            	<div class="col-md-12" id="sliderDetails">
+                            		<br>
+                            		<div id="<?= $id ?>_mcsdetail_status" data-melisKey="<?= $this->melisKey; ?>" class="make-switch main_variant_switch" data-on-label="<?php echo $this->translate('tr_MelisCmsSliderDetails_status_active')?>" data-off-label="<?php echo $this->translate('tr_MelisCmsSliderDetails_status_inactive')?>" data-text-label="<?php echo $this->translate('tr_MelisCmsSliderDetails_list_col_status')?>">
+                                        <input type="checkbox" name="mcsdetail_status" id="mcsdetail_status"  <?= $this->status ?>>
+                                    </div>
+                                    <script type="text/javascript">
+                                    	$("#<?= $id ?>_mcsdetail_status").bootstrapSwitch();
+                                    </script>	
+                            		<br>
+                            		<br>
+                                          <?php 
+                                          echo $this->form()->openTag($this->form);
+                                          echo $this->melisFieldCollection($this->form);
+                                          echo $this->form()->closeTag();
+                                          ?>
+                                          	<script type="text/javascript">
+                                            	$(":file").filestyle({buttonBefore: true, input: true, buttonText: '<?php echo $this->translate('tr_MelisCmsSliderDetails_input_file')?>', placeholder : '<?= $this->file; ?>'});
+                                            </script>
+                                          	<div class="progressContent hidden">
+                                                <?= $this->translate('tr_MelisCmsSliderDetails_save_upload'); ?>
+                                                <div class="progress">
+                                                	<span class="status pull-right text-danger hidden">0%</span>
+                                                  <div class="progress-bar progress-bar-danger progress-bar-striped" role="progressbar" aria-valuenow=0 aria-valuemin="0" aria-valuemax="100" style="width: 0%">
+                                                  </div>
+                                                </div><br/>
+                        					</div>                     
+                                 	<div align="right">
+                                 		<button data-dismiss="modal" class="btn btn-danger pull-left"><i class="fa fa-times"></i> <?php echo $this->translate('tr_MelisCmsSliderDetails_form_btn_cancel')?></button>
+                                 		<button class="btn btn-success" id="saveSliderDetails" data-detailid="<?= $this->detailid?>"><i class="fa fa-save"></i>  <?php echo $this->translate('tr_MelisCmsSliderDetails_form_btn_save') ?></button>
+                                 	</div>                                 	
+                            	</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

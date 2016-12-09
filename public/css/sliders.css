@@ -1,0 +1,3 @@
+.is-draggable td:nth-child(1){
+    cursor: move;
+}
