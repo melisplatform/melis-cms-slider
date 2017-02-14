@@ -73,11 +73,22 @@ return array(
             'MelisCmsSlider\Controller\MelisCmsSliderDetails' => 'MelisCmsSlider\Controller\MelisCmsSliderDetailsController',
             ),
     ),
+    'controller_plugins' => array(
+        'invokables' => array(
+            'MelisCmsSliderShowSliderPlugin' => 'MelisCmsSlider\Controller\Plugin\MelisCmsSliderShowSliderPlugin',
+        )
+    ),
+    'form_elements' => array(
+        'factories' => array(
+            'CmsSliderSelect' => 'MelisCmsSlider\Form\Factory\CmsSliderSelectFactory',
+        )
+    ),
     'view_manager' => array(
         'display_not_found_reason' => true,
         'display_exceptions'       => true,
         'doctype'                  => 'HTML5',
         'template_map' => array(
+            'MelisCmsSlider/showslider' => __DIR__ . '/../view/melis-cms-news/plugins/showslider.phtml',
         ),
         'template_path_stack' => array(
             __DIR__ . '/../view',

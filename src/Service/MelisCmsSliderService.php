@@ -186,7 +186,7 @@ class MelisCmsSliderService extends MelisCoreGeneralService
     {
         // Event parameters prepare
         $arrayParameters = $this->makeArrayFromParameters(__METHOD__, func_get_args());
-        $results = array();
+        $results = null;
         
         // Sending service start event
         $arrayParameters = $this->sendEvent('meliscmsslider_service_get_slider_details_start', $arrayParameters);

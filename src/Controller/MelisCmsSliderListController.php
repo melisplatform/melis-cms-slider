@@ -259,17 +259,25 @@ class MelisCmsSliderListController extends AbstractActionController
     {
         $this->getEventManager()->trigger('meliscmsslider_add_slider_start', $this, array());
         $melisTool = $this->getServiceLocator()->get('MelisCoreTool');
+        $sliderId = null;
         $response = array();
         $success = 0;
         $errors  = array();
         $data = array();
-        $textMessage = $melisTool->getTranslation('tr_MelisCmsSliderDetails_save_fail');
-        $textTitle = $melisTool->getTranslation('tr_MelisCmsSliderDetails_slider_save_Title');
+        $textMessage = 'tr_MelisCmsSliderDetails_save_fail';
+        $textTitle = 'tr_MelisCmsSliderDetails_slider_save_Title';
         
         $sliderSvc = $this->getServiceLocator()->get('MelisCmsSliderService');
         
         if($this->getRequest()->isPost()){
             $postValues = get_object_vars($this->getRequest()->getPost());
+            
+            // Preparing Log type code
+            if (!empty($postValues['mcslide_id'])){
+                $logTypeCode = 'CMS_SLIDER_UPDATE';
+            }else{
+                $logTypeCode = 'CMS_SLIDER_ADD';
+            }
             
             $melisCoreConfig = $this->serviceLocator->get('MelisCoreConfig');
             $appConfigForm = $melisCoreConfig->getFormMergedAndOrdered('MelisCmsSlider/forms/MelisTechnologySlider_slider_form','MelisTechnologySlider_slider_form');
@@ -284,8 +292,11 @@ class MelisCmsSliderListController extends AbstractActionController
                 $id = $data['mcslide_id'];
                 $data['mcslide_page_id'] = empty($data['mcslide_page_id'])? NULL : $data['mcslide_page_id'];
                 unset($data['mcslide_id']);
-                if($sliderSvc->saveSlider($data, $id)){
-                    $textMessage = $melisTool->getTranslation('tr_MelisCmsSliderDetails_slider_save_success');
+                
+                $sliderId = $sliderSvc->saveSlider($data, $id);
+                
+                if($sliderId){
+                    $textMessage = 'tr_MelisCmsSliderDetails_slider_save_success';
                     $success = 1;
                 }
             }else{
@@ -309,26 +320,28 @@ class MelisCmsSliderListController extends AbstractActionController
             'errors' => $errors,
             'chunk' => $data,
         );
-        $this->getEventManager()->trigger('meliscmsslider_add_slider_end', $this, $response);
+        
+        $this->getEventManager()->trigger('meliscmsslider_add_slider_end', $this, array_merge($response, array('typeCode' => $logTypeCode, 'itemId' => $sliderId)));
         return new JsonModel($response);
     }
     
     public function deleteSliderAction()
     {
         $this->getEventManager()->trigger('meliscmsslider_delete_slider_start', $this, array());
+        $sliderId = null;
         $response = array();
         $success = 0;
         $errors  = array();
         $data = array();
-        $textMessage = $this->getTool()->getTranslation('tr_MelisCmsSliderDetails_slider_delete_fail');
-        $textTitle = $this->getTool()->getTranslation('tr_MelisCmsSliderDetails_slider_save_Title');
+        $textMessage = 'tr_MelisCmsSliderDetails_slider_delete_fail';
+        $textTitle = 'tr_MelisCmsSliderDetails_slider_save_Title';
         
         $melisSliderSvc = $this->getServiceLocator()->get('MelisCmsSliderService');
         $sliderDetailsTable = $this->getServiceLocator()->get('MelisCmsSliderDetailTable');
-        
+         
         if($this->getRequest()->isPost()) {
             $postValues = get_object_vars($this->getRequest()->getPost());
-            
+            $sliderId = $postValues['sliderId'];
             $fileUploadPath = null;
             //attempt to delete files first before deleting db data
             $details = $sliderDetailsTable->getEntryByField('mcsdetail_mcslider_id', $postValues['sliderId']);
@@ -347,11 +360,10 @@ class MelisCmsSliderListController extends AbstractActionController
                 rmdir($fileDir);
             }            
             //delete db data
-            if($melisSliderSvc->deleteSlider($postValues['sliderId'])){
+            if($melisSliderSvc->deleteSlider($sliderId)){
                 $success = 1;
-                $textMessage = $this->getTool()->getTranslation('tr_MelisCmsSliderDetails_slider_delete_success');
+                $textMessage = 'tr_MelisCmsSliderDetails_slider_delete_success';
             }
-             
         }
         
         $response = array(
@@ -361,7 +373,8 @@ class MelisCmsSliderListController extends AbstractActionController
             'errors' => $errors,
             'chunk' => $data,
         );
-        $this->getEventManager()->trigger('meliscmsslider_delete_slider_end', $this, $response);
+        
+        $this->getEventManager()->trigger('meliscmsslider_delete_slider_end', $this, array_merge($response, array('typeCode' => 'CMS_SLIDER_DELETE', 'itemId' => $sliderId)));
         return new JsonModel($response);
     }
     

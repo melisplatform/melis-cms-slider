@@ -79,11 +79,11 @@ $(document).ready(function(){
 	     }).success(function(data){
 	    	 if(data.success){
 	    		 	$("#id_MMelisCmsSlider_slider_new_container").modal("hide");
-					melisHelper.melisOkNotification( data.textTitle, data.textMessage, '#72af46' );
+					melisHelper.melisOkNotification( data.textTitle, data.textMessage );
 					melisHelper.zoneReload("id_MelisCmsSlider_list_content_table", "MelisCmsSlider_list_content_table", {});
 					melisCore.flashMessenger();
 			}else{
-				melisHelper.melisKoNotification(data.textTitle, data.textMessage, data.errors, 'closeByButtonOnly');				
+				melisHelper.melisKoNotification(data.textTitle, data.textMessage, data.errors);				
 			}	
 	     }).error(function(){
 	    	 console.log('failed');
@@ -128,12 +128,12 @@ $(document).ready(function(){
 	    	 if(data.success){
 	    		 	$("div.progressContent").addClass("hidden");
 	    		 	$("#id_MelisCmsSlider_modal_form_container").modal("hide");
-					melisHelper.melisOkNotification( data.textTitle, data.textMessage, '#72af46' );
+					melisHelper.melisOkNotification( data.textTitle, data.textMessage );
 					melisHelper.zoneReload(sliderId+"_id_MelisCmsSlider_content_tabs_properties_details", "MelisCmsSlider_content_tabs_properties_details", {'sliderId' : sliderId});
-					melisCore.flashMessenger();
 			}else{
-				melisHelper.melisKoNotification(data.textTitle, data.textMessage, data.errors, 'closeByButtonOnly');				
-			}	
+				melisHelper.melisKoNotification(data.textTitle, data.textMessage, data.errors);				
+			}
+	    	 melisCore.flashMessenger();
 	     }).error(function(){
 	    	 console.log('failed');
 	     });
@@ -166,10 +166,10 @@ $(document).ready(function(){
 			        encode		: true,
 			     }).success(function(data){
 			    	if(data.success){				
-							melisHelper.melisOkNotification( data.textTitle, data.textMessage, '#72af46' );
+							melisHelper.melisOkNotification( data.textTitle, data.textMessage );
 							melisHelper.zoneReload(sliderId+"_id_MelisCmsSlider_content_tabs_properties_details", "MelisCmsSlider_content_tabs_properties_details", {'sliderId' : sliderId});
 					}else{
-						melisHelper.melisKoNotification(data.textTitle, data.textMessage, data.errors, 'closeByButtonOnly');				
+						melisHelper.melisKoNotification(data.textTitle, data.textMessage, data.errors);				
 					}		
 					melisCore.flashMessenger();	
 			     }).error(function(){
@@ -202,18 +202,18 @@ $(document).ready(function(){
 			        data		: dataString,
 			        dataType    : 'json',
 			        encode		: true,
-			     }).success(function(data){
+			    }).success(function(data){
 			    	if(data.success){				
-							melisHelper.melisOkNotification( data.textTitle, data.textMessage, '#72af46' );
+							melisHelper.melisOkNotification( data.textTitle, data.textMessage);
 							melisHelper.tabClose(  sliderId + "_id_MelisCmsSlider_page");
 							melisHelper.zoneReload("id_MelisCmsSlider_list_content_table", "MelisCmsSlider_list_content_table", {});
 					}else{
-						melisHelper.melisKoNotification(data.textTitle, data.textMessage, data.errors, 'closeByButtonOnly');				
+						melisHelper.melisKoNotification(data.textTitle, data.textMessage, data.errors);				
 					}		
 					melisCore.flashMessenger();	
-			     }).error(function(){
-			    	 console.log('failed');
-			     });
+			    }).error(function(){
+			    	alert( translations.tr_meliscore_error_message );
+			    });
 		});
 		
 		melisCoreTool.done(this);

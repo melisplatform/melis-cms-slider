@@ -3,7 +3,7 @@
 /**
  * Melis Technology (http://www.melistechnology.com)
  *
- * @copyright Copyright (c) 2016 Melis Technology (http://www.melistechnology.com)
+ * @copyright Copyright (c) 2015 Melis Technology (http://www.melistechnology.com)
  *
  */
 
@@ -14,6 +14,9 @@ use Zend\Mvc\MvcEvent;
 use Zend\ModuleManager\ModuleManager;
 use Zend\Stdlib\ArrayUtils;
 use Zend\Session\Container;
+
+// use MelisTechnologyCustom\Model\MelisTechnologyCustomTableList;
+// use MelisTechnologyCustom\Model\Tables\MelisTechnologyCustomTableListColumnsTable;
 
 use MelisCmsSlider\Listener\MelisCmsSliderFlashMessengerListener;
 
@@ -62,6 +65,8 @@ class Module
     			include __DIR__ . '/../config/app.interface.php',
     			include __DIR__ . '/../config/app.tools.php',
     	        include __DIR__ . '/../config/app.forms.php',
+    	        include __DIR__ . '/../config/diagnostic.config.php',
+    	        include __DIR__ . '/../config/app.plugins.php',
     	);
     	
     	foreach ($configFiles as $file) {
@@ -89,8 +94,16 @@ class Module
     
         $container = new Container('meliscore');
         $locale = $container['melis-lang-locale'];
-    
-        $translator->addTranslationFile('phparray', __DIR__ . '/../language/' . $locale . '.interface.php');
+
+        if (!empty($locale)){
+            
+            // Inteface translations
+            $interfaceTransPath = 'module/MelisModuleConfig/languages/MelisCmsSlider/' . $locale . '.interface.php';
+            $default = __DIR__ . '/../language/en_EN.interface.php';
+            $transPath = (file_exists($interfaceTransPath))? $interfaceTransPath : $default;
+            $translator->addTranslationFile('phparray', $transPath);
+            
+        }
     }
  
 }

@@ -280,6 +280,48 @@ return array(
                         ),
                     ),
                 ),
+                'meliscmsslider_select_slider_form' => array(
+                    'attributes' => array(
+                        'name' => 'selectSliderForm',
+                        'id' => 'selectSliderForm',
+                        'method' => 'POST',
+                        'action' => '',
+                    ),
+                    'hydrator'  => 'Zend\Stdlib\Hydrator\ArraySerializable',
+                    'elements' => array(
+                        array(
+                            'spec' => array(
+                                'name' => 'cnews_slider_id',
+                                'type' => 'CmsSliderSelect',
+                                'options' => array(
+                                    'label' => 'tr_MelisCmsSliderDetails_slider_name',
+                                    'empty_option' => 'tr_meliscmsliderdetails_common_label_choose',
+                                    'disable_inarray_validator' => true,
+                                ),
+                                'attributes' => array(
+                                    'id' => 'cnews_slider_id',
+                                ),
+                            ),
+                        ),                       
+                        array(
+                            'spec' => array(
+                                'name' => 'mcslide_id',
+                                'type' => 'hidden',
+                            ),
+                        ),
+                    ),
+                    'input_filter' => array(
+                        'cnews_slider_id' => array(
+                            'name'     => 'cnews_slider_id',
+                            'required' => false,
+                            'validators' => array(),
+                            'filters'  => array(
+                                array('name' => 'StripTags'),
+                                array('name' => 'StringTrim'),
+                            ),
+                        ),
+                    ),
+                ),
             ),            
         ),
     ),

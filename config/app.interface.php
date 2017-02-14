@@ -9,13 +9,7 @@ return array(
                     'interface' => array(
         			    'meliscore_toolstree' =>  array(
         			    	'interface' => array(
-								'melistechnology_tools_section' => array(
-									'conf' => array(
-											'id' => 'id_melistechnology_tools_section',
-											'name' => 'tr_melistechnology_tools_section',
-											'icon' => 'icon-wrench',
-											'rights_checkbox_disable' => true,
-									),
+								'meliscms_tools_section' => array(
         			    			'interface' => array( 
 		        			    		'MelisCmsSlider_left' => array(
 		        			    			'conf' => array(
@@ -369,6 +363,18 @@ return array(
                         ),
                     ),
                 ),
+                'meliscmsslider_select_slider' => array(
+                    'conf' => array(
+                        'id' => 'id_meliscmsslider_select_slider',
+                        'name' => 'tr_meliscmsslider_select_slider',
+                        'melisKey' => 'meliscmsslider_select_slider',
+                    ),
+                    'forward' => array(
+                        'module' => 'MelisCmsSlider',
+                        'controller' => 'MelisCmsSliderDetails',
+                        'action' => 'render-select-slider',
+                    ),
+                ),
                 'MelisCmsSlider_modal' => array(
                     'conf' => array(
                         'id' => 'id_MelisCmsSlider_modal',
@@ -410,5 +416,4 @@ return array(
             ),
         ),
     ),
-
 );

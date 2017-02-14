@@ -110,6 +110,11 @@ return array(
                                 'css' => array('width' => '10%', 'padding-right' => '0'),
                                 'sortable' => false,
                             ),
+                            'mcsdetail_img' => array(
+                                'text' => 'tr_MelisCmsSliderDetails_list_col_image',
+                                'css' => array('width' => '10%', 'padding-right' => '0', 'display' => 'none'),
+                                'sortable' => false,
+                            ),
                             'mcsdetail_title' => array(
                                 'text' => 'tr_MelisCmsSliderDetails_list_col_name',
                                 'css' => array('width' => '15%', 'padding-right' => '0'),
@@ -134,12 +139,7 @@ return array(
                                 'text' => 'tr_MelisCmsSliderDetails_list_col_link',
                                 'css' => array('width' => '10%', 'padding-right' => '0'),
                                 'sortable' => false,
-                            ),
-                            'mcsdetail_img' => array(
-                                'text' => 'tr_MelisCmsSliderDetails_list_col_image',
-                                'css' => array('width' => '10%', 'padding-right' => '0', 'display' => 'none'),
-                                'sortable' => false,
-                            ),
+                            ),                            
                         ),
                 
                         'searchables' => array(),
