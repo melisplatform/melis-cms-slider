@@ -79,7 +79,7 @@ class MelisCmsSliderService extends MelisCoreGeneralService
         $sliderDetails = array();
         foreach($sliderTable->getEntryById($arrayParameters['sliderId']) as $slider){
             foreach($sliderDetailTable->getSliderDetailsByOrder($arrayParameters['sliderId'], $arrayParameters['status']) as $sliderDetail){                
-                $sliderDetails[] = $this->getSliderDetails($sliderDetail->mcsdetail_id);
+                $sliderDetails[] = $sliderDetail;
             }
            
             $customSliderEnt->setId($slider->mcslide_id);

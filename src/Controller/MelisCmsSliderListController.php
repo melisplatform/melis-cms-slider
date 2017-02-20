@@ -338,7 +338,10 @@ class MelisCmsSliderListController extends AbstractActionController
         
         $melisSliderSvc = $this->getServiceLocator()->get('MelisCmsSliderService');
         $sliderDetailsTable = $this->getServiceLocator()->get('MelisCmsSliderDetailTable');
-         
+        $melisCoreConfig = $this->getServiceLocator()->get('MelisCoreConfig');
+        
+        $confSlidersUpload = $melisCoreConfig->getItem('MelisCmsSlider/conf/sliders');
+        
         if($this->getRequest()->isPost()) {
             $postValues = get_object_vars($this->getRequest()->getPost());
             $sliderId = $postValues['sliderId'];
@@ -355,10 +358,9 @@ class MelisCmsSliderListController extends AbstractActionController
             }
             
             //remove emptied folder
-            if(!empty($fileUploadPath)){
-                $fileDir = pathinfo($fileUploadPath, PATHINFO_DIRNAME);
-                rmdir($fileDir);
-            }            
+            if(file_exists('public'.$confSlidersUpload['imagesPath'].$postValues['sliderId'])){
+                rmdir('public'.$confSlidersUpload['imagesPath'].$postValues['sliderId']);
+            }
             //delete db data
             if($melisSliderSvc->deleteSlider($sliderId)){
                 $success = 1;

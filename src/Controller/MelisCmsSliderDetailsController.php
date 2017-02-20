@@ -314,7 +314,7 @@ class MelisCmsSliderDetailsController extends AbstractActionController
         
         if(!empty($newsId)){
             $newsSvc = $this->getServiceLocator()->get('MelisCmsNewsService');
-            $data = $newsSvc->getNewsById($newsId)->getNews();
+            $data = $newsSvc->getNewsById($newsId);
             $form->setData((array) $data);
         }
         
@@ -517,10 +517,10 @@ class MelisCmsSliderDetailsController extends AbstractActionController
                 $textMessage = 'tr_MelisCmsSliderDetails_delete_success';
                 $fileUploadPath = 'public'.$tmp->mcsdetail_img;
                
-                if(file_exists($fileUploadPath)) {
+                if(file_exists($fileUploadPath) && !empty($tmp->mcsdetail_img) ) {
                     
                     if(is_readable($fileUploadPath) && is_writable($fileUploadPath)) {    
-                        
+                        chmod($fileUploadPath, 0777);
                         unlink($fileUploadPath);
                     }                    
                 }
