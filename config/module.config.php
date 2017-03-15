@@ -97,11 +97,4 @@ return array(
             'ViewJsonStrategy',
         ),
     ),
-    'asset_manager' => array(
-        'resolver_configs' => array(
-            'aliases' => array(
-                'MelisCmsSlider/' => __DIR__ . '/../public/',
-            ),
-        ),
-    ),
 );

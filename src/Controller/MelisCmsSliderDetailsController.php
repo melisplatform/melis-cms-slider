@@ -683,7 +683,7 @@ class MelisCmsSliderDetailsController extends AbstractActionController
     /**
     * Re orders the slider details
     * @param int $sliderId
-    */
+     */
    private function reOrder($sliderId)
     {
         $data = array();
