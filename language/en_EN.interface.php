@@ -56,6 +56,11 @@
 	    
 	    'tr_MelisCmsSliderDetails_form_btn_cancel' => 'Cancel',
 	    'tr_MelisCmsSliderDetails_form_btn_save' => 'Save',
+
+        'tr_melisCmsSliderDetails_action_button_rename' => 'Rename',
+        'tr_melisCmsSliderDetails_action_button_edit' => 'Edit',
+        'tr_melisCmsSliderDetails_action_button_delete' => 'Delete',
+
 	    
 	);
 ?>

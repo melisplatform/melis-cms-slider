@@ -165,7 +165,7 @@ class MelisCmsSliderListController extends AbstractActionController
         $melisKey = $this->params()->fromRoute('melisKey', '');
         $view->melisKey = $melisKey;
         $view->tableColumns = $columns;
-        $view->getToolDataTableConfig = $this->getTool()->getDataTableConfiguration('#sliderList', true);
+        $view->getToolDataTableConfig = $this->getTool()->getDataTableConfiguration('#sliderList', true, false, array('order' => '[[ 0, "desc" ]]'));
         return $view;
     }
     
@@ -239,7 +239,7 @@ class MelisCmsSliderListController extends AbstractActionController
             foreach($sliders as $slider){
                 $tableData[$c]['DT_RowId'] = $slider->getId();
                 $tableData[$c]['mcslide_id'] = $slider->getSlider()->mcslide_id;
-                $tableData[$c]['mcslide_name'] = $slider->getSlider()->mcslide_name;
+                $tableData[$c]['mcslide_name'] = $this->getTool()->escapeHtml($slider->getSlider()->mcslide_name);
                 $tableData[$c]['mcslide_page_id'] = $slider->getSlider()->mcslide_page_id;
                 
                 $c++;

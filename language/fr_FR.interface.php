@@ -56,6 +56,10 @@
 	    
 	    'tr_MelisCmsSliderDetails_form_btn_cancel' => 'Annuler',
 	    'tr_MelisCmsSliderDetails_form_btn_save' => 'Enregistrer',
+
+        'tr_melisCmsSliderDetails_action_button_rename' => 'Renommer',
+        'tr_melisCmsSliderDetails_action_button_edit' => 'Editer',
+        'tr_melisCmsSliderDetails_action_button_delete' => 'Supprimer',
 	    
 	);
 ?>

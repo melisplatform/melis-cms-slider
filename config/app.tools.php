@@ -56,15 +56,15 @@ return array(
                 
                         'searchables' => array(),
                         'actionButtons' => array(
-                            'info' => array(
-                                'module' => 'MelisCmsSlider',
-                                'controller' => 'MelisCmsSliderList',
-                                'action' => 'render-table-list-content-action-info'
-                            ),
                             'edit' => array(
                                 'module' => 'MelisCmsSlider',
                                 'controller' => 'MelisCmsSliderList',
                                 'action' => 'render-table-list-content-action-edit'
+                            ),
+                            'info' => array(
+                                'module' => 'MelisCmsSlider',
+                                'controller' => 'MelisCmsSliderList',
+                                'action' => 'render-table-list-content-action-info'
                             ),
                             'delete' => array(
                                 'module' => 'MelisCmsSlider',

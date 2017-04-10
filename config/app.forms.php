@@ -109,6 +109,25 @@ return array(
                         ),
                     ),
                     'input_filter' => array(
+                        'mcsdetail_id' => array(
+                            'name'     => 'mcsdetail_id',
+                            'required' => false,
+                            'validators' => array(
+                                array(
+                                    'name'    => 'IsInt',
+                                    'options' => array(
+                                        'messages' => array(
+                                            \Zend\I18n\Validator\IsInt::NOT_INT => 'tr_meliscms_tool_platform_not_digit',
+                                            \Zend\I18n\Validator\IsInt::INVALID => 'tr_meliscms_tool_platform_not_digit',
+                                        )
+                                    )
+                                ),
+                            ),
+                            'filters' => array(
+                                array('name' => 'StripTags'),
+                                array('name' => 'StringTrim'),
+                            ),
+                        ),
                         'mcsdetail_title' => array(
                             'name'     => 'mcsdetail_title',
                             'required' => false,
@@ -232,6 +251,25 @@ return array(
                         ),
                     ),
                     'input_filter' => array(
+                        'mcslide_id' => array(
+                            'name'     => 'mcslide_id',
+                            'required' => false,
+                            'validators' => array(
+                                array(
+                                    'name'    => 'IsInt',
+                                    'options' => array(
+                                        'messages' => array(
+                                            \Zend\I18n\Validator\IsInt::NOT_INT => 'tr_meliscms_tool_platform_not_digit',
+                                            \Zend\I18n\Validator\IsInt::INVALID => 'tr_meliscms_tool_platform_not_digit',
+                                        )
+                                    )
+                                ),
+                            ),
+                            'filters' => array(
+                                array('name' => 'StripTags'),
+                                array('name' => 'StringTrim'),
+                            ),
+                        ),
                         'mcslide_name' => array(
                             'name'     => 'mcslide_name',
                             'required' => false,

@@ -234,7 +234,8 @@ class MelisCmsSliderDetailsController extends AbstractActionController
                 'details' => array(
                     'type' => 'column'
                 )
-            )
+            ),
+            'order' => '[[ 0, "desc" ]]',
         );
         
         $view->tableColumns = $columns;
@@ -352,7 +353,8 @@ class MelisCmsSliderDetailsController extends AbstractActionController
         $postValues = get_object_vars($this->getRequest()->getPost());
         
         if($this->getRequest()->isPost()){
-            $postValues = get_object_vars($this->getRequest()->getPost());           
+            $postValues = get_object_vars($this->getRequest()->getPost());
+            $postValues = $melisTool->sanitizePost($postValues);
             
             if (!empty($data['mcsdetail_id'])){
                 $logTypeCode = 'CMS_SLIDER_DETAILS_UPDATE';
@@ -509,7 +511,7 @@ class MelisCmsSliderDetailsController extends AbstractActionController
         
         if($this->getRequest()->isPost()) {
             $postValues = get_object_vars($this->getRequest()->getPost());
-            $sliderDetailsId = $postValues['detailsId'];
+            $sliderDetailsId = (int) $postValues['detailsId'];
             $tmp = $melisSliderSvc->getSliderDetails($sliderDetailsId);
             if($melisSliderSvc->deleteSliderDetails($sliderDetailsId)){
                 $success = 1;
