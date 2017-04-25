@@ -63,8 +63,9 @@ class MelisCmsSliderShowSliderPlugin extends MelisTemplatingPlugin
         // Retrieving the Slider Data from Slider Service
         $sliderSrv = $this->getServiceLocator()->get('MelisCmsSliderService');
         $sliderEntity = $sliderSrv->getSlider($id, 1);
+        
         // Getting the Slider details from Slider Entity
-        $sliderDetails = $sliderEntity->getSliderDetails();
+        $sliderDetails = (!empty($sliderEntity)) ? $sliderEntity->getSliderDetails() : '';
         
         $slider = array();
         if (!empty($sliderDetails))

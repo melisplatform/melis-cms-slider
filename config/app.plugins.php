@@ -3,6 +3,10 @@
 return array(
     'plugins' => array(
         'meliscmsslider' => array(
+            'conf' => array(
+                // user rights exclusions
+                'rightsDisplay' => 'none',
+            ),
             'plugins' => array(
                 'MelisCmsSliderShowSliderPlugin' => array(
                     'front' => array(

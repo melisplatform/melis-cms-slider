@@ -426,8 +426,18 @@ class MelisCmsSliderDetailsController extends AbstractActionController
                                 unset($data['mcsdetail_id']);
                                 $data['mcsdetail_status'] = $postValues['mcsdetail_status'];
                                 
+                                $sliderDetailsData = $melisSliderSvc->getSliderDetails($detailsId);
+                                
                                 $sliderDetailsId = $melisSliderSvc->saveSliderDetails($data, $detailsId);
                                 if($sliderDetailsId) {
+                                    
+                                    if (!empty($sliderDetailsData))
+                                    {
+                                        // if the file exists, delete the file after update
+                                        if(file_exists('public'.$sliderDetailsData->mcsdetail_img)) {
+                                            unlink('public'.$sliderDetailsData->mcsdetail_img);
+                                        }
+                                    }
                                     $success = 1;
                                     $textMessage = 'tr_MelisCmsSliderDetails_save_success';
                                 }

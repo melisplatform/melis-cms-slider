@@ -54,7 +54,7 @@
 	    'tr_MelisCmsSliderDetails_input_empty' => 'The input is required and can\'t be empty',
 	    'tr_MelisCmsSliderDetails_input_invalid_digit' => 'The input must contain only digits',
 	    
-	    'tr_MelisCmsSliderDetails_form_btn_cancel' => 'Cancel',
+	    'tr_MelisCmsSliderDetails_form_btn_cancel' => 'Close',
 	    'tr_MelisCmsSliderDetails_form_btn_save' => 'Save',
 
         'tr_melisCmsSliderDetails_action_button_rename' => 'Rename',
