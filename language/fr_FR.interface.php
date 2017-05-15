@@ -60,6 +60,10 @@
         'tr_melisCmsSliderDetails_action_button_rename' => 'Renommer',
         'tr_melisCmsSliderDetails_action_button_edit' => 'Editer',
         'tr_melisCmsSliderDetails_action_button_delete' => 'Supprimer',
+
+        'tr_MelisCmsSlider_list_header_modal_add' => 'Ajouter un slider',
+	    'tr_MelisCmsSlider_list_header_modal_edit' => 'Slide',
+	    'tr_MelisCmsSlider_detail_header_modal_add' => 'Ajouter un slide',
 	    
 	);
 ?>

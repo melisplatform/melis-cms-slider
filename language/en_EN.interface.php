@@ -61,6 +61,8 @@
         'tr_melisCmsSliderDetails_action_button_edit' => 'Edit',
         'tr_melisCmsSliderDetails_action_button_delete' => 'Delete',
 
-	    
+	    'tr_MelisCmsSlider_list_header_modal_add' => 'Add slider',
+	    'tr_MelisCmsSlider_list_header_modal_edit' => 'Slide',
+	    'tr_MelisCmsSlider_detail_header_modal_add' => 'Add slide',
 	);
 ?>

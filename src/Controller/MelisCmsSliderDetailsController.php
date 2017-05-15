@@ -281,21 +281,23 @@ class MelisCmsSliderDetailsController extends AbstractActionController
         $factory->setFormElementManager($formElements);
     
         $form = $factory->createForm($appConfigForm);
-    
+        $title    = $this->getTool()->getTranslation('tr_MelisCmsSlider_detail_header_modal_add');
         if(!empty($detailId)){          
             $data = (array)$details;
             $file = $details->mcsdetail_img;
+            $title = $this->getTool()->getTranslation('tr_MelisCmsSlider_list_header_modal_edit');
             if($data['mcsdetail_status']){
                 $status = 'checked';
             }
         }else{
             $data = array('mcsdetail_mcslider_id' => $sliderId);
         }
-        $form->setData($data);        
+        $form->setData($data);      
         
         $melisKey = $this->params()->fromRoute('melisKey', '');
         $view->melisKey = $melisKey;
         $view->form = $form;
+        $view->title = $title;
         $view->sliderId = $sliderId;
         $view->file = $file;
         $view->status = $status;
@@ -695,7 +697,7 @@ class MelisCmsSliderDetailsController extends AbstractActionController
     /**
     * Re orders the slider details
     * @param int $sliderId
-     */
+    */
    private function reOrder($sliderId)
     {
         $data = array();

@@ -186,13 +186,16 @@ class MelisCmsSliderListController extends AbstractActionController
         $factory->setFormElementManager($formElements);
     
         $form = $factory->createForm($appConfigForm);
+        $title    = $this->getTool()->getTranslation('tr_MelisCmsSlider_list_header_modal_add');
         if(!empty($sliderId)){
             $data = $sliderSvc->getSlider($sliderId);
             $form->setData((array) $data->getSlider());
+            $title = $this->getTool()->getTranslation('tr_MelisCmsSlider_header_title');
         }
-        
+
         $melisKey = $this->params()->fromRoute('melisKey', '');
         $view->melisKey = $melisKey;
+        $view->title = $title;
         $view->form = $form;
         return $view;
     }
