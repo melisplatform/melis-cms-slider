@@ -58,12 +58,6 @@ class MelisCmsSliderControllerTest extends AbstractHttpControllerTestCase
         $this->assertTrue((is_array($data1) && is_array($data2)));
     }
 
-    public function testForceTestToFailWhenFetchingData()
-    {
-        $data = $this->getSliderTable()->fetchAll()->toArray();
-        $this->assertEmpty($data, '<h4>This test is supposed to fail, so just ignore this test.</h4>');
-    }
-
     public function testInsertData()
     {
         $payloads = $this->getPayload(__METHOD__);
