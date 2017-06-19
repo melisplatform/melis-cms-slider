@@ -10,7 +10,13 @@ return array(
         			    'meliscore_toolstree' =>  array(
         			    	'interface' => array(
 								'meliscms_tools_section' => array(
-        			    			'interface' => array( 
+                                    'conf' => array(
+                                        'id' => 'id_meliscms_tools_section',
+                                        'name' => 'tr_meliscms_meliscms',
+                                        'icon' => 'fa-newspaper-o',
+                                        'rights_checkbox_disable' => true,
+                                    ),
+        			    			'interface' => array(
 		        			    		'MelisCmsSlider_left' => array(
 		        			    			'conf' => array(
 		        			    				'type' => '/MelisCmsSlider/interface/MelisCmsSlider_list/interface/MelisCmsSlider_left_menu',

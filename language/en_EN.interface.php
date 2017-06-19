@@ -1,5 +1,6 @@
 <?php 
 	return array(
+        'tr_meliscms_meliscms' => 'MelisCms',
 	    'tr_melistechnology_tools_section' => 'Custom tools',
 	    'tr_MelisCmsSlider_manager' => 'Slider',
 	    'tr_MelisCmsSlider_list_header_title' => 'Sliders',
