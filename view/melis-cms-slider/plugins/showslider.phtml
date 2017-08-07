@@ -1,5 +1,47 @@
-<<ul>
-<?php foreach ($this->showSlider As $val)?>
-	<li> <?php echo $val->mcsdetail_title ?> </li>
-<?php ?>
-</ul>
+<style>
+    .carousel-inner .item {
+        margin-bottom: initial;
+    }
+</style>
+
+<div id="<?php echo $this->pluginId?>">
+    <?php if (!empty($this->showSlider)){?>
+    	<div class="container">
+            <div id="cms-slider" class="carousel slide" data-ride="carousel">
+                <!-- Indicators -->
+              	<ol class="carousel-indicators">
+                    <li data-target="#carousel-example-generic" data-slide-to="0" class="active"></li>
+                    <li data-target="#carousel-example-generic" data-slide-to="1"></li>
+                    <li data-target="#carousel-example-generic" data-slide-to="2"></li>
+              	</ol>
+              	
+                <!-- Wrapper for slides -->
+                <div class="carousel-inner" role="listbox">
+                	<?php foreach ($this->showSlider As $key => $val){?>
+                    	<div class="item <?php echo ($key == 0) ? 'active' : ''?>">
+                          	<img src="<?php echo $val->mcsdetail_img?>" alt="...">
+                          	<div class="carousel-caption">
+                            	<h3><?php echo $val->mcsdetail_title ?> </h3>
+       	 						<p><?php echo (!empty($val->mcsdetail_sub1)) ? $val->mcsdetail_sub1 : ''?></p>
+                          	</div>
+                        </div>
+                    <?php }?>
+                </div>
+                
+                <!-- Controls -->
+                <a class="left carousel-control" href="#cms-slider" role="button" data-slide="prev">
+                    <span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span>
+                    <span class="sr-only">Previous</span>
+                </a>
+                <a class="right carousel-control" href="#cms-slider" role="button" data-slide="next">
+                    <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
+                    <span class="sr-only">Next</span>
+                </a>
+            </div>
+        </div>
+    <?php }else{?>
+        <div class="alert alert-warning" role="alert">
+        	No result
+        </div>
+    <?php }?>
+</div>

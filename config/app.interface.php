@@ -70,6 +70,7 @@ return array(
                                 'melisKey' => 'MelisCmsSlider_left_menu',
                                 'icon' => 'fa-columns',
                                 'rights_checkbox_disable' => true,
+                                'follow_regular_rendering' => false,
                             ),
                             'forward' => array(
                                 'module' => 'MelisCmsSlider',

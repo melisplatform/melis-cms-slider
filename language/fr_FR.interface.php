@@ -3,10 +3,16 @@
         'tr_meliscms_meliscms' => 'MelisCms',
 	    'tr_melistechnology_tools_section' => 'Outils personnalisés',
 	    'tr_MelisCmsSlider_manager' => 'Slider',
+	    'tr_MelisCmsSlider_manager edit' => 'Editer slider',
+	    'tr_MelisCmsSlider_manager tooltip' => 'Choix d&#39;un slider créé dans l&#39;outil slider',
 	    'tr_MelisCmsSlider_list_header_title' => 'Liste des sliders',
+	    'tr_MelisCmsSlider_list_header_title_description' => 'Saisissez ici les différents sliders affichés sur vos sites.',
 	    'tr_MelisCmsSlider_list_header_right_add' => 'Ajouter un slider',
 	    'tr_MelisCmsSliderDetails_slider_name' => 'Nom',
+	    'tr_MelisCmsSliderDetails_slider_name tooltip' => 'Associez un slider à votre actualité',
+	    'tr_MelisCmsSliderDetails_slider_name2 tooltip' => 'Nom du slider',
 	    'tr_MelisCmsSliderDetails_slider_page_id' => 'Page ID',
+	    'tr_MelisCmsSliderDetails_slider_page_id tooltip' => 'Associez un identifiant de page à ce slider (facultatif)',
 	    'tr_MelisCmsSliderDetails_slider_save_Title' => 'Sliders',
 	    'tr_MelisCmsSliderDetails_slider_save_success' => 'Le slider a été enregistré avec succès',
 	    'tr_MelisCmsSliderDetails_delete_slider_confirm' => 'Supprimer ce slider effacera tous les éléments associés. Etes-vous sûr de vouloir supprimer ce slider ?',
@@ -18,17 +24,25 @@
 	    'tr_MelisCmsSlider_list_col_name' => 'Nom',
 	    
 	    'tr_MelisCmsSlider_header_title' => 'Slider',
-	    'tr_MelisCmsSlider_content_tabs_properties' => 'Propriétés',
+	    'tr_MelisCmsSlider_header_title_description' => 'Editez ici vos slides et définissez l&#39;ordre d&#39;affichage par glisser-déposer.',
+	    'tr_MelisCmsSlider_content_tabs_properties' => 'Slides',
 	    'tr_MelisCmsSlider_content_tabs_properties_header_add' => 'Ajouter un slide',
+	    'tr_MelisCmsSlider_content_modal_description' => 'Remplissez ici les informations concernant ce slide.',
 	    
 	    'tr_MelisCmsSliderDetails_list_col_id' => 'ID',
 	    'tr_MelisCmsSliderDetails_list_col_status' => 'Statut',
 	    'tr_MelisCmsSliderDetails_list_col_name' => 'Titre',
+	    'tr_MelisCmsSliderDetails_list_col_name tooltip' => 'Titre du slide',
 	    'tr_MelisCmsSliderDetails_list_col_sub1' => 'Sous-titre 1',
+	    'tr_MelisCmsSliderDetails_list_col_sub1 tooltip' => '1er Sous-titre du slide',
 	    'tr_MelisCmsSliderDetails_list_col_sub2' => 'Sous-titre 2',
+	    'tr_MelisCmsSliderDetails_list_col_sub2 tooltip' => '2eme Sous-titre du slide',
 	    'tr_MelisCmsSliderDetails_list_col_sub3' => 'Sous-titre 3',
+	    'tr_MelisCmsSliderDetails_list_col_sub3 tooltip' => '3eme Sous-titre du slide',
 	    'tr_MelisCmsSliderDetails_list_col_link' => 'Lien',
+	    'tr_MelisCmsSliderDetails_list_col_link tooltip' => 'Lien vers lequel redirige le slide',
 	    'tr_MelisCmsSliderDetails_list_col_image' => 'Image',
+	    'tr_MelisCmsSliderDetails_list_col_image tooltip' => 'Image du slide',
 	    'tr_MelisCmsSliderDetails_status_active' => 'Actif',
 	    'tr_MelisCmsSliderDetails_status_inactive' => 'Inactif',
 	    
@@ -57,14 +71,21 @@
 	    
 	    'tr_MelisCmsSliderDetails_form_btn_cancel' => 'Annuler',
 	    'tr_MelisCmsSliderDetails_form_btn_save' => 'Enregistrer',
-
+	    
         'tr_melisCmsSliderDetails_action_button_rename' => 'Renommer',
         'tr_melisCmsSliderDetails_action_button_edit' => 'Editer',
         'tr_melisCmsSliderDetails_action_button_delete' => 'Supprimer',
-
+	    
         'tr_MelisCmsSlider_list_header_modal_add' => 'Ajouter un slider',
 	    'tr_MelisCmsSlider_list_header_modal_edit' => 'Slide',
 	    'tr_MelisCmsSlider_detail_header_modal_add' => 'Ajouter un slide',
+
+	    // Plugins
+	    'tr_PluginSection_meliscmsslider' => 'Melis Cms Slider',
+	    'tr_MelisCmsSliderShowSliderPlugin_Name' => 'Slider',
+	    'tr_MelisCmsSliderShowSliderPlugin_Description' => 'Le plugin slider affiche un slider spécifique basé sur l\'outil slider',
+        'tr_MelisCmsSliderShowSliderPlugin_slider_id_invalid' => 'Invalid slider selected',
+        'tr_MelisCmsSliderShowSliderPlugin_slider_id_empty'   => 'Please select a slide',
 	    
 	);
 ?>

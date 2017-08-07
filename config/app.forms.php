@@ -19,6 +19,7 @@ return array(
                                 'type' => 'MelisText',
                                 'options' => array(
                                     'label' => 'tr_MelisCmsSliderDetails_list_col_name',
+                                    'tooltip' => 'tr_MelisCmsSliderDetails_list_col_name tooltip',
                                 ),
                                 'attributes' => array(
                                     'id' => 'mcsdetail_title',
@@ -31,6 +32,7 @@ return array(
                                 'type' => 'MelisText',
                                 'options' => array(
                                     'label' => 'tr_MelisCmsSliderDetails_list_col_sub1',
+                                    'tooltip' => 'tr_MelisCmsSliderDetails_list_col_sub1 tooltip',
                                 ),
                                 'attributes' => array(
                                     'id' => 'mcsdetail_sub1',
@@ -43,6 +45,7 @@ return array(
                                 'type' => 'MelisText',
                                 'options' => array(
                                     'label' => 'tr_MelisCmsSliderDetails_list_col_sub2',
+                                    'tooltip' => 'tr_MelisCmsSliderDetails_list_col_sub2 tooltip',
                                 ),
                                 'attributes' => array(
                                     'id' => 'mcsdetail_sub2',
@@ -55,6 +58,7 @@ return array(
                                 'type' => 'MelisText',
                                 'options' => array(
                                     'label' => 'tr_MelisCmsSliderDetails_list_col_sub3',
+                                    'tooltip' => 'tr_MelisCmsSliderDetails_list_col_sub3 tooltip',
                                 ),
                                 'attributes' => array(
                                     'id' => 'mcsdetail_sub3',
@@ -67,6 +71,7 @@ return array(
                                 'type' => 'MelisText',
                                 'options' => array(
                                     'label' => 'tr_MelisCmsSliderDetails_list_col_link',
+                                    'tooltip' => 'tr_MelisCmsSliderDetails_list_col_link tooltip',
                                 ),
                                 'attributes' => array(
                                     'id' => 'mcsdetail_link',
@@ -86,6 +91,7 @@ return array(
                                 ),
                                 'options' => array(
                                     'label' => 'tr_MelisCmsSliderDetails_list_col_image',
+                                    'tooltip' => 'tr_MelisCmsSliderDetails_list_col_image tooltip',
                                 ),
                             ),
                         ),
@@ -225,9 +231,11 @@ return array(
                                 'type' => 'MelisText',
                                 'options' => array(
                                     'label' => 'tr_MelisCmsSliderDetails_slider_name',
+                                    'tooltip' => 'tr_MelisCmsSliderDetails_slider_name2 tooltip',
                                 ),
                                 'attributes' => array(
-                                    'id' => 'mcsdetail_title',
+                                    'id' => 'mcslide_name',
+                                    'required' => 'required',
                                 ),
                             ),
                         ),
@@ -237,9 +245,12 @@ return array(
                                 'type' => 'MelisText',
                                 'options' => array(
                                     'label' => 'tr_MelisCmsSliderDetails_slider_page_id',
+                                    'tooltip' => 'tr_MelisCmsSliderDetails_slider_page_id tooltip',
+                                    'button' => 'fa fa-sitemap',
+                                    'button-id' => 'generateInputFindPageTree',
                                 ),
                                 'attributes' => array(
-                                    'id' => 'mcsdetail_title',
+                                    'id' => 'mcslide_page_id',
                                 ),
                             ),
                         ),
@@ -272,7 +283,7 @@ return array(
                         ),
                         'mcslide_name' => array(
                             'name'     => 'mcslide_name',
-                            'required' => false,
+                            'required' => true,
                             'validators' => array(
                                 array(
                                     'name'    => 'StringLength',
@@ -288,7 +299,7 @@ return array(
                                     'name' => 'NotEmpty',
                                     'options' => array(
                                         'messages' => array(
-                                            \Zend\Validator\NotEmpty::IS_EMPTY => 'tr_MelisTechnologyEditionsEditor_input_empty',
+                                            \Zend\Validator\NotEmpty::IS_EMPTY => 'tr_MelisCmsSliderDetails_input_empty',
                                         ),
                                     ),
                                 ),
@@ -333,6 +344,7 @@ return array(
                                 'type' => 'CmsSliderSelect',
                                 'options' => array(
                                     'label' => 'tr_MelisCmsSliderDetails_slider_name',
+                                    'tooltip' => 'tr_MelisCmsSliderDetails_slider_name tooltip',
                                     'empty_option' => 'tr_meliscmsliderdetails_common_label_choose',
                                     'disable_inarray_validator' => true,
                                 ),

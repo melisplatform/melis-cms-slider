@@ -219,6 +219,10 @@ $(document).ready(function(){
 		melisCoreTool.done(this);
 	});
 	
+	body.on("click", '#generateInputFindPageTree span', function(){
+		melisLinkTree.createInputTreeModal('#mcslide_page_id');
+	});
+	
 });
 
 var toolSlider = {

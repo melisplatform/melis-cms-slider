@@ -88,7 +88,8 @@ return array(
         'display_exceptions'       => true,
         'doctype'                  => 'HTML5',
         'template_map' => array(
-            'MelisCmsSlider/showslider' => __DIR__ . '/../view/melis-cms-news/plugins/showslider.phtml',
+            'MelisCmsSlider/showslider' => __DIR__ . '/../view/melis-cms-slider/plugins/showslider.phtml',
+            'MelisCmsSlider/showslider/melis/form' => __DIR__ . '/../view/melis-cms-slider/plugins/slider-modal-form.phtml',
         ),
         'template_path_stack' => array(
             __DIR__ . '/../view',

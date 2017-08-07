@@ -3,10 +3,16 @@
         'tr_meliscms_meliscms' => 'MelisCms',
 	    'tr_melistechnology_tools_section' => 'Custom tools',
 	    'tr_MelisCmsSlider_manager' => 'Slider',
+	    'tr_MelisCmsSlider_manager edit' => 'Edit slider',
+	    'tr_MelisCmsSlider_manager tooltip' => 'Choice of a slider created from the slider tool',
 	    'tr_MelisCmsSlider_list_header_title' => 'Sliders',
+	    'tr_MelisCmsSlider_list_header_title_description' => 'Enter here the different sliders displayed on your sites.',
 	    'tr_MelisCmsSlider_list_header_right_add' => 'Add slider',
 	    'tr_MelisCmsSliderDetails_slider_name' => 'Name',
+	    'tr_MelisCmsSliderDetails_slider_name tooltip' => 'Associate a slider to your news',
+	    'tr_MelisCmsSliderDetails_slider_name2 tooltip' => 'Slider name',
 	    'tr_MelisCmsSliderDetails_slider_page_id' => 'Page ID',
+	    'tr_MelisCmsSliderDetails_slider_page_id tooltip' => 'Associate a page identifier to this slider (facultative)',
 	    'tr_MelisCmsSliderDetails_slider_save_Title' => 'Sliders',
 	    'tr_MelisCmsSliderDetails_slider_save_success' => 'Slider has been successfully saved',
 	    'tr_MelisCmsSliderDetails_delete_slider_confirm' => 'Deleting this slider will remove all of it\'s assosicated items. Are you sure you want to delete this slider?',
@@ -18,17 +24,25 @@
 	    'tr_MelisCmsSlider_list_col_name' => 'Name',
 	    
 	    'tr_MelisCmsSlider_header_title' => 'Slider',
+	    'tr_MelisCmsSlider_header_title_description' => 'Edit here your slides and define the display order by drag and drop.',
 	    'tr_MelisCmsSlider_content_tabs_properties' => 'Properties',
 	    'tr_MelisCmsSlider_content_tabs_properties_header_add' => 'Add slide',
+	    'tr_MelisCmsSlider_content_modal_description' => 'Fill-in here the information regarding this slide.',
 	    
 	    'tr_MelisCmsSliderDetails_list_col_id' => 'ID',
 	    'tr_MelisCmsSliderDetails_list_col_status' => 'Status',
 	    'tr_MelisCmsSliderDetails_list_col_name' => 'Title',
+	    'tr_MelisCmsSliderDetails_list_col_name tooltip' => 'Slide title',
 	    'tr_MelisCmsSliderDetails_list_col_sub1' => 'Sub title 1',
+	    'tr_MelisCmsSliderDetails_list_col_sub1 tooltip' => '1st slide sub-title',
 	    'tr_MelisCmsSliderDetails_list_col_sub2' => 'Sub title 2',
+	    'tr_MelisCmsSliderDetails_list_col_sub2 tooltip' => '2nd slide sub-title',
 	    'tr_MelisCmsSliderDetails_list_col_sub3' => 'Sub title 3',
+	    'tr_MelisCmsSliderDetails_list_col_sub3 tooltip' => '3rd slide sub-title',
 	    'tr_MelisCmsSliderDetails_list_col_link' => 'Link',
+	    'tr_MelisCmsSliderDetails_list_col_link tooltip' => ' Link to which redirect the slide',
 	    'tr_MelisCmsSliderDetails_list_col_image' => 'Image',
+	    'tr_MelisCmsSliderDetails_list_col_image tooltip' => 'Slide picture',
 	    'tr_MelisCmsSliderDetails_status_active' => 'Active',
 	    'tr_MelisCmsSliderDetails_status_inactive' => 'Inactive',
 	    
@@ -57,13 +71,21 @@
 	    
 	    'tr_MelisCmsSliderDetails_form_btn_cancel' => 'Close',
 	    'tr_MelisCmsSliderDetails_form_btn_save' => 'Save',
-
+	    
         'tr_melisCmsSliderDetails_action_button_rename' => 'Rename',
         'tr_melisCmsSliderDetails_action_button_edit' => 'Edit',
         'tr_melisCmsSliderDetails_action_button_delete' => 'Delete',
-
+	    
 	    'tr_MelisCmsSlider_list_header_modal_add' => 'Add slider',
 	    'tr_MelisCmsSlider_list_header_modal_edit' => 'Slide',
 	    'tr_MelisCmsSlider_detail_header_modal_add' => 'Add slide',
+
+	    // Plugins
+	    'tr_PluginSection_meliscmsslider' => 'Melis Cms Slider',
+	    'tr_MelisCmsSliderShowSliderPlugin_Name' => 'Slider',
+	    'tr_MelisCmsSliderShowSliderPlugin_Description' => 'The slider plugin displays a specific slider based on the slider tool.',
+        'tr_MelisCmsSliderShowSliderPlugin_slider_id_invalid' => 'Invalid slider selected',
+        'tr_MelisCmsSliderShowSliderPlugin_slider_id_empty'   => 'Please select a slide',
+
 	);
 ?>

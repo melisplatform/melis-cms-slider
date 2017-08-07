@@ -256,7 +256,7 @@ class MelisCmsSliderDetailsController extends AbstractActionController
         $melisKey = $this->params()->fromRoute('melisKey', '');
         $view->melisKey = $melisKey;
         $view->id = $id;
-        $view->setTerminal(false);
+        $view->setTerminal(true);
         return $view;
     }
     
@@ -586,10 +586,7 @@ class MelisCmsSliderDetailsController extends AbstractActionController
             
             $tmp = $sliderSvc->getSlider($sliderId)->getSliderDetails();
             $dataFiltered = count($tmp);
-//             echo '<pre>';
-//             print_r($tmp->getSliderDetails());
-//             echo '</pre>';
-//             die();
+            
             $tabelList = $sliderSvc->getSlider($sliderId)->getSliderDetails();
             $dataCount = count($tabelList);
             $c = 0;
