@@ -33,14 +33,14 @@ class MelisCmsSliderTable extends MelisEcomGenericTable
             ->or->like('mcslide_name', $search);
         }
         
-        if (!is_null($start))
+        if(!is_null($start))
         {
-            $select->offset($start);
+            $select->offset((int) $start);
         }
         
         if (!is_null($limit)&&$limit!=-1)
         {
-            $select->limit($limit);
+            $select->limit( (int) $limit);
         }
         
         if (!is_null($order))

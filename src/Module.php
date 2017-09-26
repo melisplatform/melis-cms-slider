@@ -19,7 +19,7 @@ use Zend\Session\Container;
 // use MelisTechnologyCustom\Model\Tables\MelisTechnologyCustomTableListColumnsTable;
 
 use MelisCmsSlider\Listener\MelisCmsSliderFlashMessengerListener;
-
+use MelisCmsSlider\Listener\MelisCmsSliderServiceMicroServiceListener;
 class Module
 {
     public function onBootstrap(MvcEvent $e)
@@ -49,6 +49,7 @@ class Module
         {
             // attach listeners for Melis
             $eventManager->attach(new MelisCmsSliderFlashMessengerListener());         
+            $eventManager->attach(new MelisCmsSliderServiceMicroServiceListener());         
             
         }
     }
@@ -67,6 +68,7 @@ class Module
     			include __DIR__ . '/../config/app.interface.php',
     			include __DIR__ . '/../config/app.tools.php',
     	        include __DIR__ . '/../config/app.forms.php',
+    	        include __DIR__ . '/../config/app.microservice.php',
     	    
     	        // Tests
     	        include __DIR__ . '/../config/diagnostic.config.php',
