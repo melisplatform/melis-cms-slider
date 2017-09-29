@@ -169,7 +169,7 @@ return array(
                                                 'controller' => 'MelisCmsSliderList',
                                                 'action' => 'render-table-list-content-table',
                                             ),
-                                        ),
+                                        ), 
                                     ),
                                 ),
                             ),
