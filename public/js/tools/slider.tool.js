@@ -6,6 +6,14 @@ $(document).ready(function(){
 		var name = $(this).closest('tr').find("td:nth-child(2)").text();
 		toolSlider.tabOpen(name, tableId);
 	});
+
+	//removes modal elements when clicking outside
+	body.on("click", function (e) {
+		if ($(e.target).hasClass('modal')) {
+			$('#id_MMelisCmsSlider_slider_new_container').modal('hide');
+			$('#id_MelisCmsSlider_modal_form_container').modal('hide');
+		}
+	});
 		
 	body.on("click", '.sliderListRefresh', function(){
 		melisHelper.zoneReload("id_MelisCmsSlider_list_content_table", "MelisCmsSlider_list_content_table", {});
@@ -233,7 +241,7 @@ var toolSlider = {
 		},
 		
 		tabOpen: function(name, id){
-			melisHelper.tabOpen(name, 'fa fa-columns', id+'_id_MelisCmsSlider_page', 'MelisCmsSlider_page', { sliderId : id});
+			melisHelper.tabOpen(name, 'fa fa-columns', id+'_id_MelisCmsSlider_page', 'MelisCmsSlider_page', { sliderId : id}, 'id_MelisCmsSlider_list');
 		},
 		
 		progress : function progress(e) {
