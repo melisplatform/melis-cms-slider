@@ -20,6 +20,12 @@
 	    'tr_MelisCmsSliderDetails_slider_delete_fail' => 'Impossible de supprimer le slider',
 	    'tr_MelisCmsSliderDetails_slider_delete_success' => 'Le slider a été supprimé avec succès',
 	    
+	    'tr_MelisCmsSlider_list_header' => 'Header',
+	    'tr_MelisCmsSlider_list_header_left' => 'Header right zone',
+	    'tr_MelisCmsSlider_list_header_right' => 'Header right zone',
+	    'tr_MelisCmsSlider_list_content' => 'Content',
+	    'tr_MelisCmsSlider_list_content_table' => 'Content table',
+	    
 	    'tr_MelisCmsSlider_list_col_id' => 'ID',
 	    'tr_MelisCmsSlider_list_col_name' => 'Nom',
 	    
