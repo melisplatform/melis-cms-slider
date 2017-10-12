@@ -28,13 +28,14 @@ return array(
 									'name' => 'start',
 									'type' => 'Text',
 									'options' => array(
-										'label' => 'Start',
+										'label' => 'start',
 									),
 									'attributes' => array(
 										'id' => 'start',
 										'value' => '',
 										'class' => '',
-										'placeholder' => 'Enter start',
+										'placeholder' => '0',
+										'data-type' => 'int'
 									),
 								),
 							),
@@ -43,13 +44,14 @@ return array(
 									'name' => 'limit',
 									'type' => 'Text',
 									'options' => array(
-										'label' => 'Limit',
+										'label' => 'limit',
 									),
 									'attributes' => array(
-										'id' => 'start',
+										'id' => 'limit',
 										'value' => '',
 										'class' => '',
-										'placeholder' => 'Enter limit',
+										'placeholder' => '5',
+										'data-type' => 'int'
 									),
 								),
 							),
@@ -58,13 +60,14 @@ return array(
 									'name' => 'order',
 									'type' => 'Text',
 									'options' => array(
-										'label' => 'Order',
+										'label' => 'order',
 									),
 									'attributes' => array(
 										'id' => 'order',
 										'value' => '',
 										'class' => '',
-										'placeholder' => 'Enter order',
+										'placeholder' => 'mcslide_id',
+										'data-type' => 'string'
 									),
 								),
 							),
@@ -73,13 +76,14 @@ return array(
 									'name' => 'search',
 									'type' => 'Text',
 									'options' => array(
-										'label' => 'Search',
+										'label' => 'search',
 									),
 									'attributes' => array(
 										'id' => 'search',
 										'value' => '',
 										'class' => '',
-										'placeholder' => 'Search',
+										'placeholder' => 'search',
+										'data-type' => 'string'
 									),
 								),
 							),
@@ -160,13 +164,14 @@ return array(
 									'name' => 'sliderId',
 									'type' => 'Text',
 									'options' => array(
-										'label' => 'Slider Id',
+										'label' => 'sliderId',
 									),
 									'attributes' => array(
-										'id' => 'start',
+										'id' => 'sliderId',
 										'value' => '',
 										'class' => '',
-										'placeholder' => 'Enter Slider Id',
+										'placeholder' => 'Enter sliderId',
+										'data-type' => 'int'
 									),
 								),
 							),
@@ -178,10 +183,11 @@ return array(
 										'label' => 'status',
 									),
 									'attributes' => array(
-										'id' => 'start',
+										'id' => 'status',
 										'value' => '',
 										'class' => '',
-										'placeholder' => 'Enter status',
+										'placeholder' => '1',
+										'data-type' => 'bool'
 									),
 								),
 							),
@@ -243,13 +249,14 @@ return array(
 									'name' => 'sliderDetailId',
 									'type' => 'Text',
 									'options' => array(
-										'label' => 'Slider Detail Id'
+										'label' => 'sliderDetailId'
 									),
 									'attributes' => array(
 										'id' => 'sliderDetailId',
 										'value' => '',
 										'class' => '',
-										'placeholder' => 'Enter Slider Detail Id',
+										'placeholder' => '66',
+										'data-type' => 'int'
 									),
 								),
 							),
@@ -263,7 +270,7 @@ return array(
 										'name' => 'NotEmpty',
 										'option' => array(
 											'messages' => array(
-												\Zend\Validator\NotEmpty::IS_EMPTY => 'Please enter Silder Detail Id'
+												\Zend\Validator\NotEmpty::IS_EMPTY => 'Please enter sliderDetailId'
 											),
 										),
 									),
@@ -294,13 +301,14 @@ return array(
 									'name' => 'pageId',
 									'type' => 'Text',
 									'options' => array(
-										'label' => 'page Id',
+										'label' => 'pageId',
 									),
 									'attributes' => array(
 										'id' => 'pageId',
 										'value' => '',
 										'class' => '',
-										'placeholder' => 'Enter page Id',
+										'placeholder' => '1',
+										'data-type' => 'int'
 									),
 								),
 							),
@@ -315,7 +323,8 @@ return array(
 										'id' => 'status',
 										'value' => '',
 										'class' => '',
-										'placeholder' => 'Enter status',
+										'placeholder' => '1',
+										'data-type' => 'bool'
 									),
 								),
 							),
