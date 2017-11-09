@@ -328,7 +328,16 @@ class MelisCmsSliderDetailsController extends AbstractActionController
         $view->form = $form;
         return $view;
     }
-    
+
+    public function removeFileName($fileName)
+    {
+        $file = pathinfo($fileName, PATHINFO_FILENAME);
+
+        $newFileName = $file;
+
+        return $newFileName;
+    }
+
     public function saveDetailsFormAction()
     {
         $this->getEventManager()->trigger('meliscmsslider_save_details_start', $this, array());
@@ -768,4 +777,6 @@ class MelisCmsSliderDetailsController extends AbstractActionController
         return $melisTool;
     
     }
+
 }
+
