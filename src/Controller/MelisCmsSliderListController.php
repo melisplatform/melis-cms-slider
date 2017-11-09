@@ -168,7 +168,18 @@ class MelisCmsSliderListController extends AbstractActionController
         $view->getToolDataTableConfig = $this->getTool()->getDataTableConfiguration('#sliderList', true, false, array('order' => '[[ 0, "desc" ]]'));
         return $view;
     }
-    
+
+    /**
+     * Returns the Tool Service Class
+     * @return MelisCoreTool
+     */
+    private function getAllTool()
+    {
+        $melisTool = $this->getServiceLocator()->get('MelisCoreTool');
+
+        return $melisTool;
+    }
+
     /**
      * renders the order list modal for updating order status
      * @return \Zend\View\Model\ViewModel
@@ -395,5 +406,7 @@ class MelisCmsSliderListController extends AbstractActionController
         return $melisTool;
     
     }
+
+
     
 }
