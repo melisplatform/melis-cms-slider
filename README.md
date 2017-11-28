@@ -19,14 +19,6 @@ Run the composer command:
 composer require melisplatform/melis-cms-slider
 ```
 
-## Tools & Elements provided
-
-* Slider Tool
-* Melis Templating Slider Plugin (SliderShow)
-* News with Sliders when MelisCmsNews Module is installed
-
-## Running the code
-
 ### Database    
 
 Database model is accessible on the MySQL Workbench file:  
@@ -34,6 +26,14 @@ Database model is accessible on the MySQL Workbench file:
 Database will be installed through composer and its hooks.  
 In case of problems, SQL files are located here:  
 /melis-cms-slider/install/sql  
+
+## Tools & Elements provided
+
+* Slider Tool
+* Melis Templating Slider Plugin (SliderShow)
+* News with Sliders when MelisCmsNews Module is installed
+
+## Running the code
 
 ### MelisCmsSlider Services  
 
