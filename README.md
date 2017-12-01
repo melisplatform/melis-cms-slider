@@ -19,6 +19,8 @@ Run the composer command:
 composer require melisplatform/melis-cms-slider
 ```
 
+**[See Full documentation on Melis CMS Slider here](https://www.melistechnology.com/MelisTechnology/resources/documentation/module/melis-cms-slider/PresentationofTheSliderManagemen)**
+
 ### Database    
 
 Database model is accessible on the MySQL Workbench file:  
