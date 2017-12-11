@@ -25,7 +25,8 @@
     "module"
   ],
   "extra": {
-    "module-name": "MelisCmsSlider"
+    "module-name": "MelisCmsSlider",
+    "dbdeploy": true
   },
   "require": {
     "php": "^5.5 || ^7.0",
