@@ -71,6 +71,7 @@ return array(
         'invokables' => array(
             'MelisCmsSlider\Controller\MelisCmsSliderList' => 'MelisCmsSlider\Controller\MelisCmsSliderListController',
             'MelisCmsSlider\Controller\MelisCmsSliderDetails' => 'MelisCmsSlider\Controller\MelisCmsSliderDetailsController',
+            'MelisCmsSlider\Controller\MelisSetup' => 'MelisCmsSlider\Controller\MelisSetupController',
             ),
     ),
     'controller_plugins' => array(
