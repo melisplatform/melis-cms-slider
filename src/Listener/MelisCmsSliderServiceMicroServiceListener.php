@@ -38,6 +38,22 @@ class MelisCmsSliderServiceMicroServiceListener extends MelisCoreGeneralListener
                 $results = isset($params['results'])  ? $params['results']  : null;
 
                 if($module == 'MelisCmsSlider' && $service == 'MelisCmsSliderService' && $method == 'getSlider') {
+
+                    $request = $sm->get('Request');
+                    $uri     = $request->getUri();
+                    $scheme  = $uri->getScheme();
+                    $host    = $uri->getHost();
+                    $url     = $scheme . '://' . $host;
+
+                    $sliderDetails = $results->getSliderDetails();
+
+                    $ctr = 0;
+                    foreach($sliderDetails as $item){
+                        $curImg = $results->getSliderDetails()[$ctr]->mcsdetail_img;
+                        $results->getSliderDetails()[$ctr]->mcsdetail_img = $url . $curImg;
+                        $ctr++;
+                    }
+
                     $results = $tool->convertObjectToArray($results);
                     
                 }
