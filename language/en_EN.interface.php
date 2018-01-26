@@ -15,7 +15,7 @@
 	    'tr_MelisCmsSliderDetails_slider_page_id tooltip' => 'Associate a page identifier to this slider (facultative)',
 	    'tr_MelisCmsSliderDetails_slider_save_Title' => 'Sliders',
 	    'tr_MelisCmsSliderDetails_slider_save_success' => 'Slider has been successfully saved',
-	    'tr_MelisCmsSliderDetails_delete_slider_confirm' => 'Deleting this slider will remove all of it\'s assosicated items. Are you sure you want to delete this slider?',
+	    'tr_MelisCmsSliderDetails_delete_slider_confirm' => 'Deleting this slider will remove all of its assosicated items. Are you sure you want to delete this slider?',
 	    'tr_MelisCmsSliderDetails_page_delete_slider' => 'Delete slider',
 	    'tr_MelisCmsSliderDetails_slider_delete_fail' => 'Failed to delete slider',
 	    'tr_MelisCmsSliderDetails_slider_delete_success' => 'Slider has been successfully deleted',
