@@ -20,6 +20,11 @@ use Zend\Session\Container;
 
 use MelisCmsSlider\Listener\MelisCmsSliderFlashMessengerListener;
 use MelisCmsSlider\Listener\MelisCmsSliderServiceMicroServiceListener;
+/**
+ * Class Module
+ * @package MelisCmsSlider
+ * @require melis-core|melis-cms
+ */
 class Module
 {
     public function onBootstrap(MvcEvent $e)

@@ -39,7 +39,7 @@ return array(
                         'js_initialization' => array(),
                         'modal_form' => array(
                             'cms_slider_plugin_tab_01' => array(
-                                'tab_title' => 'tr_melis_Plugins_Template',
+                                'tab_title' => 'tr_front_plugin_tab_properties',
                                 'tab_icon'  => 'fa fa-cog',
                                 'tab_form_layout' => 'MelisCmsSlider/showslider/melis/form',
                                 'attributes' => array(
@@ -110,7 +110,6 @@ return array(
                                         'filters'  => array(
                                         ),
                                     ),
-
                                     'sliderId' => array(
                                         'name'     => 'sliderId',
                                         'required' => true,
@@ -119,15 +118,7 @@ return array(
                                                 'name' => 'NotEmpty',
                                                 'options' => array(
                                                     'messages' => array(
-                                                        \Zend\Validator\NotEmpty::IS_EMPTY => 'tr_MelisCmsSliderShowSliderPlugin_slider_id_empty',
-                                                    ),
-                                                ),
-                                            ),
-                                            array(
-                                                'name' => 'IsInt',
-                                                'options' => array(
-                                                    'messages' => array(
-                                                        \Zend\I18n\Validator\IsInt::NOT_INT => 'tr_MelisCmsSliderShowSliderPlugin_slider_id_invalid'
+                                                        \Zend\Validator\NotEmpty::IS_EMPTY => 'tr_front_common_input_empty',
                                                     ),
                                                 ),
                                             ),
