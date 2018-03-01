@@ -28,3 +28,4 @@ CREATE TABLE IF NOT EXISTS `melis_cms_slider_details` (
   INDEX `fk_melis_cms_slider_details_melis_cms_slider_idx` (`mcsdetail_mcslider_id` ASC))
 ENGINE = InnoDB;
 
+ 
