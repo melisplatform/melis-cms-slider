@@ -51,6 +51,20 @@ return array(
                 'css' => array(
                     '/MelisCmsSlider/css/sliders.css',
                 ),
+                /**
+                 * the "build" configuration compiles all assets into one file to make
+                 * lesser requests
+                 */
+                'build' => [
+                    // lists of assets that will be loaded in the layout
+                    'css' => [
+                        '/MelisCmsSlider/build/css/bundle.css',
+
+                    ],
+                    'js' => [
+                        '/MelisCmsSlider/build/js/bundle.js',
+                    ]
+                ]
             ),
             'datas' => array(
                 
