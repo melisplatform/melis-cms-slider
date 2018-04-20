@@ -73,7 +73,6 @@ class MelisEcomGenericTable implements ServiceLocatorAwareInterface
 	{
 	    $select = $this->tableGateway->getSql()->select();
 	    $where = new Where();
-	    //$where->addPredicate(new Like($field, '%'.$value.'%'));
 	    $where->like($field, '%'.$value.'%');
 	    $select->where($where);
 	    $rowset = $this->tableGateway->selectwith($select);
