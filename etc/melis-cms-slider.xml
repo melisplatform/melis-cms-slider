@@ -1,0 +1,40 @@
+<melis-cms-slider>
+	<package_info>
+		<mp_title>Melis Cms Slider</mp_title>
+		<mp_subtitle>The module that brings a full slider system to your website.</mp_subtitle>
+		<mp_description>
+			MelisCmsSlider is the Slider module of Melis Platform.<br />
+			The module comes with a tool that allows user to manage the list of sliders and their properties, their images and their subtitles.<br />
+			MelisCmsSlider also brings a plugin to be used on pages with drag'n'drop.<br />
+		</mp_description>
+		<mp_maintainers>melisplatform</mp_maintainers>
+		<mp_group>Melis Cms</mp_group>
+	</package_info>
+	<package_images>
+		<img_1>
+			<mpi_image_title>MelisCmsSlider's list of sliders tool</mpi_image_title>
+			<mpi_image_file>melis-slider_1.JPG</mpi_image_file>
+			<mpi_image_main>0</mpi_image_main>
+		</img_1>
+		<img_2>
+			<mpi_image_title>MelisCmsSlider's list of images in a slider</mpi_image_title>
+			<mpi_image_file>melis-slider_2.JPG</mpi_image_file>
+			<mpi_image_main>0</mpi_image_main>
+		</img_2>
+		<img_3>
+			<mpi_image_title>MelisCmsSlider's image edition</mpi_image_title>
+			<mpi_image_file>melis-slider_3.JPG</mpi_image_file>
+			<mpi_image_main>0</mpi_image_main>
+		</img_3>
+		<img_4>
+			<mpi_image_title>MelisCmsSlider's slider plugin</mpi_image_title>
+			<mpi_image_file>melis-slider_4.JPG</mpi_image_file>
+			<mpi_image_main>1</mpi_image_main>
+		</img_4>
+		<img_5>
+			<mpi_image_title>MelisCmsSlider's plugin parameters</mpi_image_title>
+			<mpi_image_file>melis-slider_5.JPG</mpi_image_file>
+			<mpi_image_main>0</mpi_image_main>
+		</img_5>
+	</package_images>
+</melis-cms-slider>
