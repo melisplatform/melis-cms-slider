@@ -300,7 +300,7 @@ window.initSliderDetails = function(data, tblSettings) {
 			
 		    $.ajax({
 			     type        : "POST", 
-			     url         : "melis/MelisCmsSlider/MelisCmsSliderDetails/reOrderSliderDetails",
+			     url         : "/melis/MelisCmsSlider/MelisCmsSliderDetails/reOrderSliderDetails",
 			     data		: dataString,
 			     dataType    : "json",
 			     encode		: true
