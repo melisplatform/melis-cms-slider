@@ -7,7 +7,7 @@ return array(
                 'MelisCmsSlider_list' => array(
                     'table' => array(
                         'target' => '#sliderList',
-                        'ajaxUrl' => 'melis/MelisCmsSlider/MelisCmsSliderList/renderTableListData',
+                        'ajaxUrl' => '/melis/MelisCmsSlider/MelisCmsSliderList/renderTableListData',
                         'dataFunction' => '',
                         'ajaxCallback' => '',
                         'filters' => array(
@@ -77,7 +77,7 @@ return array(
                 'MelisCmsSlider_details' => array(
                     'table' => array(
                         'target' => '#sliderDetails',
-                        'ajaxUrl' => 'melis/MelisCmsSlider/MelisCmsSliderDetails/renderTableListData',
+                        'ajaxUrl' => '/melis/MelisCmsSlider/MelisCmsSliderDetails/renderTableListData',
                         'dataFunction' => 'initSliderDetails',
                         'ajaxCallback' => '',
                         'filters' => array(
