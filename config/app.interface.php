@@ -9,22 +9,20 @@ return array(
                     'interface' => array(
                         'meliscms_toolstree_section' =>  array(
                             'interface' => array(
-                                'meliscms_news_tools_section' => array(
-                                    'conf' => array(
-                                        'id' => 'id_meliscms_news_tools_section',
-                                        'name' => 'tr_MelisCmsSlider_manager',
-                                        'icon' => 'fa-image',
-                                        'rights_checkbox_disable' => true,
-                                        'melisKey' => 'meliscms_news_tools_section',
-                                    ),
-                                    'interface' => array(
+                                'meliscms_site_tools' => [
+                                    'interface' => [
                                         'MelisCmsSlider_left' => array(
                                             'conf' => array(
+                                                'id' => 'id_meliscms_news_tools_section',
+                                                'name' => 'tr_MelisCmsSlider_manager',
+                                                'icon' => 'fa-image',
+                                                'rights_checkbox_disable' => true,
+                                                'melisKey' => 'meliscms_news_tools_section',
                                                 'type' => '/MelisCmsSlider/interface/MelisCmsSlider_list/interface/MelisCmsSlider_left_menu',
                                             ),
                                         ),
-                                    ),
-                                ),
+                                    ]
+                                ],
                             ),
                         ),
                     ),
