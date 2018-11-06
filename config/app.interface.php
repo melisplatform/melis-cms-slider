@@ -9,8 +9,15 @@ return array(
                     'interface' => array(
                         'meliscms_toolstree_section' =>  array(
                             'interface' => array(
-                                'meliscms_site_tools' => [
-                                    'interface' => [
+                                'melis_cms_slider_tool' => [
+                                    'conf' => [
+                                        'id' => 'id_melis_cms_slider_tool',
+                                        'name' => 'tr_MelisCmsSlider_manager',
+                                        'icon' => 'fa-image',
+                                        'rights_checkbox_disable' => true,
+                                        'melisKey' => 'meliscms_category_tool_section'
+                                    ],
+                                    'interface' => array(
                                         'MelisCmsSlider_left' => array(
                                             'conf' => array(
                                                 'id' => 'id_meliscms_news_tools_section',
@@ -21,7 +28,7 @@ return array(
                                                 'type' => '/MelisCmsSlider/interface/MelisCmsSlider_list/interface/MelisCmsSlider_left_menu',
                                             ),
                                         ),
-                                    ]
+                                    ),
                                 ],
                             ),
                         ),
