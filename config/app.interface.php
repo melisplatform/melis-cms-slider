@@ -20,11 +20,11 @@ return [
                                     'interface' => [
                                         'MelisCmsSlider_left' => [
                                             'conf' => [
-                                                'id' => 'id_meliscms_news_tools_section',
+                                                'id' => 'id_meliscms_slider_tools_section',
                                                 'name' => 'tr_MelisCmsSlider_manager',
                                                 'icon' => 'fa-image',
                                                 'rights_checkbox_disable' => true,
-                                                'melisKey' => 'meliscms_news_tools_section',
+                                                'melisKey' => 'meliscms_slider_tools_section',
                                                 'type' => '/MelisCmsSlider/interface/MelisCmsSlider_list/interface/MelisCmsSlider_left_menu',
                                             ],
                                         ],
