@@ -4,7 +4,8 @@ $(document).ready(function(){
 	body.on("click", '.sliderInfo', function(){
 		var tableId = $(this).closest('tr').attr('id');
 		var name = $(this).closest('tr').find("td:nth-child(2)").text();
-		toolSlider.tabOpen(name, tableId);
+		
+		toolSlider.openSliderPage(name, tableId);
 	});
 
 	//removes modal elements when clicking outside
@@ -97,7 +98,6 @@ $(document).ready(function(){
 	    	 console.log('failed');
 	     });
 		melisCoreTool.done('#saveNewSlider');
-		
 	});
 	
 	body.on("click", "#saveSliderDetails", function(){
@@ -145,8 +145,6 @@ $(document).ready(function(){
 	     }).error(function(){
 	    	 console.log('failed');
 	     });
-		
-		
 	});
 	
 	body.on("click", ".sliderEntryDelete", function(){ 
@@ -240,8 +238,14 @@ var toolSlider = {
 			melisHelper.zoneReload('id_MelisTechnology_table_list_content_table', 'MelisTechnology_table_list_content_table');
 		},
 		
-		tabOpen: function(name, id){
-			melisHelper.tabOpen(name, 'fa fa-columns', id+'_id_MelisCmsSlider_page', 'MelisCmsSlider_page', { sliderId : id}, 'id_MelisCmsSlider_list');
+		openSliderPage: function(name, id, navTabsGroup, callback) {
+			var navTabsGroup = "id_meliscms_slider_tools_section";
+
+				//melisHelper.tabOpen(name, 'fa fa-columns', id+'_id_MelisCmsSlider_page', 'MelisCmsSlider_page', { sliderId : id }, 'id_MelisCmsSlider_list');
+				
+				melisHelper.disableAllTabs();
+				melisHelper.tabOpen(name, 'fa fa-columns', id+'_id_MelisCmsSlider_page', 'MelisCmsSlider_page', { sliderId : id }, navTabsGroup);
+				melisHelper.enableAllTabs();
 		},
 		
 		progress : function progress(e) {
