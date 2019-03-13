@@ -54,7 +54,7 @@
 	    
 	    'tr_MelisCmsSliderDetails_error_long' => 'Valeur trop longue, elle doit être de moins de 255 caractères',
 	    'tr_MelisCmsSliderDetails_upload_path_rights_error' => 'Impossible d\'uploader, veuillez vérifier vos droits',
-	    'tr_MelisCmsSliderDetails_save_title' => 'Détails du slider',
+	    'tr_MelisCmsSliderDetails_save_title' => 'Slides',
 	    'tr_MelisCmsSliderDetails_save_fail' => 'Impossible d\'enregistrer',
 	    'tr_MelisCmsSliderDetails_save_success' => 'Le slide a été enregistré avec succès',
 	    'tr_MelisCmsSliderDetails_input_file' => 'Image',
@@ -69,7 +69,7 @@
 	    'tr_MelisCmsSliderDetails_common_label_no' => 'Non',
 	    'tr_MelisCmsSliderDetails_page_delete_detail' => 'Supprimer le slide',
 	    'tr_MelisCmsSliderDetails_delete_confirm' => 'Etes-vous sûr de vouloir supprimer ce slide ?',
-	    'tr_MelisCmsSliderDetails_delete_Title' => 'Détails du slider',
+	    'tr_MelisCmsSliderDetails_delete_Title' => 'Slides',
 	    'tr_MelisCmsSliderDetails_delete_fail' => 'Impossible de supprimer les détails',
 	    'tr_MelisCmsSliderDetails_delete_success' => 'Le slide a été supprimé avec succès',
 	    'tr_MelisCmsSliderDetails_input_empty' => 'Le champ ne peut être vide',

@@ -54,7 +54,7 @@
 	    
 	    'tr_MelisCmsSliderDetails_error_long' => 'Value is too long, it should be less than 255 characters',
 	    'tr_MelisCmsSliderDetails_upload_path_rights_error' => 'Unable to upload, please check your rights settings',
-	    'tr_MelisCmsSliderDetails_save_title' => 'Slider details',
+	    'tr_MelisCmsSliderDetails_save_title' => 'Slides',
 	    'tr_MelisCmsSliderDetails_save_fail' => 'Failed to save slider details',
 	    'tr_MelisCmsSliderDetails_save_success' => 'The slide has been saved sucessfully',
 	    'tr_MelisCmsSliderDetails_input_file' => 'Image',
@@ -69,7 +69,7 @@
 	    'tr_MelisCmsSliderDetails_common_label_no' => 'No',
 	    'tr_MelisCmsSliderDetails_page_delete_detail' => 'Delete slide',
 	    'tr_MelisCmsSliderDetails_delete_confirm' => 'Are you sure you want to delete this slide?',
-	    'tr_MelisCmsSliderDetails_delete_Title' => 'Slider details',
+	    'tr_MelisCmsSliderDetails_delete_Title' => 'Slides',
 	    'tr_MelisCmsSliderDetails_delete_fail' => 'Failed to delete details',
 	    'tr_MelisCmsSliderDetails_delete_success' => 'The slide has been deleted successfully',
 	    'tr_MelisCmsSliderDetails_input_empty' => 'The input is required and can\'t be empty',
