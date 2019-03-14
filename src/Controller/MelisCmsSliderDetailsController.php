@@ -346,6 +346,7 @@ class MelisCmsSliderDetailsController extends AbstractActionController
     {
         $this->getEventManager()->trigger('meliscmsslider_save_details_start', $this, []);
         $melisTool = $this->getServiceLocator()->get('MelisCoreTool');
+        /** @var \MelisCmsSlider\Service\MelisCmsSliderService $melisSliderSvc */
         $melisSliderSvc = $this->getServiceLocator()->get('MelisCmsSliderService');
         $melisSliderDetailTable = $this->getServiceLocator()->get('MelisCmsSliderDetailTable');
         $sliderDetailsId = 0;
@@ -395,7 +396,7 @@ class MelisCmsSliderDetailsController extends AbstractActionController
                     unset($data['mcsdetail_img']);
                     $data['mcsdetail_status'] = $postValues['mcsdetail_status'];
                     $sliderDetailsId = $melisSliderSvc->saveSliderDetails($data, $detailsId);
-                    if ($melisSliderSvc->saveSliderDetails($data, $detailsId)) {
+                    if ($sliderDetailsId) {
                         $success = 1;
                         $textMessage = 'tr_MelisCmsSliderDetails_save_success';
                     }
