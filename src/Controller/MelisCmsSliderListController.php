@@ -10,11 +10,13 @@
 namespace MelisCmsSlider\Controller;
 
 use Zend\Mvc\Controller\AbstractActionController;
-use Zend\View\Model\ViewModel;
 use Zend\View\Model\JsonModel;
+use Zend\View\Model\ViewModel;
 
 class MelisCmsSliderListController extends AbstractActionController
 {
+    const LOG_DELETE = 'CMS_SLIDER_DELETE';
+
     /**
      * renders the page container
      * @return \Zend\View\Model\ViewModel
@@ -338,59 +340,69 @@ class MelisCmsSliderListController extends AbstractActionController
         $this->getEventManager()->trigger('meliscmsslider_add_slider_end', $this, array_merge($response, array('typeCode' => $logTypeCode, 'itemId' => $sliderId)));
         return new JsonModel($response);
     }
-    
+
+    /**
+     * @return JsonModel
+     */
     public function deleteSliderAction()
     {
-        $this->getEventManager()->trigger('meliscmsslider_delete_slider_start', $this, array());
+        $this->getEventManager()->trigger('meliscmsslider_delete_slider_start', $this, []);
         $sliderId = null;
-        $response = array();
         $success = 0;
-        $errors  = array();
-        $data = array();
+        $errors = [];
+        $data = [];
         $textMessage = 'tr_MelisCmsSliderDetails_slider_delete_fail';
         $textTitle = 'tr_MelisCmsSliderDetails_slider_save_Title';
-        
+
         $melisSliderSvc = $this->getServiceLocator()->get('MelisCmsSliderService');
         $sliderDetailsTable = $this->getServiceLocator()->get('MelisCmsSliderDetailTable');
         $melisCoreConfig = $this->getServiceLocator()->get('MelisCoreConfig');
-        
+
         $confSlidersUpload = $melisCoreConfig->getItem('MelisCmsSlider/conf/sliders');
-        
-        if($this->getRequest()->isPost()) {
+
+        if ($this->getRequest()->isPost()) {
             $postValues = get_object_vars($this->getRequest()->getPost());
             $sliderId = $postValues['sliderId'];
             $fileUploadPath = null;
             //attempt to delete files first before deleting db data
             $details = $sliderDetailsTable->getEntryByField('mcsdetail_mcslider_id', $postValues['sliderId']);
-            foreach($details as $detail){
-                $fileUploadPath = 'public'. $detail->mcsdetail_img;
-                if(file_exists($fileUploadPath)) {                
-                    if(is_readable($fileUploadPath) && is_writable($fileUploadPath)) {                
+            foreach ($details as $detail) {
+                $fileUploadPath = 'public' . $detail->mcsdetail_img;
+                if (file_exists($fileUploadPath)) {
+                    if (is_readable($fileUploadPath) && is_writable($fileUploadPath)) {
                         unlink($fileUploadPath);
                     }
                 }
             }
-            
+
             //remove emptied folder
-            if(file_exists('public'.$confSlidersUpload['imagesPath'].$postValues['sliderId'])){
-                rmdir('public'.$confSlidersUpload['imagesPath'].$postValues['sliderId']);
+            if (file_exists('public' . $confSlidersUpload['imagesPath'] . $postValues['sliderId'])) {
+                rmdir('public' . $confSlidersUpload['imagesPath'] . $postValues['sliderId']);
             }
             //delete db data
-            if($melisSliderSvc->deleteSlider($sliderId)){
+            if ($melisSliderSvc->deleteSlider($sliderId)) {
                 $success = 1;
                 $textMessage = 'tr_MelisCmsSliderDetails_slider_delete_success';
             }
         }
-        
-        $response = array(
+
+        $response = [
             'success' => $success,
             'textTitle' => $textTitle,
             'textMessage' => $textMessage,
             'errors' => $errors,
             'chunk' => $data,
+        ];
+
+        $this->getEventManager()->trigger(
+            'meliscmsslider_delete_slider_end',
+            $this,
+            array_merge(
+                $response,
+                ['typeCode' => self::LOG_DELETE, 'itemId' => $sliderId]
+            )
         );
-        
-        $this->getEventManager()->trigger('meliscmsslider_delete_slider_end', $this, array_merge($response, array('typeCode' => 'CMS_SLIDER_DELETE', 'itemId' => $sliderId)));
+
         return new JsonModel($response);
     }
     
