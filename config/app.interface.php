@@ -23,7 +23,7 @@ return [
                                                 'id' => 'id_meliscms_slider_tools_section',
                                                 'name' => 'tr_MelisCmsSlider_manager',
                                                 'icon' => 'fa-image',
-                                                'rights_checkbox_disable' => true,
+                                                'rights_checkbox_disable' => false,
                                                 'melisKey' => 'meliscms_slider_tools_section',
                                                 'type' => '/MelisCmsSlider/interface/MelisCmsSlider_list/interface/MelisCmsSlider_left_menu',
                                             ],

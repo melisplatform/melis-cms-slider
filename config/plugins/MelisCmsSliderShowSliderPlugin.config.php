@@ -26,6 +26,7 @@ return array(
                         ),
                     ),
                     'melis' => array(
+                        'section' => 'MelisCms',
                         'name' => 'tr_MelisCmsSliderShowSliderPlugin_Name',
                         'thumbnail' => '/MelisCmsSlider/plugins/images/MelisCmsSliderShowSliderPlugin_thumb.jpg',
                         'description' => 'tr_MelisCmsSliderShowSliderPlugin_Description',
