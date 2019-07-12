@@ -43,7 +43,7 @@ class MelisCmsSliderTableColumnDisplayListener extends MelisCoreGeneralListener 
                 $sliderTbl    = $sm->get('MelisCmsSliderTable');
                 $sliderData = $sliderTbl->getEntryById($params['data'])->current();
                 if ($sliderData)
-                    $name = $sliderData->pros_name;
+                    $name = $sliderData->mcslide_name;
 
                 $params['data'] = $name;
             }
