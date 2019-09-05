@@ -9,7 +9,7 @@ return array(
                         'target' => '#sliderList',
                         'ajaxUrl' => '/melis/MelisCmsSlider/MelisCmsSliderList/renderTableListData',
                         'dataFunction' => '',
-                        'ajaxCallback' => '',
+                        'ajaxCallback' => 'paginateDataTables()',
                         'filters' => array(
                             'left' => array(
                                 'table-list-table-filter-limit' => array(
