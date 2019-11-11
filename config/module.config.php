@@ -84,6 +84,11 @@ return array(
             'CmsSliderSelect' => 'MelisCmsSlider\Form\Factory\CmsSliderSelectFactory',
         )
     ),
+    'view_helpers' => [
+        'factories' => [
+            'MelisCmsSliderPlugin' => 'MelisCmsSlider\View\Helper\Factory\MelisCmsSliderHelperFactory',
+        ],
+    ],
     'view_manager' => array(
         'display_not_found_reason' => true,
         'display_exceptions'       => true,
