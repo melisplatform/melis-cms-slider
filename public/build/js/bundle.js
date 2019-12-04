@@ -317,11 +317,6 @@ window.initSliderDetails = function(data, tblSettings) {
 		
 	});
 }
-
-window.paginateDataTables = function() {
-	//paginate dataTables data
-	melisCore.paginateDataTables();
-}
 /*! ============================================================
  * bootstrapSwitch v1.8 by Larentis Mattia @SpiritualGuru
  * http://www.larentis.eu/

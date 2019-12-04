@@ -317,8 +317,3 @@ window.initSliderDetails = function(data, tblSettings) {
 		
 	});
 }
-
-window.paginateDataTables = function() {
-	//paginate dataTables data
-	melisCore.paginateDataTables();
-}
