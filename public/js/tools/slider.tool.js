@@ -302,7 +302,7 @@ var toolSlider = {
     	
 };
 
-window.initSliderDetails = function(data, tblSettings) {
+/* window.initSliderDetails = function(data, tblSettings) {
 	var sliderId = $("#" + tblSettings.sTableId).data("sliderid");
 
 		data.sliderId = sliderId;
@@ -347,4 +347,4 @@ window.initSliderDetails = function(data, tblSettings) {
 					});
 			}
 	});
-};
+}; */
