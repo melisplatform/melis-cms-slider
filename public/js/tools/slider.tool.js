@@ -252,12 +252,6 @@ $(function(){
 		$body.on("click", "#generateInputFindPageTree span", function() {
 			melisLinkTree.createInputTreeModal('#mcslide_page_id');
 		});
-
-		$body.on("click", ".sliderTable tbody tr td", function() {
-			$(this).trigger("click");
-
-			console.log("sliderTable table tbody tr td clicked!");
-		});
 });
 
 var toolSlider = {

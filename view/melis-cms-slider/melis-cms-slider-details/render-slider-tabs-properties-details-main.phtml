@@ -42,12 +42,16 @@
 			// this script cannot be separated to this file since all table configuration and initialization are done here
 			// render table to DataTable plugin
 			<?php echo $this->getToolDataTableConfig; ?>
-			
-			$($.fn.dataTable.tables(true)).DataTable().columns.adjust().draw();
 
 			$(document).on("init.dt", function(e, settings) {
 				$("#<?= $this->sliderId?>_sliderDetails_wrapper").find(".filter-bar").hide();
 			});
+
+			var $body = $("body");
+
+				$body.on("click", ".sliderTable tbody tr td:first-child", function() {
+					$(this).trigger("click");
+				});
 		});
 	</script>
 </div>
