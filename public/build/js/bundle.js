@@ -1,1 +1,727 @@
-$(function(){var e=$("body");e.on("click",".sliderInfo",function(){var e=$(this),i=e.closest("tr").attr("id"),t=e.closest("tr").find("td:nth-child(2)").text();toolSlider.openSliderPage(t,i)}),e.on("click",function(e){$(e.target).hasClass("modal")&&($("#id_MMelisCmsSlider_slider_new_container").modal("hide"),$("#id_MelisCmsSlider_modal_form_container").modal("hide"))}),e.on("click",".sliderListRefresh",function(){melisHelper.zoneReload("id_MelisCmsSlider_list_content_table","MelisCmsSlider_list_content_table",{})}),e.on("click",".sliderEntryInfo",function(){var e=$(this),i=e.closest("tr").attr("id"),t=e.closest("tr").data("sliderid");melisCoreTool.pending(".sliderEntryInfo"),zoneId="id_MelisCmsSlider_modal_form",melisKey="MelisCmsSlider_modal_form",modalUrl="melis/MelisCmsSlider/MelisCmsSliderDetails/renderModal",melisHelper.createModal(zoneId,melisKey,!1,{detailId:i,sliderId:t},modalUrl,function(){melisCoreTool.done(".sliderEntryInfo")})}),e.on("click",".addSliderData",function(){var e=$(this),i=e.data("sliderid");melisCoreTool.pending(".addSliderData"),zoneId="id_MelisCmsSlider_modal_form",melisKey="MelisCmsSlider_modal_form",modalUrl="melis/MelisCmsSlider/MelisCmsSliderDetails/renderModal",melisHelper.createModal(zoneId,melisKey,!1,{sliderId:i},modalUrl,function(){melisCoreTool.done(".addSliderData")})}),e.on("click",".addSlider",function(){melisCoreTool.pending(".addSlider"),zoneId="id_MMelisCmsSlider_slider_new",melisKey="MMelisCmsSlider_slider_new",modalUrl="melis/MelisCmsSlider/MelisCmsSliderDetails/renderModal",melisHelper.createModal(zoneId,melisKey,!1,{},modalUrl,function(){melisCoreTool.done(".addSlider")})}),e.on("click",".sliderEdit",function(){var e=$(this),i=e.closest("tr").attr("id");melisCoreTool.pending(".sliderEdit"),zoneId="id_MMelisCmsSlider_slider_new",melisKey="MMelisCmsSlider_slider_new",modalUrl="melis/MelisCmsSlider/MelisCmsSliderDetails/renderModal",melisHelper.createModal(zoneId,melisKey,!1,{sliderId:i},modalUrl,function(){melisCoreTool.done(".sliderEdit")})}),e.on("click","#saveNewSlider",function(){var e=$("#sliderForm").serializeArray();melisCoreTool.pending("#saveNewSlider"),$.ajax({type:"POST",url:"melis/MelisCmsSlider/MelisCmsSliderList/saveSlider",data:e,dataType:"json",encode:!0}).done(function(e){e.success?($("#id_MMelisCmsSlider_slider_new_container").modal("hide"),melisHelper.melisOkNotification(e.textTitle,e.textMessage),melisHelper.zoneReload("id_MelisCmsSlider_list_content_table","MelisCmsSlider_list_content_table",{}),melisCore.flashMessenger()):melisHelper.melisKoNotification(e.textTitle,e.textMessage,e.errors)}).fail(function(){alert(translations.tr_meliscore_error_message)}),melisCoreTool.done("#saveNewSlider")}),e.on("click","#saveSliderDetails",function(){var e=$("form#sliderDetailsForm input[name=mcsdetail_mcslider_id]").val(),i=$("#sliderDetailsForm").get(0),t=new FormData(i);$("#sliderDetails .make-switch div").each(function(){var e=$(this),i=e.find("input").attr("name"),s=e.hasClass("switch-on"),a=0;s&&(a=1),t.append(i,a)}),$.ajax({type:"POST",url:"melis/MelisCmsSlider/MelisCmsSliderDetails/saveDetailsForm",data:t,dataType:"json",processData:!1,cache:!1,contentType:!1,encode:!0,xhr:function(){var e=$.ajaxSettings.xhr();return e.upload&&e.upload.addEventListener("progress",toolSlider.progress,!1),e}}).done(function(i){i.success?($("div.progressContent").addClass("hidden"),$("#id_MelisCmsSlider_modal_form_container").modal("hide"),melisHelper.melisOkNotification(i.textTitle,i.textMessage),melisHelper.zoneReload(e+"_id_MelisCmsSlider_content_tabs_properties_details","MelisCmsSlider_content_tabs_properties_details",{sliderId:e})):melisHelper.melisKoNotification(i.textTitle,i.textMessage,i.errors),melisCore.flashMessenger()}).fail(function(){alert(translations.tr_meliscore_error_message)})}),e.on("click",".sliderEntryDelete",function(){var e=$(this),i=e.closest("tr").attr("id"),t=e.closest("tr").data("sliderid"),s=[];s.push({name:"detailsId",value:i}),melisCoreTool.pending(this),melisCoreTool.confirm(translations.tr_MelisCmsSliderDetails_common_label_yes,translations.tr_MelisCmsSliderDetails_common_label_no,translations.tr_MelisCmsSliderDetails_page_delete_detail,translations.tr_MelisCmsSliderDetails_delete_confirm,function(){$.ajax({type:"POST",url:"melis/MelisCmsSlider/MelisCmsSliderDetails/deleteDetails",data:s,dataType:"json",encode:!0}).done(function(e){e.success?(melisHelper.melisOkNotification(e.textTitle,e.textMessage),melisHelper.zoneReload(t+"_id_MelisCmsSlider_content_tabs_properties_details","MelisCmsSlider_content_tabs_properties_details",{sliderId:t})):melisHelper.melisKoNotification(e.textTitle,e.textMessage,e.errors),melisCore.flashMessenger()}).fail(function(){alert(translations.tr_meliscore_error_message)})}),melisCoreTool.done(this)}),e.on("click",".sliderDelete",function(){var e=($(this),$(this).closest("tr").attr("id")),i=[];i.push({name:"sliderId",value:e}),melisCoreTool.pending(this),melisCoreTool.confirm(translations.tr_MelisCmsSliderDetails_common_label_yes,translations.tr_MelisCmsSliderDetails_common_label_no,translations.tr_MelisCmsSliderDetails_page_delete_slider,translations.tr_MelisCmsSliderDetails_delete_slider_confirm,function(){$.ajax({type:"POST",url:"melis/MelisCmsSlider/MelisCmsSliderList/deleteSlider",data:i,dataType:"json",encode:!0}).done(function(i){i.success?(melisHelper.melisOkNotification(i.textTitle,i.textMessage),melisHelper.tabClose(e+"_id_MelisCmsSlider_page"),melisHelper.zoneReload("id_MelisCmsSlider_list_content_table","MelisCmsSlider_list_content_table",{})):melisHelper.melisKoNotification(i.textTitle,i.textMessage,i.errors),melisCore.flashMessenger()}).fail(function(){alert(translations.tr_meliscore_error_message)})}),melisCoreTool.done(this)}),e.on("click","#generateInputFindPageTree span",function(){melisLinkTree.createInputTreeModal("#mcslide_page_id")}),e.on("click",".sliderTable tbody tr td",function(){$(this).trigger("click"),console.log("sliderTable table tbody tr td clicked!")})});var toolSlider={refreshTable:function(){melisHelper.zoneReload("id_MelisTechnology_table_list_content_table","MelisTechnology_table_list_content_table")},openSliderPage:function(e,i,t,s){melisHelper.disableAllTabs(),melisHelper.tabOpen(e,"fa fa-columns",i+"_id_MelisCmsSlider_page","MelisCmsSlider_page",{sliderId:i},"id_meliscms_slider_tools_section"),melisHelper.enableAllTabs()},progress:function(e){if($("div.progressContent").removeClass("hidden"),$("div.progressContent > div.progress > div.progress-bar").attr("aria-valuenow",0),$("div.progressContent > div.progress > div.progress-bar").css("width","0%"),$("div.progressContent > div.progress > span.status").html(""),e.lengthComputable){var i=e.total,t=e.loaded,s=100*t/i;$("div.progressContent > div.progress > div.progress-bar").attr("aria-valuenow",s),$("div.progressContent > div.progress > div.progress-bar").css("width",s+"%"),s>100?$("div.progressContent").addClass("hidden"):$("div.progressContent > div.progress > span.status").html(Math.round(s)+"%")}}};window.initSliderDetails=function(data,tblSettings){var sliderId=$("#"+tblSettings.sTableId).data("sliderid");data.sliderId=sliderId,$("#"+sliderId+"_sliderDetails").on("row-reorder.dt",function(e,diff,edit){for(var result="Reorder started on row: "+edit.triggerRow.data()[1]+"<br>",i=0,ien=diff.length;i<ien;i++){var rowData=eval("$"+sliderId+"_sliderDetails").row(diff[i].node).data();result+=rowData[1]+" updated to be in position "+diff[i].newData+" (was "+diff[i].oldData+")<br>"}if(!$.isEmptyObject(diff)){var dataString=new Array,prdNodes=new Array;$.each(diff,function(){prdNodes.push(this.node.id+"-"+this.newPosition)}),dataString.push({name:"sliderOrderData",value:prdNodes.join()}),dataString=$.param(dataString),$.ajax({type:"POST",url:"/melis/MelisCmsSlider/MelisCmsSliderDetails/reOrderSliderDetails",data:dataString,dataType:"json",encode:!0}).done(function(e){e.success||alert(translations.tr_meliscore_error_message)}).fail(function(){alert(translations.tr_meliscore_error_message)})}})},function(e){"use strict";e.fn.bootstrapSwitch=function(i){var t='input[type!="hidden"]',s={init:function(){return this.each(function(){var i,s,a,l,r,d,o=e(this),n=o.closest("form"),c="",m=o.attr("class"),f="ON",h="OFF",p=!1,u=!1;e.each(["switch-mini","switch-small","switch-large"],function(e,i){m.indexOf(i)>=0&&(c=i)}),o.addClass("has-switch"),void 0!==o.data("on")&&(r="switch-"+o.data("on")),void 0!==o.data("on-label")&&(f=o.data("on-label")),void 0!==o.data("off-label")&&(h=o.data("off-label")),void 0!==o.data("label-icon")&&(p=o.data("label-icon")),void 0!==o.data("text-label")&&(u=o.data("text-label")),s=e("<span>").addClass("switch-left").addClass(c).addClass(r).html(f),r="",void 0!==o.data("off")&&(r="switch-"+o.data("off")),a=e("<span>").addClass("switch-right").addClass(c).addClass(r).html(h),l=e("<label>").html("&nbsp;").addClass(c).attr("for",o.find(t).attr("id")),p&&l.html('<i class="icon '+p+'"></i>'),u&&l.html(""+u),i=o.find(t).wrap(e("<div>")).parent().data("animated",!1),!1!==o.data("animated")&&i.addClass("switch-animate").data("animated",!0),i.append(s).append(l).append(a),o.find(">div").addClass(o.find(t).is(":checked")?"switch-on":"switch-off"),o.find(t).is(":disabled")&&e(this).addClass("deactivate");var _=function(e){o.parent("label").is(".label-change-switch")||e.siblings("label").trigger("mousedown").trigger("mouseup").trigger("click")};o.on("keydown",function(i){32===i.keyCode&&(i.stopImmediatePropagation(),i.preventDefault(),_(e(i.target).find("span:first")))}),s.on("click",function(i){_(e(this))}),a.on("click",function(i){_(e(this))}),o.find(t).on("change",function(i,t){var s=e(this),a=s.parent(),l=s.is(":checked"),r=a.is(".switch-off");if(i.preventDefault(),a.css("left",""),r===l){if(l?a.removeClass("switch-off").addClass("switch-on"):a.removeClass("switch-on").addClass("switch-off"),!1!==a.data("animated")&&a.addClass("switch-animate"),"boolean"==typeof t&&t)return;a.parent().trigger("switch-change",{el:s,value:l})}}),o.find("label").on("mousedown touchstart",function(i){var t=e(this);d=!1,i.preventDefault(),i.stopImmediatePropagation(),t.closest("div").removeClass("switch-animate"),t.closest(".has-switch").is(".deactivate")?t.unbind("click"):t.closest(".switch-on").parent().is(".radio-no-uncheck")?t.unbind("click"):(t.on("mousemove touchmove",function(i){var t=e(this).closest(".make-switch"),s=(i.pageX||i.originalEvent.targetTouches[0].pageX)-t.offset().left,a=s/t.width()*100;d=!0,a<25?a=25:a>75&&(a=75),t.find(">div").css("left",a-75+"%")}),t.on("click touchend",function(i){var t=e(this),s=e(i.target),a=s.siblings("input");i.stopImmediatePropagation(),i.preventDefault(),t.unbind("mouseleave"),d?a.prop("checked",!(parseInt(t.parent().css("left"))<-25)):a.prop("checked",!a.is(":checked")),d=!1,a.trigger("change")}),t.on("mouseleave",function(i){var t=e(this),s=t.siblings("input");i.preventDefault(),i.stopImmediatePropagation(),t.unbind("mouseleave"),t.trigger("mouseup"),s.prop("checked",!(parseInt(t.parent().css("left"))<-25)).trigger("change")}),t.on("mouseup",function(i){i.stopImmediatePropagation(),i.preventDefault(),e(this).unbind("mousemove")}))}),"injected"!==n.data("bootstrapSwitch")&&(n.bind("reset",function(){setTimeout(function(){n.find(".make-switch").each(function(){var i=e(this).find(t);i.prop("checked",i.is(":checked")).trigger("change")})},1)}),n.data("bootstrapSwitch","injected"))})},toggleActivation:function(){var i=e(this);i.toggleClass("deactivate"),i.find(t).prop("disabled",i.is(".deactivate"))},isActive:function(){return!e(this).hasClass("deactivate")},setActive:function(i){var s=e(this);i?(s.removeClass("deactivate"),s.find(t).removeAttr("disabled")):(s.addClass("deactivate"),s.find(t).attr("disabled","disabled"))},toggleState:function(i){var t=e(this).find(":checkbox");t.prop("checked",!t.is(":checked")).trigger("change",i)},toggleRadioState:function(i){var t=e(this).find(":radio");t.not(":checked").prop("checked",!t.is(":checked")).trigger("change",i)},toggleRadioStateAllowUncheck:function(i,t){var s=e(this).find(":radio");i?s.not(":checked").trigger("change",t):s.not(":checked").prop("checked",!s.is(":checked")).trigger("change",t)},setState:function(i,s){e(this).find(t).prop("checked",i).trigger("change",s)},setOnLabel:function(i){e(this).find(".switch-left").html(i)},setOffLabel:function(i){e(this).find(".switch-right").html(i)},setOnClass:function(i){var t=e(this).find(".switch-left"),s="";void 0!==i&&(void 0!==e(this).attr("data-on")&&(s="switch-"+e(this).attr("data-on")),t.removeClass(s),s="switch-"+i,t.addClass(s))},setOffClass:function(i){var t=e(this).find(".switch-right"),s="";void 0!==i&&(void 0!==e(this).attr("data-off")&&(s="switch-"+e(this).attr("data-off")),t.removeClass(s),s="switch-"+i,t.addClass(s))},setAnimated:function(i){var s=e(this).find(t).parent();void 0===i&&(i=!1),s.data("animated",i),s.attr("data-animated",i),!1!==s.data("animated")?s.addClass("switch-animate"):s.removeClass("switch-animate")},setSizeClass:function(i){var t=e(this),s=t.find(".switch-left"),a=t.find(".switch-right"),l=t.find("label");e.each(["switch-mini","switch-small","switch-large"],function(e,t){t!==i?(s.removeClass(t),a.removeClass(t),l.removeClass(t)):(s.addClass(t),a.addClass(t),l.addClass(t))})},status:function(){return e(this).find(t).is(":checked")},destroy:function(){var i,t=e(this),s=t.find("div"),a=t.closest("form");return s.find(":not(input)").remove(),i=s.children(),i.unwrap().unwrap(),i.unbind("change"),a&&(a.unbind("reset"),a.removeData("bootstrapSwitch")),i}};return s[i]?s[i].apply(this,Array.prototype.slice.call(arguments,1)):"object"!=typeof i&&i?void e.error("Method "+i+" does not exist!"):s.init.apply(this,arguments)}}(jQuery);
+$(function(){
+	var $body = $("body");
+	
+		$body.on("click", '.sliderInfo', function() {
+			var $this 	= $(this),
+				tableId = $this.closest('tr').attr('id'),
+				name 	= $this.closest('tr').find("td:nth-child(2)").text();
+			
+				toolSlider.openSliderPage(name, tableId);
+		});
+
+		//removes modal elements when clicking outside
+		$body.on("click", function (e) {
+			if ( $(e.target).hasClass('modal') ) {
+				$('#id_MMelisCmsSlider_slider_new_container').modal('hide');
+				$('#id_MelisCmsSlider_modal_form_container').modal('hide');
+			}
+		});
+			
+		$body.on("click", '.sliderListRefresh', function() {
+			melisHelper.zoneReload("id_MelisCmsSlider_list_content_table", "MelisCmsSlider_list_content_table", {});
+		});
+		
+		$body.on("click", '.sliderEntryInfo', function() {
+			var $this 		= $(this),
+				detailId 	= $this.closest('tr').attr('id'),
+				sliderId 	= $this.closest('tr').data('sliderid');
+
+				melisCoreTool.pending('.sliderEntryInfo');
+			
+				// initialation of local variable
+				zoneId 		= 'id_MelisCmsSlider_modal_form';
+				melisKey 	= 'MelisCmsSlider_modal_form';
+				modalUrl 	= 'melis/MelisCmsSlider/MelisCmsSliderDetails/renderModal';
+
+				// requesitng to create modal and display after
+				melisHelper.createModal(zoneId, melisKey, false, {'detailId': detailId, 'sliderId': sliderId}, modalUrl, function() {
+					melisCoreTool.done('.sliderEntryInfo');
+				});
+		});
+		
+		$body.on("click", '.addSliderData', function() {
+			var $this 		= $(this),
+				sliderId 	= $this.data('sliderid');
+
+				melisCoreTool.pending('.addSliderData');
+				
+				// initialation of local variable
+				zoneId 		= 'id_MelisCmsSlider_modal_form';
+				melisKey 	= 'MelisCmsSlider_modal_form';
+				modalUrl 	= 'melis/MelisCmsSlider/MelisCmsSliderDetails/renderModal';
+
+				// requesitng to create modal and display after
+				melisHelper.createModal(zoneId, melisKey, false, {'sliderId': sliderId}, modalUrl, function() {
+					melisCoreTool.done('.addSliderData');
+				});
+		});
+		
+		$body.on("click", '.addSlider', function() {
+			melisCoreTool.pending('.addSlider');
+
+			// initialation of local variable
+			zoneId 		= 'id_MMelisCmsSlider_slider_new';
+			melisKey 	= 'MMelisCmsSlider_slider_new';
+			modalUrl 	= 'melis/MelisCmsSlider/MelisCmsSliderDetails/renderModal';
+
+			// requesitng to create modal and display after
+			melisHelper.createModal(zoneId, melisKey, false, {}, modalUrl, function() {
+				melisCoreTool.done('.addSlider');
+			});
+		});	
+		
+		$body.on("click", '.sliderEdit', function() {
+			var $this 		= $(this),
+				sliderId 	= $this.closest('tr').attr('id');
+
+				melisCoreTool.pending('.sliderEdit');
+
+				// initialation of local variable
+				zoneId 		= 'id_MMelisCmsSlider_slider_new';
+				melisKey 	= 'MMelisCmsSlider_slider_new';
+				modalUrl 	= 'melis/MelisCmsSlider/MelisCmsSliderDetails/renderModal';
+				
+				// requesitng to create modal and display after
+				melisHelper.createModal(zoneId, melisKey, false, {'sliderId': sliderId}, modalUrl, function() {
+					melisCoreTool.done('.sliderEdit');
+				});
+		});
+		
+		$body.on("click", "#saveNewSlider", function() {
+			var ajaxUrl 	= 'melis/MelisCmsSlider/MelisCmsSliderList/saveSlider',
+				dataString 	= $('#sliderForm').serializeArray();
+
+			melisCoreTool.pending('#saveNewSlider');
+			
+			$.ajax({
+				type        : 'POST', 
+				url         : ajaxUrl,
+				data		: dataString,
+				dataType    : 'json',
+				encode		: true,
+			}).done(function(data){
+				if(data.success){
+						$("#id_MMelisCmsSlider_slider_new_container").modal("hide");
+						melisHelper.melisOkNotification( data.textTitle, data.textMessage );
+						melisHelper.zoneReload("id_MelisCmsSlider_list_content_table", "MelisCmsSlider_list_content_table", {});
+						melisCore.flashMessenger();
+				}else{
+					melisHelper.melisKoNotification(data.textTitle, data.textMessage, data.errors);				
+				}	
+			}).fail(function(){
+				alert( translations.tr_meliscore_error_message );
+			});
+			melisCoreTool.done('#saveNewSlider');
+		});
+		
+		$body.on("click", "#saveSliderDetails", function() {
+			var ajaxUrl 	= 'melis/MelisCmsSlider/MelisCmsSliderDetails/saveDetailsForm',
+				sliderId 	= $('form#sliderDetailsForm input[name=mcsdetail_mcslider_id]').val(),
+				tmpForm 	= $('#sliderDetailsForm').get(0),
+				sliderData 	= new FormData(tmpForm);
+			
+				$('#sliderDetails .make-switch div').each(function(){
+					var $this 		= $(this),
+						field 		= $this.find('input').attr('name'),
+						status 		= $this.hasClass('switch-on'),
+						saveStatus 	= 0;
+
+						if ( status ) {
+							saveStatus = 1;
+						}
+						sliderData.append(field,saveStatus);
+				});
+				
+				$.ajax({
+					type        : 'POST', 
+					url         : ajaxUrl,
+					data		: sliderData,
+					dataType    : 'json',
+					processData : false,
+					cache       : false,
+					contentType : false,
+					encode		: true,
+					xhr: function() {
+						var fileXhr = $.ajaxSettings.xhr();
+
+							if ( fileXhr.upload ) {
+								fileXhr.upload.addEventListener('progress',toolSlider.progress, false);
+							}
+
+							return fileXhr;
+					},
+				}).done(function(data){
+					if(data.success){
+							$("div.progressContent").addClass("hidden");
+							$("#id_MelisCmsSlider_modal_form_container").modal("hide");
+							melisHelper.melisOkNotification( data.textTitle, data.textMessage );
+							melisHelper.zoneReload(sliderId+"_id_MelisCmsSlider_content_tabs_properties_details", "MelisCmsSlider_content_tabs_properties_details", {'sliderId' : sliderId});
+					}else{
+						melisHelper.melisKoNotification(data.textTitle, data.textMessage, data.errors);				
+					}
+					melisCore.flashMessenger();
+				}).fail(function(){
+					alert( translations.tr_meliscore_error_message );
+				});
+		});
+		
+		$body.on("click", ".sliderEntryDelete", function() { 
+			var $this 		= $(this),
+				detailsId 	= $this.closest('tr').attr('id'),
+				sliderId 	= $this.closest('tr').data('sliderid'),
+				ajaxUrl 	= 'melis/MelisCmsSlider/MelisCmsSliderDetails/deleteDetails',
+				dataString 	= [];
+
+				dataString.push({
+					name : 'detailsId',
+					value: detailsId,
+				});
+				
+				melisCoreTool.pending(this);
+				
+				melisCoreTool.confirm(
+					translations.tr_MelisCmsSliderDetails_common_label_yes,
+					translations.tr_MelisCmsSliderDetails_common_label_no,
+					translations.tr_MelisCmsSliderDetails_page_delete_detail, 
+					translations.tr_MelisCmsSliderDetails_delete_confirm,
+					function() {
+						$.ajax({
+							type        : 'POST', 
+							url         : ajaxUrl,
+							data		: dataString,
+							dataType    : 'json',
+							encode		: true,
+						}).done(function(data){
+							if(data.success){				
+									melisHelper.melisOkNotification( data.textTitle, data.textMessage );
+									melisHelper.zoneReload(sliderId+"_id_MelisCmsSlider_content_tabs_properties_details", "MelisCmsSlider_content_tabs_properties_details", {'sliderId' : sliderId});
+							}else{
+								melisHelper.melisKoNotification(data.textTitle, data.textMessage, data.errors);				
+							}		
+							melisCore.flashMessenger();	
+						}).fail(function(){
+							alert( translations.tr_meliscore_error_message );
+						});
+				});
+				
+				melisCoreTool.done(this);
+		});
+		
+		$body.on("click", ".sliderDelete", function() { 
+			var $this 		= $(this),
+				sliderId 	= $(this).closest('tr').attr('id'),
+				ajaxUrl 	= 'melis/MelisCmsSlider/MelisCmsSliderList/deleteSlider',
+				dataString 	= [];
+
+				dataString.push({
+					name : 'sliderId',
+					value: sliderId,
+				});
+
+				melisCoreTool.pending(this);
+				
+				melisCoreTool.confirm(
+					translations.tr_MelisCmsSliderDetails_common_label_yes,
+					translations.tr_MelisCmsSliderDetails_common_label_no,
+					translations.tr_MelisCmsSliderDetails_page_delete_slider, 
+					translations.tr_MelisCmsSliderDetails_delete_slider_confirm,
+					function() {
+						$.ajax({
+							type        : 'POST', 
+							url         : ajaxUrl,
+							data		: dataString,
+							dataType    : 'json',
+							encode		: true,
+						}).done(function(data){
+							if(data.success){				
+								melisHelper.melisOkNotification( data.textTitle, data.textMessage);
+								melisHelper.tabClose(  sliderId + "_id_MelisCmsSlider_page");
+								melisHelper.zoneReload("id_MelisCmsSlider_list_content_table", "MelisCmsSlider_list_content_table", {});
+							}else{
+								melisHelper.melisKoNotification(data.textTitle, data.textMessage, data.errors);				
+							}		
+							melisCore.flashMessenger();	
+						}).fail(function(){
+							alert( translations.tr_meliscore_error_message );
+						});
+				});
+				
+				melisCoreTool.done(this);
+		});
+		
+		$body.on("click", "#generateInputFindPageTree span", function() {
+			melisLinkTree.createInputTreeModal('#mcslide_page_id');
+		});
+
+		$body.on("click", ".sliderTable tbody tr td", function() {
+			$(this).trigger("click");
+
+			console.log("sliderTable table tbody tr td clicked!");
+		});
+});
+
+var toolSlider = {
+		
+		refreshTable: function() {
+			// reload the whole content of the tool
+			melisHelper.zoneReload('id_MelisTechnology_table_list_content_table', 'MelisTechnology_table_list_content_table');
+		},
+		
+		openSliderPage: function(name, id, navTabsGroup, callback) {
+			var navTabsGroup = "id_meliscms_slider_tools_section";
+
+				//melisHelper.tabOpen(name, 'fa fa-columns', id+'_id_MelisCmsSlider_page', 'MelisCmsSlider_page', { sliderId : id }, 'id_MelisCmsSlider_list');
+				
+				melisHelper.disableAllTabs();
+				melisHelper.tabOpen(name, 'fa fa-columns', id+'_id_MelisCmsSlider_page', 'MelisCmsSlider_page', { sliderId : id }, navTabsGroup);
+				melisHelper.enableAllTabs();
+		},
+		
+		progress : function progress(e) {
+			$("div.progressContent").removeClass("hidden");
+			$("div.progressContent > div.progress > div.progress-bar").attr("aria-valuenow", 0);
+			$("div.progressContent > div.progress > div.progress-bar").css("width", '0%');
+			$("div.progressContent > div.progress > span.status").html("");
+
+			if ( e.lengthComputable ) {
+				var max 		= e.total,
+					current 	= e.loaded,
+					percentage 	= (current * 100)/max;
+
+					$("div.progressContent > div.progress > div.progress-bar").attr("aria-valuenow", percentage);
+					$("div.progressContent > div.progress > div.progress-bar").css("width", percentage+"%");
+
+					if ( percentage > 100 ) {
+						$("div.progressContent").addClass("hidden");
+					}
+					else {
+						$("div.progressContent > div.progress > span.status").html(Math.round(percentage)+"%");
+					}
+			}
+		}
+    	
+};
+
+window.initSliderDetails = function(data, tblSettings) {
+	var sliderId = $("#" + tblSettings.sTableId).data("sliderid");
+
+		data.sliderId = sliderId;
+	
+	$('#'+sliderId+'_sliderDetails').on( 'row-reorder.dt', function ( e, diff, edit ) {
+	    var result = 'Reorder started on row: '+edit.triggerRow.data()[1]+'<br>';
+
+			for ( var i=0, ien=diff.length ; i<ien ; i++ ) {
+				var rowData = eval('$'+sliderId+'_sliderDetails').row( diff[i].node ).data();
+
+					result += rowData[1]+' updated to be in position '+ diff[i].newData+' (was '+diff[i].oldData+')<br>';
+			}
+			
+			if ( !$.isEmptyObject(diff) ) {
+				
+				var dataString 	= new Array,
+					prdNodes 	= new Array;
+				
+					$.each(diff, function(){
+						prdNodes.push(this.node.id+'-'+this.newPosition);
+					});
+					
+					dataString.push({
+						name : "sliderOrderData",
+						value: prdNodes.join()
+					});
+					
+					dataString = $.param(dataString);
+					
+					$.ajax({
+						type        : "POST", 
+						url         : "/melis/MelisCmsSlider/MelisCmsSliderDetails/reOrderSliderDetails",
+						data		: dataString,
+						dataType    : "json",
+						encode		: true
+					}).done(function(data) {
+						if(!data.success) {
+							alert( translations.tr_meliscore_error_message );
+						}
+					}).fail(function() {
+						alert( translations.tr_meliscore_error_message );
+					});
+			}
+	});
+};
+/*! ============================================================
+ * bootstrapSwitch v1.8 by Larentis Mattia @SpiritualGuru
+ * http://www.larentis.eu/
+ * 
+ * Enhanced for radiobuttons by Stein, Peter @BdMdesigN
+ * http://www.bdmdesign.org/
+ *
+ * Project site:
+ * http://www.larentis.eu/switch/
+ * ============================================================
+ * Licensed under the Apache License, Version 2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * ============================================================ */
+
+!function ($) {
+  "use strict";
+
+  $.fn['bootstrapSwitch'] = function (method) {
+    var inputSelector = 'input[type!="hidden"]';
+    var methods = {
+      init: function () {
+        return this.each(function () {
+            var $element = $(this)
+              , $div
+              , $switchLeft
+              , $switchRight
+              , $label
+              , $form = $element.closest('form')
+              , myClasses = ""
+              , classes = $element.attr('class')
+              , color
+              , moving
+              , onLabel = "ON"
+              , offLabel = "OFF"
+              , icon = false
+              , textLabel = false;
+
+            $.each(['switch-mini', 'switch-small', 'switch-large'], function (i, el) {
+              if (classes.indexOf(el) >= 0)
+                myClasses = el;
+            });
+
+            $element.addClass('has-switch');
+
+            if ($element.data('on') !== undefined)
+              color = "switch-" + $element.data('on');
+
+            if ($element.data('on-label') !== undefined)
+              onLabel = $element.data('on-label');
+
+            if ($element.data('off-label') !== undefined)
+              offLabel = $element.data('off-label');
+
+            if ($element.data('label-icon') !== undefined)
+              icon = $element.data('label-icon');
+
+            if ($element.data('text-label') !== undefined)
+              textLabel = $element.data('text-label');
+
+            $switchLeft = $('<span>')
+              .addClass("switch-left")
+              .addClass(myClasses)
+              .addClass(color)
+              .html(onLabel);
+
+            color = '';
+            if ($element.data('off') !== undefined)
+              color = "switch-" + $element.data('off');
+
+            $switchRight = $('<span>')
+              .addClass("switch-right")
+              .addClass(myClasses)
+              .addClass(color)
+              .html(offLabel);
+
+            $label = $('<label>')
+              .html("&nbsp;")
+              .addClass(myClasses)
+              .attr('for', $element.find(inputSelector).attr('id'));
+
+            if (icon) {
+              $label.html('<i class="icon ' + icon + '"></i>');
+            }
+
+            if (textLabel) {
+              $label.html('' + textLabel + '');
+            }
+
+            $div = $element.find(inputSelector).wrap($('<div>')).parent().data('animated', false);
+
+            if ($element.data('animated') !== false)
+              $div.addClass('switch-animate').data('animated', true);
+
+            $div
+              .append($switchLeft)
+              .append($label)
+              .append($switchRight);
+
+            $element.find('>div').addClass(
+              $element.find(inputSelector).is(':checked') ? 'switch-on' : 'switch-off'
+            );
+
+            if ($element.find(inputSelector).is(':disabled'))
+              $(this).addClass('deactivate');
+
+            var changeStatus = function ($this) {
+              if ($element.parent('label').is('.label-change-switch')) {
+
+              } else {
+                $this.siblings('label').trigger('mousedown').trigger('mouseup').trigger('click');
+              }
+            };
+
+            $element.on('keydown', function (e) {
+              if (e.keyCode === 32) {
+                e.stopImmediatePropagation();
+                e.preventDefault();
+                changeStatus($(e.target).find('span:first'));
+              }
+            });
+
+            $switchLeft.on('click', function (e) {
+              changeStatus($(this));
+            });
+
+            $switchRight.on('click', function (e) {
+              changeStatus($(this));
+            });
+
+            $element.find(inputSelector).on('change', function (e, skipOnChange) {
+              var $this = $(this)
+                , $element = $this.parent()
+                , thisState = $this.is(':checked')
+                , state = $element.is('.switch-off');
+
+              e.preventDefault();
+
+              $element.css('left', '');
+
+              if (state === thisState) {
+
+                if (thisState)
+                  $element.removeClass('switch-off').addClass('switch-on');
+                else $element.removeClass('switch-on').addClass('switch-off');
+
+                if ($element.data('animated') !== false)
+                  $element.addClass("switch-animate");
+
+                if (typeof skipOnChange === 'boolean' && skipOnChange)
+                  return;
+
+                $element.parent().trigger('switch-change', {'el': $this, 'value': thisState})
+              }
+            });
+
+            $element.find('label').on('mousedown touchstart', function (e) {
+              var $this = $(this);
+              moving = false;
+
+              e.preventDefault();
+              e.stopImmediatePropagation();
+
+              $this.closest('div').removeClass('switch-animate');
+
+              if ($this.closest('.has-switch').is('.deactivate')) {
+                $this.unbind('click');
+              } else if ($this.closest('.switch-on').parent().is('.radio-no-uncheck')) {
+                $this.unbind('click');
+              } else {
+                $this.on('mousemove touchmove', function (e) {
+                  var $element = $(this).closest('.make-switch')
+                    , relativeX = (e.pageX || e.originalEvent.targetTouches[0].pageX) - $element.offset().left
+                    , percent = (relativeX / $element.width()) * 100
+                    , left = 25
+                    , right = 75;
+
+                  moving = true;
+
+                  if (percent < left)
+                    percent = left;
+                  else if (percent > right)
+                    percent = right;
+
+                  $element.find('>div').css('left', (percent - right) + "%")
+                });
+
+                $this.on('click touchend', function (e) {
+                  var $this = $(this)
+                    , $target = $(e.target)
+                    , $myRadioCheckBox = $target.siblings('input');
+
+                  e.stopImmediatePropagation();
+                  e.preventDefault();
+
+                  $this.unbind('mouseleave');
+
+                  if (moving)
+                    $myRadioCheckBox.prop('checked', !(parseInt($this.parent().css('left')) < -25));
+                  else
+                    $myRadioCheckBox.prop("checked", !$myRadioCheckBox.is(":checked"));
+
+                  moving = false;
+                  $myRadioCheckBox.trigger('change');
+                });
+
+                $this.on('mouseleave', function (e) {
+                  var $this = $(this)
+                    , $myInputBox = $this.siblings('input');
+
+                  e.preventDefault();
+                  e.stopImmediatePropagation();
+
+                  $this.unbind('mouseleave');
+                  $this.trigger('mouseup');
+
+                  $myInputBox.prop('checked', !(parseInt($this.parent().css('left')) < -25)).trigger('change');
+                });
+
+                $this.on('mouseup', function (e) {
+                  e.stopImmediatePropagation();
+                  e.preventDefault();
+
+                  $(this).unbind('mousemove');
+                });
+              }
+            });
+
+            if ($form.data('bootstrapSwitch') !== 'injected') {
+              $form.bind('reset', function () {
+                setTimeout(function () {
+                  $form.find('.make-switch').each(function () {
+                    var $input = $(this).find(inputSelector);
+
+                    $input.prop('checked', $input.is(':checked')).trigger('change');
+                  });
+                }, 1);
+              });
+              $form.data('bootstrapSwitch', 'injected');
+            }
+          }
+        );
+      },
+      toggleActivation: function () {
+        var $this = $(this);
+
+        $this.toggleClass('deactivate');
+        $this.find(inputSelector).prop('disabled', $this.is('.deactivate'));
+      },
+      isActive: function () {
+        return !$(this).hasClass('deactivate');
+      },
+      setActive: function (active) {
+        var $this = $(this);
+
+        if (active) {
+          $this.removeClass('deactivate');
+          $this.find(inputSelector).removeAttr('disabled');
+        }
+        else {
+          $this.addClass('deactivate');
+          $this.find(inputSelector).attr('disabled', 'disabled');
+        }
+      },
+      toggleState: function (skipOnChange) {
+        var $input = $(this).find(':checkbox');
+        $input.prop('checked', !$input.is(':checked')).trigger('change', skipOnChange);
+      },
+      toggleRadioState: function (skipOnChange) {
+        var $radioinput = $(this).find(':radio');
+        $radioinput.not(':checked').prop('checked', !$radioinput.is(':checked')).trigger('change', skipOnChange);
+      },
+      toggleRadioStateAllowUncheck: function (uncheck, skipOnChange) {
+        var $radioinput = $(this).find(':radio');
+        if (uncheck) {
+          $radioinput.not(':checked').trigger('change', skipOnChange);
+        }
+        else {
+          $radioinput.not(':checked').prop('checked', !$radioinput.is(':checked')).trigger('change', skipOnChange);
+        }
+      },
+      setState: function (value, skipOnChange) {
+        $(this).find(inputSelector).prop('checked', value).trigger('change', skipOnChange);
+      },
+      setOnLabel: function (value) {
+        var $switchLeft = $(this).find(".switch-left");
+        $switchLeft.html(value);
+      },
+      setOffLabel: function (value) {
+        var $switchRight = $(this).find(".switch-right");
+        $switchRight.html(value);
+      },
+      setOnClass: function (value) {
+        var $switchLeft = $(this).find(".switch-left");
+        var color = '';
+        if (value !== undefined) {
+          if ($(this).attr('data-on') !== undefined) {
+            color = "switch-" + $(this).attr('data-on')
+          }
+          $switchLeft.removeClass(color);
+          color = "switch-" + value;
+          $switchLeft.addClass(color);
+        }
+      },
+      setOffClass: function (value) {
+        var $switchRight = $(this).find(".switch-right");
+        var color = '';
+        if (value !== undefined) {
+          if ($(this).attr('data-off') !== undefined) {
+            color = "switch-" + $(this).attr('data-off')
+          }
+          $switchRight.removeClass(color);
+          color = "switch-" + value;
+          $switchRight.addClass(color);
+        }
+      },
+      setAnimated: function (value) {
+        var $element = $(this).find(inputSelector).parent();
+        if (value === undefined) value = false;
+        $element.data('animated', value);
+        $element.attr('data-animated', value);
+
+        if ($element.data('animated') !== false) {
+          $element.addClass("switch-animate");
+        } else {
+          $element.removeClass("switch-animate");
+        }
+      },
+      setSizeClass: function (value) {
+        var $element = $(this);
+        var $switchLeft = $element.find(".switch-left");
+        var $switchRight = $element.find(".switch-right");
+        var $label = $element.find("label");
+        $.each(['switch-mini', 'switch-small', 'switch-large'], function (i, el) {
+          if (el !== value) {
+            $switchLeft.removeClass(el);
+            $switchRight.removeClass(el);
+            $label.removeClass(el);
+          } else {
+            $switchLeft.addClass(el);
+            $switchRight.addClass(el);
+            $label.addClass(el);
+          }
+        });
+      },
+      status: function () {
+        return $(this).find(inputSelector).is(':checked');
+      },
+      destroy: function () {
+        var $element = $(this)
+          , $div = $element.find('div')
+          , $form = $element.closest('form')
+          , $inputbox;
+
+        $div.find(':not(input)').remove();
+
+        $inputbox = $div.children();
+        $inputbox.unwrap().unwrap();
+
+        $inputbox.unbind('change');
+
+        if ($form) {
+          $form.unbind('reset');
+          $form.removeData('bootstrapSwitch');
+        }
+
+        return $inputbox;
+      }
+    };
+
+    if (methods[method])
+      return methods[method].apply(this, Array.prototype.slice.call(arguments, 1));
+    else if (typeof method === 'object' || !method)
+      return methods.init.apply(this, arguments);
+    else
+      $.error('Method ' + method + ' does not exist!');
+  };
+}(jQuery);
