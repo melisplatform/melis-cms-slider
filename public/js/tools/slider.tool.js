@@ -302,49 +302,49 @@ var toolSlider = {
     	
 };
 
-/* window.initSliderDetails = function(data, tblSettings) {
+window.initSliderDetails = function(data, tblSettings) {
 	var sliderId = $("#" + tblSettings.sTableId).data("sliderid");
 
 		data.sliderId = sliderId;
 	
-	$('#'+sliderId+'_sliderDetails').on( 'row-reorder.dt', function ( e, diff, edit ) {
-	    var result = 'Reorder started on row: '+edit.triggerRow.data()[1]+'<br>';
+		/* $('#'+sliderId+'_sliderDetails').on( 'row-reorder.dt', function ( e, diff, edit ) {
+			var result = 'Reorder started on row: '+edit.triggerRow.data()[1]+'<br>';
 
-			for ( var i=0, ien=diff.length ; i<ien ; i++ ) {
-				var rowData = eval('$'+sliderId+'_sliderDetails').row( diff[i].node ).data();
+				for ( var i=0, ien=diff.length ; i<ien ; i++ ) {
+					var rowData = eval('$'+sliderId+'_sliderDetails').row( diff[i].node ).data();
 
-					result += rowData[1]+' updated to be in position '+ diff[i].newData+' (was '+diff[i].oldData+')<br>';
-			}
-			
-			if ( !$.isEmptyObject(diff) ) {
+						result += rowData[1]+' updated to be in position '+ diff[i].newData+' (was '+diff[i].oldData+')<br>';
+				}
 				
-				var dataString 	= new Array,
-					prdNodes 	= new Array;
-				
-					$.each(diff, function(){
-						prdNodes.push(this.node.id+'-'+this.newPosition);
-					});
+				if ( !$.isEmptyObject(diff) ) {
 					
-					dataString.push({
-						name : "sliderOrderData",
-						value: prdNodes.join()
-					});
+					var dataString 	= new Array,
+						prdNodes 	= new Array;
 					
-					dataString = $.param(dataString);
-					
-					$.ajax({
-						type        : "POST", 
-						url         : "/melis/MelisCmsSlider/MelisCmsSliderDetails/reOrderSliderDetails",
-						data		: dataString,
-						dataType    : "json",
-						encode		: true
-					}).done(function(data) {
-						if(!data.success) {
+						$.each(diff, function(){
+							prdNodes.push(this.node.id+'-'+this.newPosition);
+						});
+						
+						dataString.push({
+							name : "sliderOrderData",
+							value: prdNodes.join()
+						});
+						
+						dataString = $.param(dataString);
+						
+						$.ajax({
+							type        : "POST", 
+							url         : "/melis/MelisCmsSlider/MelisCmsSliderDetails/reOrderSliderDetails",
+							data		: dataString,
+							dataType    : "json",
+							encode		: true
+						}).done(function(data) {
+							if(!data.success) {
+								alert( translations.tr_meliscore_error_message );
+							}
+						}).fail(function() {
 							alert( translations.tr_meliscore_error_message );
-						}
-					}).fail(function() {
-						alert( translations.tr_meliscore_error_message );
-					});
-			}
-	});
-}; */
+						});
+				}
+		}); */
+};
