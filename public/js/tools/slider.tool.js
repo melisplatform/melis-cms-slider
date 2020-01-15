@@ -307,7 +307,7 @@ window.initSliderDetails = function(data, tblSettings) {
 
 		data.sliderId = sliderId;
 	
-		/* $('#'+sliderId+'_sliderDetails').on( 'row-reorder.dt', function ( e, diff, edit ) {
+		$('#'+sliderId+'_sliderDetails').on( 'row-reorder.dt', function ( e, diff, edit ) {
 			var result = 'Reorder started on row: '+edit.triggerRow.data()[1]+'<br>';
 
 				for ( var i=0, ien=diff.length ; i<ien ; i++ ) {
@@ -346,5 +346,5 @@ window.initSliderDetails = function(data, tblSettings) {
 							alert( translations.tr_meliscore_error_message );
 						});
 				}
-		}); */
+		});
 };
