@@ -9,7 +9,6 @@
 
 namespace MelisCmsSlider\Controller;
 
-use MelisCore\Service\MelisCoreToolService;
 use Zend\File\Transfer\Adapter\Http;
 use Zend\Form\Factory;
 use Zend\Mvc\Controller\AbstractActionController;
@@ -227,6 +226,10 @@ class MelisCmsSliderDetailsController extends AbstractActionController
         $defaultTblOptions = array(
             'paging' => 'false',
             'searching' => 'false',
+            'rowReorder' => array(
+                'dataSrc' => 'mcsdetail_order',
+                'selector' => 'td:nth-child(1)',
+            ),
             'serverSide' => 'false',            
             'responsive' => array(
                 'details' => array(
@@ -235,15 +238,8 @@ class MelisCmsSliderDetailsController extends AbstractActionController
             ),
             'order' => '[[ 0, "desc" ]]',
         );
+        
 
-        // add row re order only when desktop not in mobile
-        if (!$this->getTool()->isMobileDevice()){
-            $defaultTblOptions['rowReorder'] = array(
-                'dataSrc' => 'mcsdetail_order',
-                'selector' => 'td:nth-child(1)',
-            );
-        }
-     
         $view->tableColumns = $columns;
         $view->getToolDataTableConfig = $this->getTool()->getDataTableConfiguration('#'.$sliderId.'_sliderDetails', true, false, $defaultTblOptions);
         $view->melisKey = $melisKey;
@@ -770,7 +766,7 @@ class MelisCmsSliderDetailsController extends AbstractActionController
     
     /**
      * Returns the Tool Service Class
-     * @return MelisCoreToolService
+     * @return MelisCoreTool
      */
     private function getTool()
     {
