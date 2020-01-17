@@ -227,7 +227,11 @@ class MelisCmsSliderDetailsController extends AbstractActionController
         $defaultTblOptions = array(
             'paging' => 'false',
             'searching' => 'false',
-            'serverSide' => 'false',            
+            'rowReorder' => array(
+                'dataSrc' => 'mcsdetail_order',
+                'selector' => 'td:nth-child(1)',
+            ),
+            'serverSide' => 'false',
             'responsive' => array(
                 'details' => array(
                     'type' => 'column'
@@ -235,14 +239,7 @@ class MelisCmsSliderDetailsController extends AbstractActionController
             ),
             'order' => '[[ 0, "desc" ]]',
         );
-
-        // add row re order only when desktop not in mobile
-        if (!$this->getTool()->isMobileDevice()){
-            $defaultTblOptions['rowReorder'] = array(
-                'dataSrc' => 'mcsdetail_order',
-                'selector' => 'td:nth-child(1)',
-            );
-        }
+        
      
         $view->tableColumns = $columns;
         $view->getToolDataTableConfig = $this->getTool()->getDataTableConfiguration('#'.$sliderId.'_sliderDetails', true, false, $defaultTblOptions);
