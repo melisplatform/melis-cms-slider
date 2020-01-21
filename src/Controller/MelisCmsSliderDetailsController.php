@@ -244,14 +244,14 @@ class MelisCmsSliderDetailsController extends AbstractActionController
         if ($this->getTool()->isMobileDevice()) {
             $defaultTblOptions['rowReorder']['selector'] = "td:nth-child(2)";
         }
-     
+
         $view->tableColumns = $columns;
         $view->getToolDataTableConfig = $this->getTool()->getDataTableConfiguration('#'.$sliderId.'_sliderDetails', true, false, $defaultTblOptions);
         $view->melisKey = $melisKey;
         $view->sliderId = $sliderId;
         return $view;
     }
-    
+
     /**
      * renders the order list modal container
      * @return \Zend\View\Model\ViewModel
@@ -266,7 +266,7 @@ class MelisCmsSliderDetailsController extends AbstractActionController
         $view->setTerminal(true);
         return $view;
     }
-    
+
     /**
      * renders the order list modal for updating order status
      * @return \Zend\View\Model\ViewModel
@@ -286,10 +286,10 @@ class MelisCmsSliderDetailsController extends AbstractActionController
         $factory = new Factory();
         $formElements = $this->serviceLocator->get('FormElementManager');
         $factory->setFormElementManager($formElements);
-    
+
         $form = $factory->createForm($appConfigForm);
         $title    = $this->getTool()->getTranslation('tr_MelisCmsSlider_detail_header_modal_add');
-        if(!empty($detailId)){          
+        if(!empty($detailId)){
             $data = (array)$details;
             $file = $details->mcsdetail_img;
             $title = $this->getTool()->getTranslation('tr_MelisCmsSlider_list_header_modal_edit');
@@ -299,8 +299,8 @@ class MelisCmsSliderDetailsController extends AbstractActionController
         }else{
             $data = array('mcsdetail_mcslider_id' => $sliderId);
         }
-        $form->setData($data);      
-        
+        $form->setData($data);
+
         $melisKey = $this->params()->fromRoute('melisKey', '');
         $view->melisKey = $melisKey;
         $view->form = $form;
@@ -310,27 +310,27 @@ class MelisCmsSliderDetailsController extends AbstractActionController
         $view->status = $status;
         return $view;
     }
-    
+
     public function renderSelectSliderAction()
     {
         $newsId = (int) $this->params()->fromQuery('newsId', '');
-        
+
         $melisCoreConfig = $this->serviceLocator->get('MelisCoreConfig');
         $appConfigForm = $melisCoreConfig->getFormMergedAndOrdered('MelisCmsSlider/forms/meliscmsslider_select_slider_form','meliscmsslider_select_slider_form');
         $factory = new Factory();
         $formElements = $this->serviceLocator->get('FormElementManager');
         $factory->setFormElementManager($formElements);
         $form = $factory->createForm($appConfigForm);
-        
+
         if(!empty($newsId)){
             $newsSvc = $this->getServiceLocator()->get('MelisCmsNewsService');
             $data = $newsSvc->getNewsById($newsId);
             $form->setData((array) $data);
         }
-        
+
         $view = new ViewModel();
         $melisKey = $this->params()->fromRoute('melisKey', '');
-        
+
         $view->melisKey = $melisKey;
         $view->form = $form;
         return $view;
@@ -520,10 +520,10 @@ class MelisCmsSliderDetailsController extends AbstractActionController
 
         return new JsonModel($response);
     }
-    
+
     public function deleteDetailsAction()
     {
-        
+
         $this->getEventManager()->trigger('meliscmsslider_delete_details_start', $this, array());
         $sliderDetailsId = null;
         $response = array();
@@ -533,7 +533,7 @@ class MelisCmsSliderDetailsController extends AbstractActionController
         $textMessage = 'tr_MelisCmsSliderDetails_delete_fail';
         $textTitle = 'tr_MelisCmsSliderDetails_delete_Title';
         $melisSliderSvc = $this->getServiceLocator()->get('MelisCmsSliderService');
-        
+
         if($this->getRequest()->isPost()) {
             $postValues = get_object_vars($this->getRequest()->getPost());
             $sliderDetailsId = (int) $postValues['detailsId'];
@@ -543,18 +543,18 @@ class MelisCmsSliderDetailsController extends AbstractActionController
                 $this->reOrder($tmp->mcsdetail_mcslider_id);
                 $textMessage = 'tr_MelisCmsSliderDetails_delete_success';
                 $fileUploadPath = 'public'.$tmp->mcsdetail_img;
-               
+
                 if(file_exists($fileUploadPath) && !empty($tmp->mcsdetail_img) ) {
-                    
-                    if(is_readable($fileUploadPath) && is_writable($fileUploadPath)) {    
+
+                    if(is_readable($fileUploadPath) && is_writable($fileUploadPath)) {
                         chmod($fileUploadPath, 0777);
                         unlink($fileUploadPath);
-                    }                    
+                    }
                 }
             }
-           
+
         }
-        
+
         $response = array(
             'success' => $success,
             'textTitle' => $textTitle,
@@ -565,7 +565,7 @@ class MelisCmsSliderDetailsController extends AbstractActionController
         $this->getEventManager()->trigger('meliscmsslider_delete_details_end', $this, array_merge($response, array('typeCode' => 'CMS_SLIDER_DETAILS_DELETE', 'itemId' => $sliderDetailsId)));
         return new JsonModel($response);
     }
-    
+
     public function renderTableListDataAction()
     {
         $success = 0;
@@ -574,52 +574,53 @@ class MelisCmsSliderDetailsController extends AbstractActionController
         $draw = 0;
         $dataFiltered = 0;
         $tableData = array();
-        
+
         $sliderSvc = $this->getServiceLocator()->get('MelisCmsSliderService');
         $img = '<img src="%s" width="50" height="50">';
         if($this->getRequest()->isPost()) {
             $colId = array_keys($this->getTool()->getColumns());
             $sliderId = $this->getRequest()->getPost('sliderId');
-            
+
             $sortOrder = $this->getRequest()->getPost('order');
             $sortOrder = $sortOrder[0]['dir'];
-            
+
             $selCol = $this->getRequest()->getPost('order');
 //             $selCol = $colId[$selCol[0]['column']];
 //             $colOrder = $selCol. ' ' . $sortOrder;
             $draw = (int) $this->getRequest()->getPost('draw');
-            
+
             $start = (int) $this->getRequest()->getPost('start');
             $length =  (int) $this->getRequest()->getPost('length');
-            
+
             $search = $this->getRequest()->getPost('search');
             $search = $search['value'];
-            
+
             $postValues = $this->getRequest()->getPost();
-            
+
             $tmp = $sliderSvc->getSlider($sliderId)->getSliderDetails();
             $dataFiltered = count($tmp);
-            
+
             $tabelList = $sliderSvc->getSlider($sliderId)->getSliderDetails();
             $dataCount = count($tabelList);
             $c = 0;
             foreach($tabelList as $table){
                 $details = $table;
-                if($details->mcsdetail_status){                    
+                if($details->mcsdetail_status){
                     $status = '<span class="text-success"><i class="fa fa-fw fa-circle"></i></span>';
                 }else{
                     $status = '<span class="text-danger"><i class="fa fa-fw fa-circle"></i></span>';
                 }
-                
+
                 $title =  !empty($details->mcsdetail_title)? $this->getTool()->limitedText($details->mcsdetail_title, 30) : '&nbsp;';
                 $sub1  =  !empty($details->mcsdetail_sub1)? $this->getTool()->limitedText($details->mcsdetail_sub1, 30): '&nbsp;';
                 $sub2  =  !empty($details->mcsdetail_sub2)? $this->getTool()->limitedText($details->mcsdetail_sub2, 30): '&nbsp;';
                 $sub3  =  !empty($details->mcsdetail_sub3)? $this->getTool()->limitedText($details->mcsdetail_sub3, 30): '&nbsp;';
                 $link  =  !empty($details->mcsdetail_link)? $this->getTool()->limitedText($details->mcsdetail_link, 30): '&nbsp;';
                 $image  =  !empty($details->mcsdetail_img)? sprintf($img, $details->mcsdetail_img): '&nbsp;';
-                
+
                 $tableData[$c]['DT_RowId']          = $details->mcsdetail_id;
                 $tableData[$c]['DT_RowAttr']        = array('data-sliderid' => $sliderId);
+                $tableData[$c]['DT_RowClass']       = 'is-draggable';
                 $tableData[$c]['mcsdetail_order']   = $details->mcsdetail_order;
                 $tableData[$c]['mcsdetail_id']      = $details->mcsdetail_id;
                 $tableData[$c]['mcsdetail_status']  = $status;
