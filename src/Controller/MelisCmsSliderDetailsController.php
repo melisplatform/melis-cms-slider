@@ -229,7 +229,7 @@ class MelisCmsSliderDetailsController extends AbstractActionController
             'searching' => 'false',
             'rowReorder' => array(
                 'dataSrc' => 'mcsdetail_order',
-                'selector' => 'td:nth-child(2)',
+                'selector' => 'td:nth-child(1)',
             ),
             'serverSide' => 'false',
             'responsive' => array(
@@ -240,10 +240,10 @@ class MelisCmsSliderDetailsController extends AbstractActionController
             'order' => '[[ 0, "desc" ]]',
         );
 
-//
-//        if ($this->getTool()->isMobileDevice()) {
-//            $defaultTblOptions['rowReorder']['selector'] = "td:nth-child(2)";
-//        }
+
+        if ($this->getTool()->isMobileDevice()) {
+            $defaultTblOptions['rowReorder']['selector'] = "td:nth-child(2)";
+        }
      
         $view->tableColumns = $columns;
         $view->getToolDataTableConfig = $this->getTool()->getDataTableConfiguration('#'.$sliderId.'_sliderDetails', true, false, $defaultTblOptions);
