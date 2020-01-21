@@ -239,7 +239,10 @@ class MelisCmsSliderDetailsController extends AbstractActionController
             ),
             'order' => '[[ 0, "desc" ]]',
         );
-        
+
+        if ($this->getTool()->isMobileDevice()) {
+            $defaultTblOptions['rowReorder']['selector'] = "td:nth-child(2)";
+        }
      
         $view->tableColumns = $columns;
         $view->getToolDataTableConfig = $this->getTool()->getDataTableConfiguration('#'.$sliderId.'_sliderDetails', true, false, $defaultTblOptions);
@@ -616,7 +619,6 @@ class MelisCmsSliderDetailsController extends AbstractActionController
                 
                 $tableData[$c]['DT_RowId']          = $details->mcsdetail_id;
                 $tableData[$c]['DT_RowAttr']        = array('data-sliderid' => $sliderId);
-                $tableData[$c]['DT_RowClass']       = 'is-draggable';
                 $tableData[$c]['mcsdetail_order']   = $details->mcsdetail_order;
                 $tableData[$c]['mcsdetail_id']      = $details->mcsdetail_id;
                 $tableData[$c]['mcsdetail_status']  = $status;
