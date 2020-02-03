@@ -1,1 +1,1 @@
-.is-draggable td:nth-child(1){cursor:move}
+.is-draggable td:nth-child(1){cursor:move}@media (max-width:767px){.is-draggable td:nth-child(2){cursor:move}}
