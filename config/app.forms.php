@@ -42,26 +42,28 @@ return array(
                         array(
                             'spec' => array(
                                 'name' => 'mcsdetail_sub2',
-                                'type' => 'MelisText',
+                                'type' => 'TextArea',
                                 'options' => array(
-                                    'label' => 'tr_MelisCmsSliderDetails_list_col_sub2',
-                                    'tooltip' => 'tr_MelisCmsSliderDetails_list_col_sub2 tooltip',
+                                    'label' => 'tr_MelisCmsSliderDetails_list_col_desc1',
+                                    'tooltip' => 'tr_MelisCmsSliderDetails_list_col_desc1 tooltip',
                                 ),
                                 'attributes' => array(
                                     'id' => 'mcsdetail_sub2',
+                                    'meliscore-tinymce-textarea' => true
                                 ),
                             ),
                         ),
                         array(
                             'spec' => array(
                                 'name' => 'mcsdetail_sub3',
-                                'type' => 'MelisText',
+                                'type' => 'TextArea',
                                 'options' => array(
-                                    'label' => 'tr_MelisCmsSliderDetails_list_col_sub3',
-                                    'tooltip' => 'tr_MelisCmsSliderDetails_list_col_sub3 tooltip',
+                                    'label' => 'tr_MelisCmsSliderDetails_list_col_desc2',
+                                    'tooltip' => 'tr_MelisCmsSliderDetails_list_col_desc2 tooltip',
                                 ),
                                 'attributes' => array(
                                     'id' => 'mcsdetail_sub3',
+                                    'meliscore-tinymce-textarea' => true
                                 ),
                             ),
                         ),
@@ -180,7 +182,6 @@ return array(
                             'validators' => array(
                             ),
                             'filters'  => array(
-                                array('name' => 'StripTags'),
                                 array('name' => 'StringTrim'),
                             ),
                         ),
@@ -190,7 +191,6 @@ return array(
                             'validators' => array(
                             ),
                             'filters'  => array(
-                                array('name' => 'StripTags'),
                                 array('name' => 'StringTrim'),
                             ),
                         ),
