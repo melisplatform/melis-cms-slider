@@ -181,17 +181,11 @@ return array(
                             'required' => false,
                             'validators' => array(
                             ),
-                            'filters'  => array(
-                                array('name' => 'StringTrim'),
-                            ),
                         ),
                         'mcsdetail_sub3' => array(
                             'name'     => 'mcsdetail_sub3',
                             'required' => false,
                             'validators' => array(
-                            ),
-                            'filters'  => array(
-                                array('name' => 'StringTrim'),
                             ),
                         ),
                         'mcsdetail_link' => array(
