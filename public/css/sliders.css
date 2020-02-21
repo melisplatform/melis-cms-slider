@@ -1,3 +1,7 @@
+.slider-open-tooltip .melis-opentools {
+    margin-right: 0.75rem;
+}
+
 .is-draggable td:nth-child(1){
     cursor: move;
 }
