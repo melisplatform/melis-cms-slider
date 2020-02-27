@@ -10,4 +10,8 @@
     .is-draggable td:nth-child(2){
         cursor: move;
     }
+
+    #sliderDetailsForm .tox-tinymce{
+        height: 260px;
+    }
 }

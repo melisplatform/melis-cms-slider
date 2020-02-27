@@ -1,0 +1,2 @@
+ALTER TABLE `melis_cms_slider_details` CHANGE `mcsdetail_sub2` `mcsdetail_sub2` TEXT CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL;
+ALTER TABLE `melis_cms_slider_details` CHANGE `mcsdetail_sub3` `mcsdetail_sub3` TEXT CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL;
