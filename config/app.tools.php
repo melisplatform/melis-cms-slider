@@ -117,27 +117,17 @@ return array(
                             ),
                             'mcsdetail_title' => array(
                                 'text' => 'tr_MelisCmsSliderDetails_list_col_name',
-                                'css' => array('width' => '15%', 'padding-right' => '0'),
+                                'css' => array('width' => '25%', 'padding-right' => '0'),
                                 'sortable' => true,
                             ),
                             'mcsdetail_sub1' => array(
                                 'text' => 'tr_MelisCmsSliderDetails_list_col_sub1',
-                                'css' => array('width' => '15%', 'padding-right' => '0'),
+                                'css' => array('width' => '30%', 'padding-right' => '0'),
                                 'sortable' => true,
-                            ),
-                            'mcsdetail_sub2' => array(
-                                'text' => 'tr_MelisCmsSliderDetails_list_col_sub2',
-                                'css' => array('width' => '15%', 'padding-right' => '0'),
-                                'sortable' => false,
-                            ),
-                            'mcsdetail_sub3' => array(
-                                'text' => 'tr_MelisCmsSliderDetails_list_col_sub3',
-                                'css' => array('width' => '15%', 'padding-right' => '0'),
-                                'sortable' => false,
                             ),
                             'mcsdetail_link' => array(
                                 'text' => 'tr_MelisCmsSliderDetails_list_col_link',
-                                'css' => array('width' => '10%', 'padding-right' => '0'),
+                                'css' => array('width' => '20%', 'padding-right' => '0'),
                                 'sortable' => false,
                             ),                            
                         ),

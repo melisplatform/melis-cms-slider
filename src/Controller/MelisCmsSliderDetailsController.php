@@ -365,7 +365,13 @@ class MelisCmsSliderDetailsController extends AbstractActionController
 
         if ($this->getRequest()->isPost()) {
             $postValues = $this->getRequest()->getPost()->toArray();
-            $postValues = $melisTool->sanitizePost($postValues);
+
+            // Cache the fields to be sanitized
+            $sanitize = [
+                'mcsdetail_title' => $postValues['mcsdetail_title'],
+                'mcsdetail_sub1' => $postValues['mcsdetail_sub1'],
+            ];
+            $postValues = array_merge($postValues, $melisTool->sanitizePost($sanitize));
 
             if (empty($postValues['mcsdetail_id'])) {
                 $logTypeCode = 'CMS_SLIDER_DETAILS_ADD';
