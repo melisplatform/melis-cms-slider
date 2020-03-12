@@ -9,17 +9,20 @@
 
 namespace MelisCmsSlider;
 
+
 use Zend\Mvc\ModuleRouteListener;
 use Zend\Mvc\MvcEvent;
 use Zend\ModuleManager\ModuleManager;
 use Zend\Stdlib\ArrayUtils;
 use Zend\Session\Container;
-
+use MelisCmsSlider\Listener\MelisCmsSliderTableColumnDisplayListener;
+use MelisCmsSlider\Listener\MelisCmsSliderToolCreatorEditionTypeListener;
+use MelisCmsSlider\Listener\MelisCmsSliderFlashMessengerListener;
+use MelisCmsSlider\Listener\MelisCmsSliderServiceMicroServiceListener;
 // use MelisTechnologyCustom\Model\MelisTechnologyCustomTableList;
 // use MelisTechnologyCustom\Model\Tables\MelisTechnologyCustomTableListColumnsTable;
 
-use MelisCmsSlider\Listener\MelisCmsSliderFlashMessengerListener;
-use MelisCmsSlider\Listener\MelisCmsSliderServiceMicroServiceListener;
+
 /**
  * Class Module
  * @package MelisCmsSlider
@@ -55,7 +58,9 @@ class Module
             // attach listeners for Melis
             $eventManager->attach(new MelisCmsSliderFlashMessengerListener());         
             $eventManager->attach(new MelisCmsSliderServiceMicroServiceListener());         
-            
+            $eventManager->attach(new MelisCmsSliderTableColumnDisplayListener());
+            $eventManager->attach(new MelisCmsSliderToolCreatorEditionTypeListener());
+
         }
     }
     
