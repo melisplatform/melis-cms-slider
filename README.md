@@ -46,7 +46,7 @@ Services to retrieve lists of sliders, slider details and save sliders
 File: /melis-cms-slider/src/Service/MelisCmsSliderService.php  
 ```
 // Get the service
-$sliderService = $this->getServiceLocator()->get('MelisCmsSliderService');  
+$sliderService = $this->getServiceManager()->get('MelisCmsSliderService');  
 // Get slider by id
 $data = $sliderService->getSlider($sliderId);  
 ```
@@ -76,7 +76,7 @@ return array(
 						'method' => 'POST',
 						'action' => '',
 					),
-					'hydrator'  => 'Zend\Stdlib\Hydrator\ArraySerializable',
+					'hydrator'  => 'Laminas\Stdlib\Hydrator\ArraySerializable',
 					'elements' => array(  
 						array(
 							'spec' => array(
@@ -115,7 +115,8 @@ public function attach(EventManagerInterface $events)
 		),
 		function($e){
 
-			$sm = $e->getTarget()->getServiceLocator();
+			$sm = $e->getTarget()->getEvent()->getApplication()->getServiceManager()
+			$sm = $e->getTarget()->getEvent()->getApplication()->getServiceManager()
     		$params = $e->getParams();
     		
     		// Custom code here

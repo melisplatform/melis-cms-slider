@@ -9,33 +9,34 @@
 
 namespace MelisCmsSlider\Listener;
 
-use Zend\EventManager\EventManagerInterface;
-use Zend\EventManager\ListenerAggregateInterface;
+use Laminas\EventManager\EventManagerInterface;
+use Laminas\EventManager\ListenerAggregateInterface;
 use MelisCore\Listener\MelisCoreGeneralListener;
 
 class MelisCmsSliderTableColumnDisplayListener extends MelisCoreGeneralListener implements ListenerAggregateInterface
 {
-    public function attach(EventManagerInterface $events)
+    public function attach(EventManagerInterface $events, $priority = 1)
     {
-        $sharedEvents      = $events->getSharedManager();
 
-        $this->listeners[] = $sharedEvents->attach(
+        $this->attachEventListener(
+            $events,
             '*',
             'melis_toolcreator_col_display_options',
             function ($e) {
 
-                $sm = $e->getTarget()->getServiceLocator();
+                $sm = $event->getTarget()->getEvent()->getApplication()->getServiceManager();
                 $params = $e->getParams();
                 $params['valueOptions']['slider_name'] = $sm->get('translator')->translate('tr_MelisCmsSlider_header_title');
             }
         );
 
-        $this->listeners[] = $sharedEvents->attach(
+        $this->attachEventListener(
+            $events,
             '*',
             'melis_tool_column_display_slider_name',
             function($e){
 
-                $sm = $e->getTarget()->getServiceLocator();
+                $sm = $event->getTarget()->getEvent()->getApplication()->getServiceManager();
                 $params = $e->getParams();
 
                 $name = $params['data'];

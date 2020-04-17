@@ -10,7 +10,7 @@
 namespace MelisCmsSliderTest\Controller;
 
 use MelisCore\ServiceManagerGrabber;
-use Zend\Test\PHPUnit\Controller\AbstractHttpControllerTestCase;
+use Laminas\Test\PHPUnit\Controller\AbstractHttpControllerTestCase;
 class MelisCmsSliderControllerTest extends AbstractHttpControllerTestCase
 {
     protected $traceError = false;

@@ -10,17 +10,15 @@
 namespace MelisCmsSlider;
 
 
-use Zend\Mvc\ModuleRouteListener;
-use Zend\Mvc\MvcEvent;
-use Zend\ModuleManager\ModuleManager;
-use Zend\Stdlib\ArrayUtils;
-use Zend\Session\Container;
+use Laminas\Mvc\ModuleRouteListener;
+use Laminas\Mvc\MvcEvent;
+use Laminas\ModuleManager\ModuleManager;
+use Laminas\Stdlib\ArrayUtils;
+use Laminas\Session\Container;
 use MelisCmsSlider\Listener\MelisCmsSliderTableColumnDisplayListener;
 use MelisCmsSlider\Listener\MelisCmsSliderToolCreatorEditionTypeListener;
 use MelisCmsSlider\Listener\MelisCmsSliderFlashMessengerListener;
 use MelisCmsSlider\Listener\MelisCmsSliderServiceMicroServiceListener;
-// use MelisTechnologyCustom\Model\MelisTechnologyCustomTableList;
-// use MelisTechnologyCustom\Model\Tables\MelisTechnologyCustomTableListColumnsTable;
 
 
 /**
@@ -40,72 +38,60 @@ class Module
         $sm = $e->getApplication()->getServiceManager();
         $routeMatch = $sm->get('router')->match($sm->get('request'));
         
-        if (!empty($routeMatch))
-        {
+        if (!empty($routeMatch)) {
             $routeName = $routeMatch->getMatchedRouteName();
             
             $module = explode('/', $routeName);
              
-            if (!empty($module[0]))
-            {
+            if (!empty($module[0])) {
                 if ($module[0] == 'melis-backoffice')
                     $melisRoute = true;
             }
         }
         
-        if ($melisRoute)
-        {
+        if ($melisRoute) {
             // attach listeners for Melis
-            $eventManager->attach(new MelisCmsSliderFlashMessengerListener());         
-            $eventManager->attach(new MelisCmsSliderServiceMicroServiceListener());         
-            $eventManager->attach(new MelisCmsSliderTableColumnDisplayListener());
-            $eventManager->attach(new MelisCmsSliderToolCreatorEditionTypeListener());
-
+            (new MelisCmsSliderFlashMessengerListener())->attach($eventManager);
+            (new MelisCmsSliderServiceMicroServiceListener())->attach($eventManager);
+            (new MelisCmsSliderTableColumnDisplayListener())->attach($eventManager);
+            (new MelisCmsSliderToolCreatorEditionTypeListener())->attach($eventManager);
         }
     }
     
-    public function init(ModuleManager $manager)
-    {
-    }
-
     public function getConfig()
     {
-    	$config = array();
-    	$configFiles = array(
-    			include __DIR__ . '/../config/module.config.php',
-    	    
-    	        // interface design Melis
-    			include __DIR__ . '/../config/app.interface.php',
-    			include __DIR__ . '/../config/app.tools.php',
-    	        include __DIR__ . '/../config/app.forms.php',
-    	        include __DIR__ . '/../config/app.microservice.php',
-    	    
-    	        // Tests
-    	        include __DIR__ . '/../config/diagnostic.config.php',
-    	    
-    	        // Templating plugins
-			    include __DIR__ . '/../config/plugins/MelisCmsSliderShowSliderPlugin.config.php',
-    	);
+    	$config = [];
+    	$configFiles = [
+            include __DIR__ . '/../config/module.config.php',
+            // interface design Melis
+            include __DIR__ . '/../config/app.interface.php',
+            include __DIR__ . '/../config/app.tools.php',
+            include __DIR__ . '/../config/app.forms.php',
+            include __DIR__ . '/../config/app.microservice.php',
+            // Tests
+            include __DIR__ . '/../config/diagnostic.config.php',
+            // Templating plugins
+            include __DIR__ . '/../config/plugins/MelisCmsSliderShowSliderPlugin.config.php',
+    	];
     	
-    	foreach ($configFiles as $file) {
+    	foreach ($configFiles as $file)
     		$config = ArrayUtils::merge($config, $file);
-    	} 
-    	
+
     	return $config;
     }
 
     public function getAutoloaderConfig()
     {
-        return array(
-            'Zend\Loader\StandardAutoloader' => array(
-                'namespaces' => array(
+        return [
+            'Laminas\Loader\StandardAutoloader' => [
+                'namespaces' => [
                     __NAMESPACE__ => __DIR__ . '/src/' . __NAMESPACE__,
-                ),
-            ),
-        );
+                ],
+            ],
+        ];
     }
     
-    public function createTranslations($e)
+    public function createTranslations(MvcEvent $e)
     {
         $sm = $e->getApplication()->getServiceManager();
         $translator = $sm->get('translator');
@@ -115,11 +101,11 @@ class Module
 
         if (!empty($locale)){
             
-            $translationType = array(
-                'interface',
-            );
+            $translationType = [
+                'interface'
+            ];
             
-            $translationList = array();
+            $translationList = [];
             if(file_exists($_SERVER['DOCUMENT_ROOT'].'/../module/MelisModuleConfig/config/translation.list.php')){
                 $translationList = include 'module/MelisModuleConfig/config/translation.list.php';
             }
@@ -144,5 +130,4 @@ class Module
             }
         }
     }
- 
 }
