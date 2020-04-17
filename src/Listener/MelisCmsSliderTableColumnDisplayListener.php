@@ -11,9 +11,9 @@ namespace MelisCmsSlider\Listener;
 
 use Laminas\EventManager\EventManagerInterface;
 use Laminas\EventManager\ListenerAggregateInterface;
-use MelisCore\Listener\MelisCoreGeneralListener;
+use MelisCore\Listener\MelisGeneralListener;
 
-class MelisCmsSliderTableColumnDisplayListener extends MelisCoreGeneralListener implements ListenerAggregateInterface
+class MelisCmsSliderTableColumnDisplayListener extends MelisGeneralListener implements ListenerAggregateInterface
 {
     public function attach(EventManagerInterface $events, $priority = 1)
     {

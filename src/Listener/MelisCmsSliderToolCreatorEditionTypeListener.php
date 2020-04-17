@@ -12,9 +12,9 @@ namespace MelisCmsSlider\Listener;
 use Laminas\EventManager\EventManagerInterface;
 use Laminas\EventManager\ListenerAggregateInterface;
 use Laminas\Mvc\MvcEvent;
-use MelisCore\Listener\MelisCoreGeneralListener;
+use MelisCore\Listener\MelisGeneralListener;
 
-class MelisCmsSliderToolCreatorEditionTypeListener extends MelisCoreGeneralListener implements ListenerAggregateInterface
+class MelisCmsSliderToolCreatorEditionTypeListener extends MelisGeneralListener implements ListenerAggregateInterface
 {
     public function attach(EventManagerInterface $events, $priority = 1)
     {
