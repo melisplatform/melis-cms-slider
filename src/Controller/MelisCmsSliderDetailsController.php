@@ -464,7 +464,7 @@ class MelisCmsSliderDetailsController extends AbstractActionController
                             $adapter->setDestination('public' . $confSlidersPath . $data['mcsdetail_mcslider_id'] . '/');
                             $newFileName = $this->renameIfDuplicateFile($confSlidersPath . $data['mcsdetail_mcslider_id'] . '/' . $fileName);
                             $savedDocFileName = 'public' . $newFileName;
-                            $adapter->addFilter('File\Rename', [
+                            $adapter->addFilter('Laminas\Filter\File\Rename', [
                                 'target' => $savedDocFileName,
                                 'overwrite' => true,
                             ]);
