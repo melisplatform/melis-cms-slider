@@ -24,7 +24,7 @@ class MelisCmsSliderTableColumnDisplayListener extends MelisGeneralListener impl
             'melis_toolcreator_col_display_options',
             function ($e) {
 
-                $sm = $event->getTarget()->getEvent()->getApplication()->getServiceManager();
+                $sm = $e->getTarget()->getServiceManager();
                 $params = $e->getParams();
                 $params['valueOptions']['slider_name'] = $sm->get('translator')->translate('tr_MelisCmsSlider_header_title');
             }
@@ -36,7 +36,7 @@ class MelisCmsSliderTableColumnDisplayListener extends MelisGeneralListener impl
             'melis_tool_column_display_slider_name',
             function($e){
 
-                $sm = $event->getTarget()->getEvent()->getApplication()->getServiceManager();
+                $sm = $e->getTarget()->getServiceManager();
                 $params = $e->getParams();
 
                 $name = $params['data'];

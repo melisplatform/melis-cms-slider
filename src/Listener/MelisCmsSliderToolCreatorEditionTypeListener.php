@@ -23,7 +23,7 @@ class MelisCmsSliderToolCreatorEditionTypeListener extends MelisGeneralListener 
             '*',
             'melis_toolcreator_input_edition_type_options',
             function ($e) {
-                $sm = $event->getTarget()->getEvent()->getApplication()->getServiceManager();
+                $sm = $e->getTarget()->getServiceManager();
                 $params = $e->getParams();
                 $params['valueOptions']['CmsSliderSelect'] = $sm->get('translator')->translate('tr_MelisCmsSlider_header_title');
             }
