@@ -22,7 +22,10 @@ class MelisCmsSliderHelper extends AbstractHelper
 {
 	public $serviceManager;
 
-	public function setServiceManger(ServiceManager $serviceManager)
+    /**
+     * @param ServiceManager $serviceManager
+     */
+	public function setServiceManager(ServiceManager $serviceManager)
 	{
 		$this->serviceManager = $serviceManager;
 	}
