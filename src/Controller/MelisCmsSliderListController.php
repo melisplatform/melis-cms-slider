@@ -11,9 +11,9 @@ namespace MelisCmsSlider\Controller;
 
 use Laminas\View\Model\JsonModel;
 use Laminas\View\Model\ViewModel;
-use MelisCore\Controller\AbstractActionController;
+use MelisCore\Controller\MelisAbstractActionController;
 
-class MelisCmsSliderListController extends AbstractActionController
+class MelisCmsSliderListController extends MelisAbstractActionController
 {
     const LOG_DELETE = 'CMS_SLIDER_DELETE';
 

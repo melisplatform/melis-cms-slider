@@ -9,7 +9,7 @@
 
 namespace MelisCmsSlider\Controller;
 
-use MelisCore\Controller\AbstractActionController;
+use MelisCore\Controller\MelisAbstractActionController;
 use MelisCore\Service\MelisCoreToolService;
 use Laminas\File\Transfer\Adapter\Http;
 use Laminas\Form\Factory;
@@ -18,7 +18,7 @@ use Laminas\Validator\File\Size;
 use Laminas\View\Model\JsonModel;
 use Laminas\View\Model\ViewModel;
 
-class MelisCmsSliderDetailsController extends AbstractActionController
+class MelisCmsSliderDetailsController extends MelisAbstractActionController
 {
     /**
      * renders the page container
