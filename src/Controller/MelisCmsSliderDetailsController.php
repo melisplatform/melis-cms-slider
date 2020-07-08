@@ -26,16 +26,16 @@ class MelisCmsSliderDetailsController extends AbstractActionController
      */
     public function renderSliderPageAction()
     {
-        
+
         $view = new ViewModel();
         $melisKey = $this->params()->fromRoute('melisKey', '');
         $sliderId = (int) $this->params()->fromQuery('sliderId', '');
-        $this->setTableVariables($sliderId);        
+        $this->setTableVariables($sliderId);
         $view->melisKey = $melisKey;
         $view->sliderId = $sliderId;
         return $view;
     }
-    
+
     /**
      * renders the page header container
      * @return \Zend\View\Model\ViewModel
@@ -49,7 +49,7 @@ class MelisCmsSliderDetailsController extends AbstractActionController
         $view->sliderId = $sliderId;
         return $view;
     }
-    
+
     /**
      * renders the page header left container
      * @return \Zend\View\Model\ViewModel
@@ -63,7 +63,7 @@ class MelisCmsSliderDetailsController extends AbstractActionController
         $view->sliderId = $sliderId;
         return $view;
     }
-    
+
     /**
      * renders the page header right container
      * @return \Zend\View\Model\ViewModel
@@ -77,7 +77,7 @@ class MelisCmsSliderDetailsController extends AbstractActionController
         $view->sliderId = $sliderId;
         return $view;
     }
-    
+
     /**
      * renders the page header title
      * @return \Zend\View\Model\ViewModel
@@ -92,7 +92,7 @@ class MelisCmsSliderDetailsController extends AbstractActionController
         $view->sliderId = $sliderId;
         return $view;
     }
-    
+
     /**
      * renders the page content container
      * @return \Zend\View\Model\ViewModel
@@ -106,7 +106,7 @@ class MelisCmsSliderDetailsController extends AbstractActionController
         $view->sliderId = $sliderId;
         return $view;
     }
-    
+
     /**
      * renders the page main content container
      * @return \Zend\View\Model\ViewModel render-coupon-page-tab-main
@@ -120,7 +120,7 @@ class MelisCmsSliderDetailsController extends AbstractActionController
         $view->sliderId = $sliderId;
         return $view;
     }
-    
+
     /**
      * renders the tabs content header container
      * @return \Zend\View\Model\ViewModel
@@ -134,7 +134,7 @@ class MelisCmsSliderDetailsController extends AbstractActionController
         $view->sliderId = $sliderId;
         return $view;
     }
-    
+
     /**
      * renders the tabs content header left container
      * @return \Zend\View\Model\ViewModel
@@ -148,7 +148,7 @@ class MelisCmsSliderDetailsController extends AbstractActionController
         $view->sliderId = $sliderId;
         return $view;
     }
-    
+
     /**
      * renders the tabs content header title
      * @return \Zend\View\Model\ViewModel
@@ -176,7 +176,7 @@ class MelisCmsSliderDetailsController extends AbstractActionController
         $view->sliderId = $sliderId;
         return $view;
     }
-    
+
     /**
      * renders the tabs content details container
      * @return \Zend\View\Model\ViewModel
@@ -190,7 +190,7 @@ class MelisCmsSliderDetailsController extends AbstractActionController
         $view->sliderId = $sliderId;
         return $view;
     }
-    
+
     public function renderSliderContentActionInfoAction()
     {
         $view = new ViewModel();
@@ -200,7 +200,7 @@ class MelisCmsSliderDetailsController extends AbstractActionController
         $view->sliderId = $sliderId;
         return $view;
     }
-    
+
     public function renderSliderContentActionDeleteAction()
     {
         $view = new ViewModel();
@@ -210,7 +210,7 @@ class MelisCmsSliderDetailsController extends AbstractActionController
         $view->sliderId = $sliderId;
         return $view;
     }
-    
+
     /**
      * renders the tabs content details main content
      * @return \Zend\View\Model\ViewModel
@@ -221,7 +221,7 @@ class MelisCmsSliderDetailsController extends AbstractActionController
         $melisKey = $this->params()->fromRoute('melisKey', '');
         $sliderId = (int) $this->params()->fromQuery('sliderId', '');
         $this->setTableVariables($sliderId);
-        
+
         $columns = $this->getTool()->getColumns();
         $columns['actions'] = array('text'=> 'Action');
         $defaultTblOptions = array(
@@ -325,6 +325,11 @@ class MelisCmsSliderDetailsController extends AbstractActionController
         if(!empty($newsId)){
             $newsSvc = $this->getServiceLocator()->get('MelisCmsNewsService');
             $data = $newsSvc->getNewsById($newsId);
+
+            if (!empty($data) && is_array($data)) {
+                $data = $data[0];
+            }
+
             $form->setData((array) $data);
         }
 
@@ -636,11 +641,11 @@ class MelisCmsSliderDetailsController extends AbstractActionController
                 $tableData[$c]['mcsdetail_sub3']    = $sub3;
                 $tableData[$c]['mcsdetail_link']    = $link;
                 $tableData[$c]['mcsdetail_img']     = $image;
-                
+
                 $c++;
-            }    
+            }
         }
-        
+
         return new JsonModel(array (
             'draw' => (int) $draw,
             'recordsTotal' => $dataCount,
@@ -648,7 +653,7 @@ class MelisCmsSliderDetailsController extends AbstractActionController
             'data' => $tableData,
         ));
     }
-    
+
     public function reOrderSliderDetailsAction()
     {
         $request = $this->getRequest();
@@ -657,7 +662,7 @@ class MelisCmsSliderDetailsController extends AbstractActionController
         $status  = 0;
         $textTitle = '';
         $textMessage = '';
-        
+
         $sliderSvc = $this->getServiceLocator()->get('MelisCmsSliderService');
 
         if($request->isPost()) {
@@ -683,21 +688,21 @@ class MelisCmsSliderDetailsController extends AbstractActionController
 
         return new JsonModel($response);
     }
-    
+
     public function getFormattedFileName($fileName)
     {
         $file = pathinfo($fileName, PATHINFO_FILENAME);
         $fileExt = pathinfo($fileName, PATHINFO_EXTENSION);
         $newFileName = $file;
-    
+
         return $newFileName;
     }
-    
+
     public function renameIfDuplicateFile($filePath)
     {
         $detailTable = $this->getServiceLocator()->get('MelisCmsSliderDetailTable');
         $docData = $detailTable->getEntryByFieldUsingLike('mcsdetail_img', pathinfo($filePath, PATHINFO_DIRNAME).'/'.pathinfo($filePath, PATHINFO_FILENAME))->toArray();
-        
+
         $totalFile = count($docData) ? '_' .count($docData) : null;
         $fileDir = pathinfo($filePath, PATHINFO_DIRNAME);
         $fileName = pathinfo($filePath, PATHINFO_FILENAME) . $totalFile;
@@ -705,35 +710,35 @@ class MelisCmsSliderDetailsController extends AbstractActionController
         $fileName = str_replace(' ', '_', $fileName);
         $fileExt  = pathinfo($filePath, PATHINFO_EXTENSION) ? '.' . pathinfo($filePath, PATHINFO_EXTENSION) : '';
         $newFilePathAndName = $fileDir . '/'. $fileName . $fileExt;
-    
+
         return $newFilePathAndName;
-    
+
     }
-    
+
     /**
-    * Re orders the slider details
-    * @param int $sliderId
-    */
-   private function reOrder($sliderId)
+     * Re orders the slider details
+     * @param int $sliderId
+     */
+    private function reOrder($sliderId)
     {
         $data = array();
         $sliderSvc = $this->getServiceLocator()->get('MelisCmsSliderService');
         $details = $sliderSvc->getSlider($sliderId)->getSliderDetails();
         $i = 1;
         foreach($details as $detail){
-        $data['mcsdetail_order'] = $i;
-        $sliderSvc->saveSliderDetails($data, $detail->mcsdetail_id);
-        $i++;
+            $data['mcsdetail_order'] = $i;
+            $sliderSvc->saveSliderDetails($data, $detail->mcsdetail_id);
+            $i++;
         }
     }
-    
+
     private function formatBytes($bytes) {
         $size = $bytes;
         $units = array( 'B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB');
         $power = $size > 0 ? floor(log($size, 1024)) : 0;
         return round(number_format($size / pow(1024, $power), 2, '.', ',')) . ' ' . $units[$power];
     }
-    
+
     /**
      * Creates a folder inside "public/media/commerce" with full permission (for now)
      * @param String $folderType, enum: category, product, variant
@@ -752,11 +757,11 @@ class MelisCmsSliderDetailsController extends AbstractActionController
             $status = mkdir($path, 0777, true);
             $this->createFolder($id);
         }
-    
+
         return $status;
     }
-    
-    
+
+
     /**
      * sets the coupon data to the layout
      * @param unknown $couponId
@@ -774,7 +779,7 @@ class MelisCmsSliderDetailsController extends AbstractActionController
             'sliderId' => $sliderId,
         ), $layoutVar));
     }
-    
+
     /**
      * Returns the Tool Service Class
      * @return MelisCoreToolService
@@ -783,10 +788,8 @@ class MelisCmsSliderDetailsController extends AbstractActionController
     {
         $melisTool = $this->getServiceLocator()->get('MelisCoreTool');
         $melisTool->setMelisToolKey('MelisCmsSlider', 'MelisCmsSlider_details');
-    
+
         return $melisTool;
-    
+
     }
-
 }
-
