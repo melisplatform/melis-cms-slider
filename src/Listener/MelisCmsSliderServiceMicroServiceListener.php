@@ -26,7 +26,7 @@ class MelisCmsSliderServiceMicroServiceListener extends MelisGeneralListener imp
             ],
             function($e){
 
-                $sm = $event->getTarget()->getEvent()->getApplication()->getServiceManager();
+                $sm = $e->getTarget()->getEvent()->getApplication()->getServiceManager();
                 $params = $e->getParams();
                 $tool = $sm->get('MelisCoreTool');
 
