@@ -36,35 +36,39 @@ class MelisCmsSliderServiceMicroServiceListener extends MelisGeneralListener imp
                 $post    = isset($params['post'])  ? $params['post']  : null;
                 $results = isset($params['results'])  ? $params['results']  : null;
 
-                if($module == 'MelisCmsSlider' && $service == 'MelisCmsSliderService' && $method == 'getSlider') {
+                if (! empty($results)) {
+                    if ($module == 'MelisCmsSlider' && $service == 'MelisCmsSliderService' && $method == 'getSlider') {
 
-                    $request = $sm->get('Request');
-                    $uri     = $request->getUri();
-                    $scheme  = $uri->getScheme();
-                    $host    = $uri->getHost();
-                    $url     = $scheme . '://' . $host;
+                        $request = $sm->get('Request');
+                        $uri = $request->getUri();
+                        $scheme = $uri->getScheme();
+                        $host = $uri->getHost();
+                        $url = $scheme . '://' . $host;
 
-                    $sliderDetails = $results->getSliderDetails();
+                        $sliderDetails = $results->getSliderDetails();
 
-                    $ctr = 0;
-                    foreach($sliderDetails as $item){
-                        $curImg = $results->getSliderDetails()[$ctr]->mcsdetail_img;
-                        $results->getSliderDetails()[$ctr]->mcsdetail_img = $url . $curImg;
-                        $ctr++;
+                        $ctr = 0;
+                        foreach ($sliderDetails as $item) {
+                            $curImg = $results->getSliderDetails()[$ctr]->mcsdetail_img;
+                            $results->getSliderDetails()[$ctr]->mcsdetail_img = $url . $curImg;
+                            $ctr++;
+                        }
+
+                        $results = $tool->convertObjectToArray($results);
+
                     }
 
-                    $results = $tool->convertObjectToArray($results);
-                    
-                }
-                if($module == 'MelisCmsSlider' && $service == 'MelisCmsSliderService' && $method == 'getSliderList') {
-                    $results = $tool->convertObjectToArray($results);
-                    
+                    if ($module == 'MelisCmsSlider' && $service == 'MelisCmsSliderService' && $method == 'getSliderList') {
+                        $results = $tool->convertObjectToArray($results);
+
+                    }
+
+                    if ($module == 'MelisCmsSlider' && $service == 'MelisCmsSliderService' && $method == 'getSliderByPageId') {
+                        $results = $tool->convertObjectToArray($results);
+
+                    }
                 }
 
-                if($module == 'MelisCmsSlider' && $service == 'MelisCmsSliderService' && $method == 'getSliderByPageId') {
-                    $results = $tool->convertObjectToArray($results);
-                    
-                }
                 return [
                     'module'  => $module,
                     'service' => $service,
