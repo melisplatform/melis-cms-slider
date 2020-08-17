@@ -9,39 +9,32 @@
 
 namespace MelisCmsSlider\Listener;
 
-use Zend\EventManager\EventManagerInterface;
-use Zend\EventManager\ListenerAggregateInterface;
-use MelisCore\Listener\MelisCoreGeneralListener;
+use Laminas\EventManager\EventManagerInterface;
+use Laminas\EventManager\ListenerAggregateInterface;
+use MelisCore\Listener\MelisGeneralListener;
 
-class MelisCmsSliderFlashMessengerListener extends MelisCoreGeneralListener implements ListenerAggregateInterface
+class MelisCmsSliderFlashMessengerListener extends MelisGeneralListener implements ListenerAggregateInterface
 {
 	
-    public function attach(EventManagerInterface $events)
+    public function attach(EventManagerInterface $events, $priority = 1)
     {
-        $sharedEvents      = $events->getSharedManager();
-        
-        $callBackHandler = $sharedEvents->attach(
-        	'MelisCmsSlider',
-        	array(
-        	    'meliscmsslider_delete_details_end',        	    
-        	    'meliscmsslider_save_details_end',
-        	    'meliscmsslider_add_slider_end',
-        	    'meliscmsslider_delete_slider_end',
-        	    
-        	),
-        	function($e){
+        $identifier = 'MelisCmsSlider';
 
-        		$sm = $e->getTarget()->getServiceLocator();
-        		
-        		$flashMessenger = $sm->get('MelisCoreFlashMessenger');
-        		$params = $e->getParams();
-        		$results = $e->getTarget()->forward()->dispatch(
-        		    'MelisCore\Controller\MelisFlashMessenger',
-        		    array_merge(array('action' => 'log'), $params))->getVariables();
+        /**
+         * Events
+         */
+        $eventsName = [
+            'meliscmsslider_delete_details_end',
+            'meliscmsslider_save_details_end',
+            'meliscmsslider_add_slider_end',
+            'meliscmsslider_delete_slider_end',
+        ];
 
-        	},
-        -1000);
-        
-        $this->listeners[] = $callBackHandler;
+        $priority = -1000;
+
+        /**
+         * Attaching Events listiners
+         */
+        $this->attachEventListener($events, $identifier, $eventsName, [$this, 'logMessages'], $priority);
     }
 }

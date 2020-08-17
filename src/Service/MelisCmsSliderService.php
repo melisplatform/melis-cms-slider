@@ -9,15 +9,16 @@
 
 namespace MelisCmsSlider\Service;
 
-use MelisCore\Service\MelisCoreGeneralService;
 use MelisCmsSlider\Entity\MelisCmsSlider;
-use Zend\Db\Sql\Delete;
+use Laminas\Db\Sql\Delete;
+use MelisCore\Service\MelisGeneralService;
+
 /**
  *
  * This service handles the slider system of Melis.
  *
  */
-class MelisCmsSliderService extends MelisCoreGeneralService
+class MelisCmsSliderService extends MelisGeneralService
 {
     /**
      * This service retrieves  a list of sliders
@@ -39,7 +40,7 @@ class MelisCmsSliderService extends MelisCoreGeneralService
         $arrayParameters = $this->sendEvent('meliscmsslider_service_get_slider_list_start', $arrayParameters);
     
         // Service implementation start
-        $sliderTable = $this->getServiceLocator()->get('MelisCmsSliderTable');
+        $sliderTable = $this->getServiceManager()->get('MelisCmsSliderTable');
         $sliders = $sliderTable->getSliderList($arrayParameters['start'], $arrayParameters['limit'], $arrayParameters['order'], $arrayParameters['search']);
        
         foreach($sliders as $slider){
@@ -72,8 +73,8 @@ class MelisCmsSliderService extends MelisCoreGeneralService
         $arrayParameters = $this->sendEvent('meliscmsslider_service_get_slider_start', $arrayParameters);
        
         // Service implementation start
-        $sliderTable = $this->getServiceLocator()->get('MelisCmsSliderTable');        
-        $sliderDetailTable = $this->getServiceLocator()->get('MelisCmsSliderDetailTable');
+        $sliderTable = $this->getServiceManager()->get('MelisCmsSliderTable');
+        $sliderDetailTable = $this->getServiceManager()->get('MelisCmsSliderDetailTable');
         $customSliderEnt = new MelisCmsSlider();
         
         $sliderDetails = array();
@@ -115,7 +116,7 @@ class MelisCmsSliderService extends MelisCoreGeneralService
         $arrayParameters = $this->sendEvent('meliscmsslider_service_get_slider_details_start', $arrayParameters);
         
         // Service implementation start
-        $sliderDetailTable = $this->getServiceLocator()->get('MelisCmsSliderDetailTable');
+        $sliderDetailTable = $this->getServiceManager()->get('MelisCmsSliderDetailTable');
         foreach($sliderDetailTable->getEntryById($arrayParameters['sliderDetailId']) as $sliderDetail){
             $results = $sliderDetail;
         }
@@ -147,8 +148,8 @@ class MelisCmsSliderService extends MelisCoreGeneralService
         $arrayParameters = $this->sendEvent('meliscmsslider_service_get_slider_by_page_id_start', $arrayParameters);
        
         // Service implementation start
-        $sliderTable = $this->getServiceLocator()->get('MelisCmsSliderTable');        
-        $sliderDetailTable = $this->getServiceLocator()->get('MelisCmsSliderDetailTable');
+        $sliderTable = $this->getServiceManager()->get('MelisCmsSliderTable');
+        $sliderDetailTable = $this->getServiceManager()->get('MelisCmsSliderDetailTable');
         $customSliderEnt = new MelisCmsSlider();
         
         $sliderDetails = array();
@@ -192,7 +193,7 @@ class MelisCmsSliderService extends MelisCoreGeneralService
         $arrayParameters = $this->sendEvent('meliscmsslider_service_get_slider_details_start', $arrayParameters);
         
         // Service implementation start
-        $sliderTable = $this->getServiceLocator()->get('MelisCmsSliderTable');
+        $sliderTable = $this->getServiceManager()->get('MelisCmsSliderTable');
         try{
             $results = $sliderTable->save($arrayParameters['slider'], $arrayParameters['sliderId']);
         }catch(\Exception $e){
@@ -227,7 +228,7 @@ class MelisCmsSliderService extends MelisCoreGeneralService
         $arrayParameters = $this->sendEvent('meliscmsslider_service_save_details_start', $arrayParameters);
         
         // Service implementation start
-        $sliderDetailTable = $this->getServiceLocator()->get('MelisCmsSliderDetailTable');
+        $sliderDetailTable = $this->getServiceManager()->get('MelisCmsSliderDetailTable');
         try{
             $results = $sliderDetailTable->save($arrayParameters['sliderDetail'], $arrayParameters['sliderDetailId']);
         }catch(\Exception $e){
@@ -261,8 +262,8 @@ class MelisCmsSliderService extends MelisCoreGeneralService
         $arrayParameters = $this->sendEvent('meliscmsslider_service_delete_details_start', $arrayParameters);
         
         // Service implementation start
-        $sliderTable = $this->getServiceLocator()->get('MelisCmsSliderTable');
-        $sliderDetailTable = $this->getServiceLocator()->get('MelisCmsSliderDetailTable');
+        $sliderTable = $this->getServiceManager()->get('MelisCmsSliderTable');
+        $sliderDetailTable = $this->getServiceManager()->get('MelisCmsSliderDetailTable');
         $details = $sliderDetailTable->getEntryByField('mcsdetail_mcslider_id', $arrayParameters['sliderId']);
         try{
             $results = $sliderTable->deleteById($arrayParameters['sliderId']);
@@ -301,7 +302,7 @@ class MelisCmsSliderService extends MelisCoreGeneralService
         $arrayParameters = $this->sendEvent('meliscmsslider_service_delete_details_start', $arrayParameters);
         
         // Service implementation start
-        $sliderDetailTable = $this->getServiceLocator()->get('MelisCmsSliderDetailTable');
+        $sliderDetailTable = $this->getServiceManager()->get('MelisCmsSliderDetailTable');
         try{
             $results = $sliderDetailTable->deleteById($arrayParameters['sliderDetailId']);
             $results = true;
@@ -337,7 +338,7 @@ class MelisCmsSliderService extends MelisCoreGeneralService
         $arrayParameters = $this->sendEvent('meliscmsslider_service_delete_details_start', $arrayParameters);
         
         // Service implementation start
-        $sliderDetailTable = $this->getServiceLocator()->get('MelisCmsSliderDetailTable');
+        $sliderDetailTable = $this->getServiceManager()->get('MelisCmsSliderDetailTable');
         $data = array('mcsdetail_order' => $arrayParameters['mcsdetail_order']);
         try{
             $results = $sliderDetailTable->save($data,$arrayParameters['sliderDetailId']);

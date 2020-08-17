@@ -9,21 +9,21 @@
 
 namespace MelisCmsSlider\Listener;
 
-use Zend\EventManager\EventManagerInterface;
-use Zend\EventManager\ListenerAggregateInterface;
-use MelisCore\Listener\MelisCoreGeneralListener;
+use Laminas\EventManager\EventManagerInterface;
+use Laminas\EventManager\ListenerAggregateInterface;
+use Laminas\Mvc\MvcEvent;
+use MelisCore\Listener\MelisGeneralListener;
 
-class MelisCmsSliderToolCreatorEditionTypeListener extends MelisCoreGeneralListener implements ListenerAggregateInterface
+class MelisCmsSliderToolCreatorEditionTypeListener extends MelisGeneralListener implements ListenerAggregateInterface
 {
-    public function attach(EventManagerInterface $events)
+    public function attach(EventManagerInterface $events, $priority = 1)
     {
-        $sharedEvents      = $events->getSharedManager();
-
-        $this->listeners[] = $sharedEvents->attach(
+        $this->attachEventListener(
+            $events,
             '*',
             'melis_toolcreator_input_edition_type_options',
             function ($e) {
-                $sm = $e->getTarget()->getServiceLocator();
+                $sm = $e->getTarget()->getServiceManager();
                 $params = $e->getParams();
                 $params['valueOptions']['CmsSliderSelect'] = $sm->get('translator')->translate('tr_MelisCmsSlider_header_title');
             }

@@ -1,153 +1,159 @@
 <?php
 
-return array(
-    'plugins' => array(
-        'MelisCmsSlider' => array(
-            'tools' => array(
-                'MelisCmsSlider_list' => array(
-                    'table' => array(
+/**
+ * Melis Technology (http://www.melistechnology.com)
+ *
+ * @copyright Copyright (c) 2015 Melis Technology (http://www.melistechnology.com)
+ *
+ */
+
+return [
+    'plugins' => [
+        'MelisCmsSlider' => [
+            'tools' => [
+                'MelisCmsSlider_list' => [
+                    'table' => [
                         'target' => '#sliderList',
                         'ajaxUrl' => '/melis/MelisCmsSlider/MelisCmsSliderList/renderTableListData',
                         'dataFunction' => '',
                         'ajaxCallback' => '',
-                        'filters' => array(
-                            'left' => array(
-                                'table-list-table-filter-limit' => array(
+                        'filters' => [
+                            'left' => [
+                                'table-list-table-filter-limit' => [
                                     'module' => 'MelisCmsSlider',
                                     'controller' => 'MelisCmsSliderList',
                                     'action' => 'render-table-list-content-filter-limit'
-                                ),
-                            ),
+                                ],
+                            ],
                 
-                            'center' => array(
-                                'table-list-table-filter-search' => array(
+                            'center' => [
+                                'table-list-table-filter-search' => [
                                     'module' => 'MelisCmsSlider',
                                     'controller' => 'MelisCmsSliderList',
                                     'action' => 'render-table-list-content-filter-search'
-                                ),
-                            ),
+                                ],
+                            ],
                 
-                            'right' => array(
-                                'table-list-table-filter-refresh' => array(
+                            'right' => [
+                                'table-list-table-filter-refresh' => [
                                     'module' => 'MelisCmsSlider',
                                     'controller' => 'MelisCmsSliderList',
                                     'action' => 'render-table-list-content-filter-refresh'
-                                ),
-                            ),
-                        ),
+                                ],
+                            ],
+                        ],
                 
-                        'columns' => array(
-                            'mcslide_id' => array(
+                        'columns' => [
+                            'mcslide_id' => [
                                 'text' => 'tr_MelisCmsSlider_list_col_id',
-                                'css' => array('width' => '10%', 'padding-right' => '0'),
+                                'css' => ['width' => '10%', 'padding-right' => '0'],
                                 'sortable' => true,
-                            ),
-                            'mcslide_name' => array(
+                            ],
+                            'mcslide_name' => [
                                 'text' => 'tr_MelisCmsSlider_list_col_name',
-                                'css' => array('width' => '10%', 'padding-right' => '0'),
+                                'css' => ['width' => '10%', 'padding-right' => '0'],
                                 'sortable' => true,
-                            ),
-                            'mcslide_page_id' => array(
+                            ],
+                            'mcslide_page_id' => [
                                 'text' => 'tr_MelisCmsSliderDetails_slider_page_id',
-                                'css' => array('width' => '10%', 'padding-right' => '0'),
+                                'css' => ['width' => '10%', 'padding-right' => '0'],
                                 'sortable' => true,
-                            ),
-                        ),
+                            ],
+                        ],
                 
-                        'searchables' => array(),
-                        'actionButtons' => array(
-                            'edit' => array(
+                        'searchables' => [],
+                        'actionButtons' => [
+                            'edit' => [
                                 'module' => 'MelisCmsSlider',
                                 'controller' => 'MelisCmsSliderList',
                                 'action' => 'render-table-list-content-action-edit'
-                            ),
-                            'info' => array(
+                            ],
+                            'info' => [
                                 'module' => 'MelisCmsSlider',
                                 'controller' => 'MelisCmsSliderList',
                                 'action' => 'render-table-list-content-action-info'
-                            ),
-                            'delete' => array(
+                            ],
+                            'delete' => [
                                 'module' => 'MelisCmsSlider',
                                 'controller' => 'MelisCmsSliderList',
                                 'action' => 'render-table-list-content-action-delete'
-                            ),
-                        ),
-                    ),
-                ),
-                'MelisCmsSlider_details' => array(
-                    'table' => array(
+                            ],
+                        ],
+                    ],
+                ],
+                'MelisCmsSlider_details' => [
+                    'table' => [
                         'target' => '#sliderDetails',
                         'ajaxUrl' => '/melis/MelisCmsSlider/MelisCmsSliderDetails/renderTableListData',
                         'dataFunction' => 'initSliderDetails',
                         'ajaxCallback' => '',
-                        'filters' => array(
-                            'left' => array(
-                                'table-list-table-filter-limits' => array(
+                        'filters' => [
+                            'left' => [
+                                'table-list-table-filter-limits' => [
                                     'module' => 'MelisCmsSlider',
                                     'controller' => 'MelisCmsSliderList',
                                     'action' => 'render-table-list-content-filter-limit'
-                                ),
-                            ),
+                                ],
+                            ],
                 
-                            'center' => array(),
+                            'center' => [],
                 
-                            'right' => array(),
-                        ),
+                            'right' => [],
+                        ],
                 
-                        'columns' => array(
-                            'mcsdetail_order' => array(
+                        'columns' => [
+                            'mcsdetail_order' => [
                                 'text' => '<i class="fa fa-plus"> </i>',
-                                'css' => array('width' => '1%', 'padding-right' => '0', 'visible' => false),
+                                'css' => ['width' => '1%', 'padding-right' => '0', 'visible' => false],
                                 'sortable' => true,
-                            ),
-                            'mcsdetail_id' => array(
+                            ],
+                            'mcsdetail_id' => [
                                 'text' => 'tr_MelisCmsSliderDetails_list_col_id',
-                                'css' => array('width' => '5%', 'padding-right' => '0'),
+                                'css' => ['width' => '5%', 'padding-right' => '0'],
                                 'sortable' => true,
-                            ),
-                            'mcsdetail_status' => array(
+                            ],
+                            'mcsdetail_status' => [
                                 'text' => 'tr_MelisCmsSliderDetails_list_col_status',
-                                'css' => array('width' => '10%', 'padding-right' => '0'),
+                                'css' => ['width' => '10%', 'padding-right' => '0'],
                                 'sortable' => false,
-                            ),
-                            'mcsdetail_img' => array(
+                            ],
+                            'mcsdetail_img' => [
                                 'text' => 'tr_MelisCmsSliderDetails_list_col_image',
-                                'css' => array('width' => '10%', 'padding-right' => '0', 'display' => 'none'),
+                                'css' => ['width' => '10%', 'padding-right' => '0', 'display' => 'none'],
                                 'sortable' => false,
-                            ),
-                            'mcsdetail_title' => array(
+                            ],
+                            'mcsdetail_title' => [
                                 'text' => 'tr_MelisCmsSliderDetails_list_col_name',
-                                'css' => array('width' => '25%', 'padding-right' => '0'),
+                                'css' => ['width' => '25%', 'padding-right' => '0'],
                                 'sortable' => true,
-                            ),
-                            'mcsdetail_sub1' => array(
+                            ],
+                            'mcsdetail_sub1' => [
                                 'text' => 'tr_MelisCmsSliderDetails_list_col_sub1',
-                                'css' => array('width' => '30%', 'padding-right' => '0'),
+                                'css' => ['width' => '30%', 'padding-right' => '0'],
                                 'sortable' => true,
-                            ),
-                            'mcsdetail_link' => array(
+                            ],
+                            'mcsdetail_link' => [
                                 'text' => 'tr_MelisCmsSliderDetails_list_col_link',
-                                'css' => array('width' => '20%', 'padding-right' => '0'),
+                                'css' => ['width' => '20%', 'padding-right' => '0'],
                                 'sortable' => false,
-                            ),                            
-                        ),
-                
-                        'searchables' => array(),
-                        'actionButtons' => array(
-                            'info' => array(
+                            ],
+                        ],
+                        'searchables' => [],
+                        'actionButtons' => [
+                            'info' => [
                                 'module' => 'MelisCmsSlider',
                                 'controller' => 'MelisCmsSliderDetails',
                                 'action' => 'render-slider-content-action-info'
-                            ),
-                            'delete' => array(
+                            ],
+                            'delete' => [
                                 'module' => 'MelisCmsSlider',
                                 'controller' => 'MelisCmsSliderDetails',
                                 'action' => 'render-slider-content-action-delete'
-                            ),
-                        ),
-                    ),
-                ),
-            ),
-        ),
-    ),
-);
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+];

@@ -1,1 +1,14 @@
-.slider-open-tooltip .melis-opentools{margin-right:.75rem}.is-draggable td:nth-child(1){cursor:move}@media (max-width:767px){.is-draggable td:nth-child(2){cursor:move}#sliderDetailsForm .tox-tinymce{height:260px}}
+.slider-open-tooltip .melis-opentools {
+	margin-right: 0.75rem;
+}
+.is-draggable td:nth-child(1) {
+	cursor: move;
+}
+@media (max-width: 767px) {
+	.is-draggable td:nth-child(2) {
+		cursor: move;
+	}
+	#sliderDetailsForm .tox-tinymce {
+		height: 260px;
+	}
+}

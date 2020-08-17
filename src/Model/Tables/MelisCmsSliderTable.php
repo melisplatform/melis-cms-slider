@@ -9,22 +9,29 @@
 
 namespace MelisCmsSlider\Model\Tables;
 
-use Zend\Db\TableGateway\TableGateway;
+use Laminas\Db\TableGateway\TableGateway;
+use MelisEngine\Model\Tables\MelisGenericTable;
 
-class MelisCmsSliderTable extends MelisEcomGenericTable 
+class MelisCmsSliderTable extends MelisGenericTable
 {
-    protected $tableGateway;
-    protected $idField;
-    
-    public function __construct(TableGateway $tableGateway)
+    /**
+     * Model table
+     */
+    const TABLE = 'melis_cms_slider';
+
+    /**
+     * Table primary key
+     */
+    const PRIMARY_KEY = 'mcslide_id';
+
+    public function __construct()
     {
-        parent::__construct($tableGateway);
-        $this->idField = 'mcslide_id';
+        $this->idField = self::PRIMARY_KEY;
     }
-    
+
     public function getSliderList($start = null, $limit = null, $order = null, $search = null )
     {
-        $select = $this->tableGateway->getSql()->select();
+        $select = $this->getTableGateway()->getSql()->select();
         $clause = array();
         
         if(!is_null($search)){
@@ -48,7 +55,7 @@ class MelisCmsSliderTable extends MelisEcomGenericTable
             $select->order($order);
         }
         
-        $resultData = $this->tableGateway->selectWith($select);
+        $resultData = $this->getTableGateway()->selectWith($select);
         return $resultData;
     }
     

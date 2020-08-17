@@ -9,30 +9,20 @@
 
 namespace MelisCmsSlider\Form\Factory;
 
-use Zend\Form\Element\Select;
-use Zend\ServiceManager\ServiceLocatorInterface;
+use Laminas\Form\Element\Select;
+use Laminas\ServiceManager\ServiceManager;
 use MelisCore\Form\Factory\MelisSelectFactory;
+use Psr\Container\ContainerInterface;
 
 /**
  * MelisCommerce Countries select factory
  */
 class CmsSliderSelectFactory extends MelisSelectFactory
 {
-    public function createService(ServiceLocatorInterface $formElementManager)
-    {
-        $serviceManager = $formElementManager->getServiceLocator();
-
-        $element = new Select();
-        $element->setValueOptions($this->loadValueOptions($formElementManager));
-        $element->setEmptyOption($serviceManager->get('translator')->translate('tr_meliscore_common_choose'));
-        return $element;
-    }
-
-	protected function loadValueOptions(ServiceLocatorInterface $formElementManager)
+	protected function loadValueOptions(ServiceManager $serviceManager)
 	{
-		$sliders = array();
-	    $serviceManager = $formElementManager->getServiceLocator();		
-		$sliderSvc = $serviceManager->get('MelisCmsSliderService');	
+		$sliders = [];
+		$sliderSvc = $serviceManager->get('MelisCmsSliderService');
 
 		foreach($sliderSvc->getSliderList(null, null, 'mcslide_name ASC') as $s){
 		    $slider = $s->getSlider();
@@ -41,5 +31,4 @@ class CmsSliderSelectFactory extends MelisSelectFactory
 		
 		return $sliders;
 	}
-
 }

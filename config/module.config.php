@@ -1,107 +1,91 @@
 <?php
 
 /**
- * Melis Technology (http://www.melistechnology.com)
+ * Melis Technology (http://www.melistechnology.com]
  *
- * @copyright Copyright (c) 2015 Melis Technology (http://www.melistechnology.com)
+ * @copyright Copyright (c] 2015 Melis Technology (http://www.melistechnology.com]
  *
  */
 
-return array(
-    'router' => array(
-        'routes' => array(
-            'melis-backoffice' => array(
+return [
+    'router' => [
+        'routes' => [
+            'melis-backoffice' => [
                 'type'    => 'Segment',
-                'options' => array(
+                'options' => [
                     'route'    => '/melis[/]',
-                ),
-                'child_routes' => array(
-                    'application-MelisCmsSlider' => array(
+                ],
+                'child_routes' => [
+                    'application-MelisCmsSlider' => [
                         'type'    => 'Literal',
-                        'options' => array(
+                        'options' => [
                             'route'    => 'MelisCmsSlider',
-                            'defaults' => array(
+                            'defaults' => [
                                 '__NAMESPACE__' => 'MelisCmsSlider\Controller',
                                 'controller'    => 'CustomEdition',
                                 'action'        => 'renderCustomTableEditor',
-                            ),
-                        ),
+                            ],
+                        ],
                         'may_terminate' => true,
-                        'child_routes' => array(
-                            'default' => array(
+                        'child_routes' => [
+                            'default' => [
                                 'type'    => 'Segment',
-                                'options' => array(
+                                'options' => [
                                     'route'    => '/[:controller[/:action]]',
-                                    'constraints' => array(
+                                    'constraints' => [
                                         'controller' => '[a-zA-Z][a-zA-Z0-9_-]*',
                                         'action'     => '[a-zA-Z][a-zA-Z0-9_-]*',
-                                    ),
-                                    'defaults' => array(
-                                    ),
-                                ),
-                            ),
-                        ),
-                    ),
-                ),
-            ),
-        ),
-    ),
-    'translator' => array(
-    	'locale' => 'en_EN',
-	),
-    'service_manager' => array(
-        'invokables' => array(
-            
-        ),
-        'aliases' => array(
-            'translator' => 'MvcTranslator',
-            'MelisCmsSliderTable' => 'MelisCmsSlider\Model\Tables\MelisCmsSliderTable',
-            'MelisCmsSliderDetailTable' => 'MelisCmsSlider\Model\Tables\MelisCmsSliderDetailTable',
-        ),
-        'factories' => array(
-            //services
-            'MelisCmsSliderService' => 'MelisCmsSlider\Service\Factory\MelisCmsSliderServiceFactory',
-            
-            //tables
-            'MelisCmsSlider\Model\Tables\MelisCmsSliderTable' => 'MelisCmsSlider\Model\Tables\Factory\MelisCmsSliderTableFactory',
-            'MelisCmsSlider\Model\Tables\MelisCmsSliderDetailTable' => 'MelisCmsSlider\Model\Tables\Factory\MelisCmsSliderDetailTableFactory',
-        ),
-    ),
-    'controllers' => array(
-        'invokables' => array(
-            'MelisCmsSlider\Controller\MelisCmsSliderList' => 'MelisCmsSlider\Controller\MelisCmsSliderListController',
-            'MelisCmsSlider\Controller\MelisCmsSliderDetails' => 'MelisCmsSlider\Controller\MelisCmsSliderDetailsController',
-            'MelisCmsSlider\Controller\MelisSetup' => 'MelisCmsSlider\Controller\MelisSetupController',
-            ),
-    ),
-    'controller_plugins' => array(
-        'invokables' => array(
-            'MelisCmsSliderShowSliderPlugin' => 'MelisCmsSlider\Controller\Plugin\MelisCmsSliderShowSliderPlugin',
-        )
-    ),
-    'form_elements' => array(
-        'factories' => array(
-            'CmsSliderSelect' => 'MelisCmsSlider\Form\Factory\CmsSliderSelectFactory',
-        )
-    ),
-    'view_helpers' => [
-        'factories' => [
-            'MelisCmsSliderPlugin' => 'MelisCmsSlider\View\Helper\Factory\MelisCmsSliderHelperFactory',
+                                    ],
+                                    'defaults' => [],
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
         ],
     ],
-    'view_manager' => array(
-        'display_not_found_reason' => true,
-        'display_exceptions'       => true,
-        'doctype'                  => 'HTML5',
-        'template_map' => array(
-            'MelisCmsSlider/showslider' => __DIR__ . '/../view/melis-cms-slider/plugins/showslider.phtml',
-            'MelisCmsSlider/showslider/melis/form' => __DIR__ . '/../view/melis-cms-slider/plugins/slider-modal-form.phtml',
-        ),
-        'template_path_stack' => array(
+    'service_manager' => [
+        'aliases' => [
+            // Service
+            'MelisCmsSliderService'     => \MelisCmsSlider\Service\MelisCmsSliderService::class,
+            // Tables
+            'MelisCmsSliderTable'       => \MelisCmsSlider\Model\Tables\MelisCmsSliderTable::class,
+            'MelisCmsSliderDetailTable' => \MelisCmsSlider\Model\Tables\MelisCmsSliderDetailTable::class,
+        ],
+    ],
+    'controllers' => [
+        'invokables' => [
+            'MelisCmsSlider\Controller\MelisCmsSliderList'      => \MelisCmsSlider\Controller\MelisCmsSliderListController::class,
+            'MelisCmsSlider\Controller\MelisCmsSliderDetails'   => \MelisCmsSlider\Controller\MelisCmsSliderDetailsController::class,
+            'MelisCmsSlider\Controller\MelisSetup'              => \MelisCmsSlider\Controller\MelisSetupController::class,
+        ],
+    ],
+    'controller_plugins' => [
+        'invokables' => [
+            'MelisCmsSliderShowSliderPlugin' => \MelisCmsSlider\Controller\Plugin\MelisCmsSliderShowSliderPlugin::class,
+        ]
+    ],
+    'form_elements' => [
+        'factories' => [
+            'CmsSliderSelect' => \MelisCmsSlider\Form\Factory\CmsSliderSelectFactory::class,
+        ]
+    ],
+    'view_helpers' => [
+        'aliases' => [
+            'MelisCmsSliderPlugin' => \MelisCmsSlider\View\Helper\MelisCmsSliderHelper::class,
+        ],
+    ],
+    'view_manager' => [
+        'template_map' => [
+            'MelisCmsSlider/showslider'             => __DIR__ . '/../view/melis-cms-slider/plugins/showslider.phtml',
+            'MelisCmsSlider/showslider/melis/form'  => __DIR__ . '/../view/melis-cms-slider/plugins/slider-modal-form.phtml',
+        ],
+        'template_path_stack' => [
             __DIR__ . '/../view',
-        ),
-        'strategies' => array(
+        ],
+        'strategies' => [
             'ViewJsonStrategy',
-        ),
-    ),
-);
+        ],
+    ],
+];

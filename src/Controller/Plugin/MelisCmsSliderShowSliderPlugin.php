@@ -10,8 +10,8 @@
 namespace MelisCmsSlider\Controller\Plugin;
 
 use MelisEngine\Controller\Plugin\MelisTemplatingPlugin;
-use Zend\View\Model\ViewModel;
-use Zend\Session\Container;
+use Laminas\View\Model\ViewModel;
+use Laminas\Session\Container;
 /**
  * This plugin implements the business logic of the
  * "showSlider" plugin.
@@ -66,7 +66,7 @@ class MelisCmsSliderShowSliderPlugin extends MelisTemplatingPlugin
         $id   = isset($this->pluginFrontConfig['sliderId']) ? $this->pluginFrontConfig['sliderId'] : null;
         
         // Retrieving the Slider Data from Slider Service
-        $sliderSrv = $this->getServiceLocator()->get('MelisCmsSliderService');
+        $sliderSrv = $this->getServiceManager()->get('MelisCmsSliderService');
         $sliderEntity = $sliderSrv->getSlider($id, 1);
         
         // Getting the Slider details from Slider Entity
@@ -99,8 +99,8 @@ class MelisCmsSliderShowSliderPlugin extends MelisTemplatingPlugin
     public function createOptionsForms()
     {
         // construct form
-        $factory = new \Zend\Form\Factory();
-        $formElements = $this->getServiceLocator()->get('FormElementManager');
+        $factory = new \Laminas\Form\Factory();
+        $formElements = $this->getServiceManager()->get('FormElementManager');
         $factory->setFormElementManager($formElements);
         $formConfig = $this->pluginBackConfig['modal_form'];
 
@@ -109,7 +109,7 @@ class MelisCmsSliderShowSliderPlugin extends MelisTemplatingPlugin
         if (!empty($formConfig)) {
             foreach ($formConfig as $formKey => $config) {
                 $form = $factory->createForm($config);
-                $request = $this->getServiceLocator()->get('request');
+                $request = $this->getServiceManager()->get('request');
                 $parameters = $request->getQuery()->toArray();
 
                 if (!isset($parameters['validate'])) {
@@ -119,7 +119,7 @@ class MelisCmsSliderShowSliderPlugin extends MelisTemplatingPlugin
                     $viewModelTab->setTemplate($config['tab_form_layout']);
                     $viewModelTab->modalForm = $form;
                     $viewModelTab->formData   = $this->getFormData();
-                    $viewRender = $this->getServiceLocator()->get('ViewRenderer');
+                    $viewRender = $this->getServiceManager()->get('ViewRenderer');
                     $html = $viewRender->render($viewModelTab);
                     array_push($render, [
                             'name' => $config['tab_title'],
