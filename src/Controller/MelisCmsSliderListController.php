@@ -9,17 +9,17 @@
 
 namespace MelisCmsSlider\Controller;
 
-use Zend\Mvc\Controller\AbstractActionController;
-use Zend\View\Model\JsonModel;
-use Zend\View\Model\ViewModel;
+use Laminas\View\Model\JsonModel;
+use Laminas\View\Model\ViewModel;
+use MelisCore\Controller\MelisAbstractActionController;
 
-class MelisCmsSliderListController extends AbstractActionController
+class MelisCmsSliderListController extends MelisAbstractActionController
 {
     const LOG_DELETE = 'CMS_SLIDER_DELETE';
 
     /**
      * renders the page container
-     * @return \Zend\View\Model\ViewModel
+     * @return \Laminas\View\Model\ViewModel
      */
     public function renderTableListPageAction()
     {
@@ -31,7 +31,7 @@ class MelisCmsSliderListController extends AbstractActionController
     
     /**
      * renders the header container
-     * @return \Zend\View\Model\ViewModel
+     * @return \Laminas\View\Model\ViewModel
      */
     public function renderTableListHeaderAction()
     {
@@ -43,7 +43,7 @@ class MelisCmsSliderListController extends AbstractActionController
     
     /**
      * renders the table list page left header container
-     * @return \Zend\View\Model\ViewModel
+     * @return \Laminas\View\Model\ViewModel
      */
     public function renderTableListHeaderLeftAction()
     {
@@ -55,7 +55,7 @@ class MelisCmsSliderListController extends AbstractActionController
     
     /**
      * renders the table list page right header container
-     * @return \Zend\View\Model\ViewModel
+     * @return \Laminas\View\Model\ViewModel
      */
     public function renderTableListHeaderRightAction()
     {
@@ -67,7 +67,7 @@ class MelisCmsSliderListController extends AbstractActionController
     
     /**
      * renders the table list page right header container
-     * @return \Zend\View\Model\ViewModel
+     * @return \Laminas\View\Model\ViewModel
      */
     public function renderTableListHeaderRightAddAction()
     {
@@ -79,7 +79,7 @@ class MelisCmsSliderListController extends AbstractActionController
     
     /**
      * renders the table list page title
-     * @return \Zend\View\Model\ViewModel
+     * @return \Laminas\View\Model\ViewModel
      */
     public function renderTableListHeaderTitleAction()
     {
@@ -91,7 +91,7 @@ class MelisCmsSliderListController extends AbstractActionController
     
     /**
      * renders the table list page content container
-     * @return \Zend\View\Model\ViewModel
+     * @return \Laminas\View\Model\ViewModel
      */
     public function renderTableListContentAction()
     {
@@ -103,7 +103,7 @@ class MelisCmsSliderListController extends AbstractActionController
     
     /**
      * renders the coupon list content table filter limit
-     * @return \Zend\View\Model\ViewModel
+     * @return \Laminas\View\Model\ViewModel
      */
     public function renderTableListContentFilterLimitAction()
     {
@@ -112,7 +112,7 @@ class MelisCmsSliderListController extends AbstractActionController
     
     /**
      * renders the coupon list content table filter search
-     * @return \Zend\View\Model\ViewModel
+     * @return \Laminas\View\Model\ViewModel
      */
     public function renderTableListContentFilterSearchAction()
     {
@@ -121,7 +121,7 @@ class MelisCmsSliderListController extends AbstractActionController
     
     /**
      * renders the coupon list content table filter refresh
-     * @return \Zend\View\Model\ViewModel
+     * @return \Laminas\View\Model\ViewModel
      */
     public function renderTableListContentFilterRefreshAction()
     {
@@ -130,7 +130,7 @@ class MelisCmsSliderListController extends AbstractActionController
     
     /**
      * renders the coupon list content table action info
-     * @return \Zend\View\Model\ViewModel
+     * @return \Laminas\View\Model\ViewModel
      */
     public function renderTableListContentActionInfoAction()
     {
@@ -139,7 +139,7 @@ class MelisCmsSliderListController extends AbstractActionController
     
     /**
      * renders the coupon list content table action edit
-     * @return \Zend\View\Model\ViewModel
+     * @return \Laminas\View\Model\ViewModel
      */
     public function renderTableListContentActionEditAction()
     {
@@ -148,7 +148,7 @@ class MelisCmsSliderListController extends AbstractActionController
     
     /**
      * renders the coupon list content table action edit
-     * @return \Zend\View\Model\ViewModel
+     * @return \Laminas\View\Model\ViewModel
      */
     public function renderTableListContentActionDeleteAction()
     {
@@ -157,7 +157,7 @@ class MelisCmsSliderListController extends AbstractActionController
     
     /**
      * renders the coupon list page table
-     * @return \Zend\View\Model\ViewModel
+     * @return \Laminas\View\Model\ViewModel
      */
     public function renderTableListContentTableAction()
     {
@@ -177,25 +177,25 @@ class MelisCmsSliderListController extends AbstractActionController
      */
     private function getAllTool()
     {
-        $melisTool = $this->getServiceLocator()->get('MelisCoreTool');
+        $melisTool = $this->getServiceManager()->get('MelisCoreTool');
 
         return $melisTool;
     }
 
     /**
      * renders the order list modal for updating order status
-     * @return \Zend\View\Model\ViewModel
+     * @return \Laminas\View\Model\ViewModel
      */
     public function renderModalFormAction()
     {
         $sliderId = (int) $this->params()->fromQuery('sliderId', '');        
-        $sliderSvc = $this->getServiceLocator()->get('MelisCmsSliderService');
+        $sliderSvc = $this->getServiceManager()->get('MelisCmsSliderService');
         
         $view = new ViewModel();  
-        $melisCoreConfig = $this->serviceLocator->get('MelisCoreConfig');
+        $melisCoreConfig = $this->getServiceManager()->get('MelisCoreConfig');
         $appConfigForm = $melisCoreConfig->getFormMergedAndOrdered('MelisCmsSlider/forms/MelisTechnologySlider_slider_form','MelisTechnologySlider_slider_form');
-        $factory = new \Zend\Form\Factory();
-        $formElements = $this->serviceLocator->get('FormElementManager');
+        $factory = new \Laminas\Form\Factory();
+        $formElements = $this->getServiceManager()->get('FormElementManager');
         $factory->setFormElementManager($formElements);
     
         $form = $factory->createForm($appConfigForm);
@@ -223,7 +223,7 @@ class MelisCmsSliderListController extends AbstractActionController
         $tableData = array();
         $langId = $this->getTool()->getCurrentLocaleID();
         
-        $sliderSvc = $this->getServiceLocator()->get('MelisCmsSliderService');
+        $sliderSvc = $this->getServiceManager()->get('MelisCmsSliderService');
         
         if($this->getRequest()->isPost()) {
             $colId = array_keys($this->getTool()->getColumns());
@@ -274,7 +274,7 @@ class MelisCmsSliderListController extends AbstractActionController
     public function saveSliderAction()
     {
         $this->getEventManager()->trigger('meliscmsslider_add_slider_start', $this, array());
-        $melisTool = $this->getServiceLocator()->get('MelisCoreTool');
+        $melisTool = $this->getServiceManager()->get('MelisCoreTool');
         $sliderId = null;
         $response = array();
         $success = 0;
@@ -283,7 +283,7 @@ class MelisCmsSliderListController extends AbstractActionController
         $textMessage = 'tr_MelisCmsSliderDetails_save_fail';
         $textTitle = 'tr_MelisCmsSliderDetails_slider_save_Title';
         
-        $sliderSvc = $this->getServiceLocator()->get('MelisCmsSliderService');
+        $sliderSvc = $this->getServiceManager()->get('MelisCmsSliderService');
         
         if($this->getRequest()->isPost()){
             $postValues = get_object_vars($this->getRequest()->getPost());
@@ -295,10 +295,10 @@ class MelisCmsSliderListController extends AbstractActionController
                 $logTypeCode = 'CMS_SLIDER_ADD';
             }
             
-            $melisCoreConfig = $this->serviceLocator->get('MelisCoreConfig');
+            $melisCoreConfig = $this->getServiceManager()->get('MelisCoreConfig');
             $appConfigForm = $melisCoreConfig->getFormMergedAndOrdered('MelisCmsSlider/forms/MelisTechnologySlider_slider_form','MelisTechnologySlider_slider_form');
-            $factory = new \Zend\Form\Factory();
-            $formElements = $this->serviceLocator->get('FormElementManager');
+            $factory = new \Laminas\Form\Factory();
+            $formElements = $this->getServiceManager()->get('FormElementManager');
             $factory->setFormElementManager($formElements);            
             $form = $factory->createForm($appConfigForm);
             
@@ -354,9 +354,9 @@ class MelisCmsSliderListController extends AbstractActionController
         $textMessage = 'tr_MelisCmsSliderDetails_slider_delete_fail';
         $textTitle = 'tr_MelisCmsSliderDetails_slider_save_Title';
 
-        $melisSliderSvc = $this->getServiceLocator()->get('MelisCmsSliderService');
-        $sliderDetailsTable = $this->getServiceLocator()->get('MelisCmsSliderDetailTable');
-        $melisCoreConfig = $this->getServiceLocator()->get('MelisCoreConfig');
+        $melisSliderSvc = $this->getServiceManager()->get('MelisCmsSliderService');
+        $sliderDetailsTable = $this->getServiceManager()->get('MelisCmsSliderDetailTable');
+        $melisCoreConfig = $this->getServiceManager()->get('MelisCoreConfig');
 
         $confSlidersUpload = $melisCoreConfig->getItem('MelisCmsSlider/conf/sliders');
 
@@ -412,7 +412,7 @@ class MelisCmsSliderListController extends AbstractActionController
      */
     private function getTool()
     {
-        $melisTool = $this->getServiceLocator()->get('MelisCoreTool');
+        $melisTool = $this->getServiceManager()->get('MelisCoreTool');
         $melisTool->setMelisToolKey('MelisCmsSlider', 'MelisCmsSlider_list');
     
         return $melisTool;

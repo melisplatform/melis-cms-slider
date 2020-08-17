@@ -1,1 +1,14 @@
-.slider-open-tooltip .melis-opentools{margin-right:.75rem}.is-draggable td:nth-child(1){cursor:move}.melis-news-heading{padding-bottom:20px}.melis-news-heading h3{display:inline-block}.melis-news-heading .addSliderData{float:right}@media (max-width:767px){.is-draggable td:nth-child(2){cursor:move}#sliderDetailsForm .tox-tinymce{height:260px}}
+.slider-open-tooltip .melis-opentools {
+	margin-right: 0.75rem;
+}
+.is-draggable td:nth-child(1) {
+	cursor: move;
+}
+@media (max-width: 767px) {
+	.is-draggable td:nth-child(2) {
+		cursor: move;
+	}
+	#sliderDetailsForm .tox-tinymce {
+		height: 260px;
+	}
+}

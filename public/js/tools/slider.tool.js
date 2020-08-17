@@ -31,7 +31,7 @@ $(function(){
 				// initialation of local variable
 				zoneId 		= 'id_MelisCmsSlider_modal_form';
 				melisKey 	= 'MelisCmsSlider_modal_form';
-				modalUrl 	= 'melis/MelisCmsSlider/MelisCmsSliderDetails/renderModal';
+				modalUrl 	= '/melis/MelisCmsSlider/MelisCmsSliderDetails/renderModal';
 
 				// requesitng to create modal and display after
 				melisHelper.createModal(zoneId, melisKey, false, {'detailId': detailId, 'sliderId': sliderId}, modalUrl, function() {
@@ -48,7 +48,7 @@ $(function(){
 				// initialation of local variable
 				zoneId 		= 'id_MelisCmsSlider_modal_form';
 				melisKey 	= 'MelisCmsSlider_modal_form';
-				modalUrl 	= 'melis/MelisCmsSlider/MelisCmsSliderDetails/renderModal';
+				modalUrl 	= '/melis/MelisCmsSlider/MelisCmsSliderDetails/renderModal';
 
 				// requesitng to create modal and display after
 				melisHelper.createModal(zoneId, melisKey, false, {'sliderId': sliderId}, modalUrl, function() {
@@ -62,7 +62,7 @@ $(function(){
 			// initialation of local variable
 			zoneId 		= 'id_MMelisCmsSlider_slider_new';
 			melisKey 	= 'MMelisCmsSlider_slider_new';
-			modalUrl 	= 'melis/MelisCmsSlider/MelisCmsSliderDetails/renderModal';
+			modalUrl 	= '/melis/MelisCmsSlider/MelisCmsSliderDetails/renderModal';
 
 			// requesitng to create modal and display after
 			melisHelper.createModal(zoneId, melisKey, false, {}, modalUrl, function() {
@@ -79,7 +79,7 @@ $(function(){
 				// initialation of local variable
 				zoneId 		= 'id_MMelisCmsSlider_slider_new';
 				melisKey 	= 'MMelisCmsSlider_slider_new';
-				modalUrl 	= 'melis/MelisCmsSlider/MelisCmsSliderDetails/renderModal';
+				modalUrl 	= '/melis/MelisCmsSlider/MelisCmsSliderDetails/renderModal';
 				
 				// requesitng to create modal and display after
 				melisHelper.createModal(zoneId, melisKey, false, {'sliderId': sliderId}, modalUrl, function() {
@@ -88,7 +88,7 @@ $(function(){
 		});
 		
 		$body.on("click", "#saveNewSlider", function() {
-			var ajaxUrl 	= 'melis/MelisCmsSlider/MelisCmsSliderList/saveSlider',
+			var ajaxUrl 	= '/melis/MelisCmsSlider/MelisCmsSliderList/saveSlider',
 				dataString 	= $('#sliderForm').serializeArray();
 
 			melisCoreTool.pending('#saveNewSlider');
@@ -115,7 +115,7 @@ $(function(){
 		});
 		
 		$body.on("click", "#saveSliderDetails", function() {
-			var ajaxUrl 	= 'melis/MelisCmsSlider/MelisCmsSliderDetails/saveDetailsForm',
+			var ajaxUrl 	= '/melis/MelisCmsSlider/MelisCmsSliderDetails/saveDetailsForm',
 				sliderId 	= $('form#sliderDetailsForm input[name=mcsdetail_mcslider_id]').val(),
 				tmpForm 	= $('#sliderDetailsForm').get(0),
 				sliderData 	= new FormData(tmpForm);
@@ -169,7 +169,7 @@ $(function(){
 			var $this 		= $(this),
 				detailsId 	= $this.closest('tr').attr('id'),
 				sliderId 	= $this.closest('tr').data('sliderid'),
-				ajaxUrl 	= 'melis/MelisCmsSlider/MelisCmsSliderDetails/deleteDetails',
+				ajaxUrl 	= '/melis/MelisCmsSlider/MelisCmsSliderDetails/deleteDetails',
 				dataString 	= [];
 
 				dataString.push({
@@ -210,7 +210,7 @@ $(function(){
 		$body.on("click", ".sliderDelete", function() { 
 			var $this 		= $(this),
 				sliderId 	= $(this).closest('tr').attr('id'),
-				ajaxUrl 	= 'melis/MelisCmsSlider/MelisCmsSliderList/deleteSlider',
+				ajaxUrl 	= '/melis/MelisCmsSlider/MelisCmsSliderList/deleteSlider',
 				dataString 	= [];
 
 				dataString.push({

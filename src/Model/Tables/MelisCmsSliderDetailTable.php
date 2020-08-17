@@ -9,22 +9,29 @@
 
 namespace MelisCmsSlider\Model\Tables;
 
-use Zend\Db\TableGateway\TableGateway;
+use Laminas\Db\TableGateway\TableGateway;
+use MelisEngine\Model\Tables\MelisGenericTable;
 
-class MelisCmsSliderDetailTable extends MelisEcomGenericTable 
+class MelisCmsSliderDetailTable extends MelisGenericTable
 {
-    protected $tableGateway;
-    protected $idField;
-    
-    public function __construct(TableGateway $tableGateway)
+    /**
+     * Model table
+     */
+    const TABLE = 'melis_cms_slider_details';
+
+    /**
+     * Table primary key
+     */
+    const PRIMARY_KEY = 'mcsdetail_id';
+
+    public function __construct()
     {
-        parent::__construct($tableGateway);
-        $this->idField = 'mcsdetail_id';
+        $this->idField = self::PRIMARY_KEY;
     }
-    
+
     public function getSliderDetailsByOrder($sliderId, $status = null)
     {
-        $select = $this->tableGateway->getSql()->select();
+        $select = $this->getTableGateway()->getSql()->select();
         $clause = array();
         
         $select->where('mcsdetail_mcslider_id ='.$sliderId);
@@ -34,21 +41,20 @@ class MelisCmsSliderDetailTable extends MelisEcomGenericTable
         
         $select->order('mcsdetail_order ASC');
         
-        $resultData = $this->tableGateway->selectWith($select);
+        $resultData = $this->getTableGateway()->selectWith($select);
         
         return $resultData;
     }
     
     public function getLastOrderNum($sliderId)
     {
-        $select = $this->tableGateway->getSql()->select();
+        $select = $this->getTableGateway()->getSql()->select();
         $select->where('mcsdetail_mcslider_id ='.$sliderId);
         $select->order('mcsdetail_order DESC');
         $select->limit(1);
     
-        $resultData = $this->tableGateway->selectWith($select);
+        $resultData = $this->getTableGateway()->selectWith($select);
     
         return $resultData;
     }
-    
 }

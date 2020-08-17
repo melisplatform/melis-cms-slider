@@ -1,12 +1,19 @@
-<?php 
+<?php
 
-return array(
-	'plugins' => array(
-		'microservice' => array(
+/**
+ * Melis Technology (http://www.melistechnology.com)
+ *
+ * @copyright Copyright (c) 2015 Melis Technology (http://www.melistechnology.com)
+ *
+ */
+
+return [
+	'plugins' => [
+		'microservice' => [
 			//Module Name
-			'MelisCmsSlider' => array( 
+			'MelisCmsSlider' => [
 				//MelisCmsSliderService.php
-				'MelisCmsSliderService' => array(
+				'MelisCmsSliderService' => [
 					/**
 					 * getSliderList method
 					 * @param int Start
@@ -14,362 +21,362 @@ return array(
 					 * @param varchar order by
 					 * @param varchar search
 					 */
-					'getSliderList' => array(
-						'attributes' => array(
+					'getSliderList' => [
+						'attributes' => [
 							'name'	=> 'microservice_form',
 							'id'	=> 'microservice_form',
 							'method'=> 'POST',
 							'action'=> $_SERVER['REQUEST_URI'],
-						),
-						'hydrator' => 'Zend\Stdlib\Hydrator\ArraySerializable',
-						'elements' => array(
-							array(
-								'spec' => array(
+						],
+						'hydrator' => 'Laminas\Hydrator\ArraySerializable',
+						'elements' => [
+							[
+								'spec' => [
 									'name' => 'start',
 									'type' => 'Text',
-									'options' => array(
+									'options' => [
 										'label' => 'start',
-									),
-									'attributes' => array(
+									],
+									'attributes' => [
 										'id' => 'start',
 										'value' => '',
 										'class' => '',
 										'placeholder' => '0',
 										'data-type' => 'int'
-									),
-								),
-							),
-							array(
-								'spec' => array(
+									],
+								],
+							],
+							[
+								'spec' => [
 									'name' => 'limit',
 									'type' => 'Text',
-									'options' => array(
+									'options' => [
 										'label' => 'limit',
-									),
-									'attributes' => array(
+									],
+									'attributes' => [
 										'id' => 'limit',
 										'value' => '',
 										'class' => '',
 										'placeholder' => '5',
 										'data-type' => 'int'
-									),
-								),
-							),
-							array(
-								'spec' => array(
+									],
+								],
+							],
+							[
+								'spec' => [
 									'name' => 'order',
 									'type' => 'Text',
-									'options' => array(
+									'options' => [
 										'label' => 'order',
-									),
-									'attributes' => array(
+									],
+									'attributes' => [
 										'id' => 'order',
 										'value' => '',
 										'class' => '',
 										'placeholder' => 'mcslide_id',
 										'data-type' => 'string'
-									),
-								),
-							),
-							array(
-								'spec' => array(
+									],
+								],
+							],
+							[
+								'spec' => [
 									'name' => 'search',
 									'type' => 'Text',
-									'options' => array(
+									'options' => [
 										'label' => 'search',
-									),
-									'attributes' => array(
+									],
+									'attributes' => [
 										'id' => 'search',
 										'value' => '',
 										'class' => '',
 										'placeholder' => 'search',
 										'data-type' => 'string'
-									),
-								),
-							),
-						),
-						'input_filter' => array(
-							'start' => array(
+									],
+								],
+							],
+						],
+						'input_filter' => [
+							'start' => [
 								'name' => 'start',
 								'required' => false,
-								'validators' => array(
-									array(
+								'validators' => [
+									[
 										'name' => 'NotEmpty',
-										'options' => array(
-											'message' => array(
-												\Zend\Validator\NotEmpty::IS_EMPTY => 'Please enter start'
-											),
-										),
-									),
-								),
-								'filters' => array(
-									array('name' => 'StripTags'),
-									array('name' => 'StringTrim')
-								),
-							),
-							'limit' => array(
+										'options' => [
+											'message' => [
+												\Laminas\Validator\NotEmpty::IS_EMPTY => 'Please enter start'
+											],
+										],
+									],
+								],
+								'filters' => [
+									['name' => 'StripTags'],
+									['name' => 'StringTrim']
+								],
+							],
+							'limit' => [
 								'name' => 'limit',
 								'required' => false,
-								'validators' => array(
-									array(
+								'validators' => [
+									[
 										'name' => 'NotEmpty',
-										'options' => array(
-											'message' => array(
-												\Zend\Validator\NotEmpty::IS_EMPTY => 'Please enter limit'
-											),
-										),
-									),
-								),
-								'filters' => array(
-									array('name' => 'StripTags'),
-									array('name' => 'StringTrim')
-								),
-							),
-							'order' => array(
+										'options' => [
+											'message' => [
+												\Laminas\Validator\NotEmpty::IS_EMPTY => 'Please enter limit'
+											],
+										],
+									],
+								],
+								'filters' => [
+									['name' => 'StripTags'],
+									['name' => 'StringTrim']
+								],
+							],
+							'order' => [
 								'name' => 'order',
 								'required' => false,
-								'validators' => array(
-									array(
+								'validators' => [
+									[
 										'name' => 'NotEmpty',
-										'options' => array(
-											'message' => array(
-												\Zend\Validator\NotEmpty::IS_EMPTY => 'Please enter order'
-											),
-										),
-									),
-								),
-								'filters' => array(
-									array('name' => 'StripTags'),
-									array('name' => 'StringTrim')
-								),
-							),
-						),
-					),
+										'options' => [
+											'message' => [
+												\Laminas\Validator\NotEmpty::IS_EMPTY => 'Please enter order'
+											],
+										],
+									],
+								],
+								'filters' => [
+									['name' => 'StripTags'],
+									['name' => 'StringTrim']
+								],
+							],
+						],
+					],
 					/**
 					 *  method getSlider
 					 * 	@param $sliderId
 					 * 	@param $status
 					 */
-					'getSlider' => array(
-						'attributes' => array(
+					'getSlider' => [
+						'attributes' => [
 							'name' => 'microservice_form',
 							'id'   => 'microservice_form',
 							'method' => 'POST',
 							'action' => $_SERVER['REQUEST_URI']
-						),
-						'hydrator' => 'Zend\Stdlib\Hydrator\ArraySerializable',
-						'elements' => array(
-							array(
-								'spec' => array(
+						],
+						'hydrator' => 'Laminas\Hydrator\ArraySerializable',
+						'elements' => [
+							[
+								'spec' => [
 									'name' => 'sliderId',
 									'type' => 'Text',
-									'options' => array(
+									'options' => [
 										'label' => 'sliderId',
-									),
-									'attributes' => array(
+									],
+									'attributes' => [
 										'id' => 'sliderId',
 										'value' => '',
 										'class' => '',
 										'placeholder' => 'Enter sliderId',
 										'data-type' => 'int'
-									),
-								),
-							),
-							array(
-								'spec' => array(
+									],
+								],
+							],
+							[
+								'spec' => [
 									'name' => 'status',
 									'type' => 'Text',
-									'options' => array(
+									'options' => [
 										'label' => 'status',
-									),
-									'attributes' => array(
+									],
+									'attributes' => [
 										'id' => 'status',
 										'value' => '',
 										'class' => '',
 										'placeholder' => '1',
 										'data-type' => 'bool'
-									),
-								),
-							),
-						),
-						'input_filter' => array(
-							'sliderId' => array(
+									],
+								],
+							],
+						],
+						'input_filter' => [
+							'sliderId' => [
 								'name' => 'sliderId',
 								'required' => true,
-								'validators' => array(
-									array(
+								'validators' => [
+									[
 										'name' => 'IsInt',
-										'options' => array(
-											'message' => array(
-												\Zend\I18n\Validator\IsInt::INVALID => 'Slider Id must be an integer'
-											),
-										),
-									),
-								),
-								'filters' => array(
-									array('name' => 'StripTags'),
-									array('name' => 'StringTrim')
-								),
-							),
-							'status' => array(
+										'options' => [
+											'message' => [
+												\Laminas\I18n\Validator\IsInt::INVALID => 'Slider Id must be an integer'
+											],
+										],
+									],
+								],
+								'filters' => [
+									['name' => 'StripTags'],
+									['name' => 'StringTrim']
+								],
+							],
+							'status' => [
 								'name' => 'status',
 								'required' => false,
-								'validators' => array(
-									array(
+								'validators' => [
+									[
 										'name' => 'NotEmpty',
-										'option' => array(
-											'message' => array(
-												\Zend\Validator\NotEmpty::IS_EMPTY => 'Please enter status'
-											),
-										),
-									),
-								),
-								'filters' => array(
-									array('name' => 'StripTags'),
-									array('name' => 'StringTrim')
-								),
-							),
-						),
-					),
+										'option' => [
+											'message' => [
+												\Laminas\Validator\NotEmpty::IS_EMPTY => 'Please enter status'
+											],
+										],
+									],
+								],
+								'filters' => [
+									['name' => 'StripTags'],
+									['name' => 'StringTrim']
+								],
+							],
+						],
+					],
 					/**
 					 * 	method getSliderDetails
 					 *	@param sliderDetailId
 					 */
-					'getSliderDetails' => array(
-						'attributes' => array(
+					'getSliderDetails' => [
+						'attributes' => [
 							'name' => 'microservice_form',
 							'id' => 'microservice_form',
 							'method' => 'POST',
 							'action' => $_SERVER['REQUEST_URI']
-						),
-						'hydrator' => 'Zend\Stdlib\Hydrator\ArraySerializable',
-						'elements' => array(
-							array(
-								'spec' => array(
+						],
+						'hydrator' => 'Laminas\Hydrator\ArraySerializable',
+						'elements' => [
+							[
+								'spec' => [
 									'name' => 'sliderDetailId',
 									'type' => 'Text',
-									'options' => array(
+									'options' => [
 										'label' => 'sliderDetailId'
-									),
-									'attributes' => array(
+									],
+									'attributes' => [
 										'id' => 'sliderDetailId',
 										'value' => '',
 										'class' => '',
 										'placeholder' => '66',
 										'data-type' => 'int'
-									),
-								),
-							),
-						),
-						'input_filter' => array(
-							'sliderDetailId' => array(
+									],
+								],
+							],
+						],
+						'input_filter' => [
+							'sliderDetailId' => [
 								'name' => 'sliderDetailId',
 								'required' => true,
-								'validators' => array(
-									array(
+								'validators' => [
+									[
 										'name' => 'NotEmpty',
-										'option' => array(
-											'messages' => array(
-												\Zend\Validator\NotEmpty::IS_EMPTY => 'Please enter sliderDetailId'
-											),
-										),
-									),
-								),
-								'filters' => array(
-									array('name' => 'StripTags'),
-									array('name' => 'StringTrim')
-								),
-							),
-						),
-					),
+										'option' => [
+											'messages' => [
+												\Laminas\Validator\NotEmpty::IS_EMPTY => 'Please enter sliderDetailId'
+											],
+										],
+									],
+								],
+								'filters' => [
+									['name' => 'StripTags'],
+									['name' => 'StringTrim']
+								],
+							],
+						],
+					],
 					/**
 					 *  method getSliderByPageId
 					 * 	@param $pageId
 					 * 	@param $status
 					 */
-					'getSliderByPageId' => array(
-						'attributes' => array(
+					'getSliderByPageId' => [
+						'attributes' => [
 							'name' => 'microservice_form',
 							'id'   => 'microservice_form',
 							'method' => 'POST',
 							'action' => $_SERVER['REQUEST_URI']
-						),
-						'hydrator' => 'Zend\Stdlib\Hydrator\ArraySerializable',
-						'elements' => array(
-							array(
-								'spec' => array(
+						],
+						'hydrator' => 'Laminas\Hydrator\ArraySerializable',
+						'elements' => [
+							[
+								'spec' => [
 									'name' => 'pageId',
 									'type' => 'Text',
-									'options' => array(
+									'options' => [
 										'label' => 'pageId',
-									),
-									'attributes' => array(
+									],
+									'attributes' => [
 										'id' => 'pageId',
 										'value' => '',
 										'class' => '',
 										'placeholder' => '1',
 										'data-type' => 'int'
-									),
-								),
-							),
-							array(
-								'spec' => array(
+									],
+								],
+							],
+							[
+								'spec' => [
 									'name' => 'status',
 									'type' => 'Text',
-									'options' => array(
+									'options' => [
 										'label' => 'status',
-									),
-									'attributes' => array(
+									],
+									'attributes' => [
 										'id' => 'status',
 										'value' => '',
 										'class' => '',
 										'placeholder' => '1',
 										'data-type' => 'bool'
-									),
-								),
-							),
-						),
-						'input_filter' => array(
-							'pageId' => array(
+									],
+								],
+							],
+						],
+						'input_filter' => [
+							'pageId' => [
 								'name' => 'pageId',
 								'required' => true,
-								'validators' => array(
-									array(
+								'validators' => [
+									[
 										'name' => 'NotEmpty',
-										'option' => array(
-											'messages' => array(
-												\Zend\Validator\NotEmpty::IS_EMPTY => 'Please enter pageId'
-											),
-										),
-									),
-								),
-								'filters' => array(
-									array('name' => 'StripTags'),
-									array('name' => 'StringTrim')
-								),
-							),
-							'sliderId' => array(
+										'option' => [
+											'messages' => [
+												\Laminas\Validator\NotEmpty::IS_EMPTY => 'Please enter pageId'
+											],
+										],
+									],
+								],
+								'filters' => [
+									['name' => 'StripTags'],
+									['name' => 'StringTrim']
+								],
+							],
+							'sliderId' => [
 								'name' => 'status',
 								'required' => false,
-								'validators' => array(
-									array(
+								'validators' => [
+									[
 										'name' => 'NotEmpty',
-										'option' => array(
-											'messages' => array(
-												\Zend\Validator\NotEmpty::IS_EMPTY => 'Please enter status'
-											),
-										),
-									),
-								),
-								'filters' => array(
-									array('name' => 'StripTags'),
-									array('name' => 'StringTrim')
-								),
-							),
-						),
-					),
-				),
-			),
-		),
-	),
-);
+										'option' => [
+											'messages' => [
+												\Laminas\Validator\NotEmpty::IS_EMPTY => 'Please enter status'
+											],
+										],
+									],
+								],
+								'filters' => [
+									['name' => 'StripTags'],
+									['name' => 'StringTrim']
+								],
+							],
+						],
+					],
+				],
+			],
+		],
+	],
+];
