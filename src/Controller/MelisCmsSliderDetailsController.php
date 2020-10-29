@@ -546,7 +546,7 @@ class MelisCmsSliderDetailsController extends MelisAbstractActionController
         $melisSliderSvc = $this->getServiceManager()->get('MelisCmsSliderService');
 
         if($this->getRequest()->isPost()) {
-            $postValues = get_object_vars($this->getRequest()->getPost());
+            $postValues = $this->getRequest()->getPost()->toArray();
             $sliderDetailsId = (int) $postValues['detailsId'];
             $tmp = $melisSliderSvc->getSliderDetails($sliderDetailsId);
             if($melisSliderSvc->deleteSliderDetails($sliderDetailsId)){
@@ -593,7 +593,7 @@ class MelisCmsSliderDetailsController extends MelisAbstractActionController
             $sliderId = $this->getRequest()->getPost('sliderId');
 
             $sortOrder = $this->getRequest()->getPost('order');
-            $sortOrder = $sortOrder[0]['dir'];
+//            $sortOrder = $sortOrder[0]['dir'];
 
             $selCol = $this->getRequest()->getPost('order');
 //             $selCol = $colId[$selCol[0]['column']];
@@ -603,8 +603,8 @@ class MelisCmsSliderDetailsController extends MelisAbstractActionController
             $start = (int) $this->getRequest()->getPost('start');
             $length =  (int) $this->getRequest()->getPost('length');
 
-            $search = $this->getRequest()->getPost('search');
-            $search = $search['value'];
+//            $search = $this->getRequest()->getPost('search');
+//            $search = $search['value'];
 
             $postValues = $this->getRequest()->getPost();
 
@@ -666,7 +666,7 @@ class MelisCmsSliderDetailsController extends MelisAbstractActionController
         $sliderSvc = $this->getServiceManager()->get('MelisCmsSliderService');
 
         if($request->isPost()) {
-            $postValues = get_object_vars($request->getPost());
+            $postValues = $request->getPost()->toArray();
 
             $sliderOrder = explode(',', $postValues['sliderOrderData']);
 

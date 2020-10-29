@@ -286,7 +286,7 @@ class MelisCmsSliderListController extends MelisAbstractActionController
         $sliderSvc = $this->getServiceManager()->get('MelisCmsSliderService');
         
         if($this->getRequest()->isPost()){
-            $postValues = get_object_vars($this->getRequest()->getPost());
+            $postValues = $this->getRequest()->getPost()->toArray();
             
             // Preparing Log type code
             if (!empty($postValues['mcslide_id'])){
@@ -361,7 +361,7 @@ class MelisCmsSliderListController extends MelisAbstractActionController
         $confSlidersUpload = $melisCoreConfig->getItem('MelisCmsSlider/conf/sliders');
 
         if ($this->getRequest()->isPost()) {
-            $postValues = get_object_vars($this->getRequest()->getPost());
+            $postValues = $this->getRequest()->getPost()->toArray();
             $sliderId = $postValues['sliderId'];
             $fileUploadPath = null;
             //attempt to delete files first before deleting db data
