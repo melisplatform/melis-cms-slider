@@ -54,6 +54,9 @@ return [
                                 'options' => [
                                     'label' => 'tr_MelisCmsSliderDetails_list_col_desc1',
                                     'tooltip' => 'tr_MelisCmsSliderDetails_list_col_desc1 tooltip',
+                                    'templates' => '/melis/MelisCore/MelisTinyMce/getTinyTemplates',
+                                    'site_id' => '',
+                                    'prefix' => '',
                                 ],
                                 'attributes' => [
                                     'id' => 'mcsdetail_sub2',
@@ -68,6 +71,9 @@ return [
                                 'options' => [
                                     'label' => 'tr_MelisCmsSliderDetails_list_col_desc2',
                                     'tooltip' => 'tr_MelisCmsSliderDetails_list_col_desc2 tooltip',
+                                    'templates' => '/melis/MelisCore/MelisTinyMce/getTinyTemplates',
+                                    'site_id' => '',
+                                    'prefix' => '',
                                 ],
                                 'attributes' => [
                                     'id' => 'mcsdetail_sub3',

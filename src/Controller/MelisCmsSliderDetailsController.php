@@ -290,6 +290,11 @@ class MelisCmsSliderDetailsController extends MelisAbstractActionController
         $form = $factory->createForm($appConfigForm);
         $title    = $this->getTool()->getTranslation('tr_MelisCmsSlider_detail_header_modal_add');
         if(!empty($detailId)){
+            $sliderData = $sliderSvc->getSlider($sliderId)->getSlider();
+            $siteId = $this->getSiteIdByPageId($sliderData->mcslide_page_id);
+            // set site id for minitemplates
+            $form->get('mcsdetail_sub2')->setOption('site_id', $siteId);
+            $form->get('mcsdetail_sub3')->setOption('site_id', $siteId);
             $data = (array)$details;
             $file = $details->mcsdetail_img;
             $title = $this->getTool()->getTranslation('tr_MelisCmsSlider_list_header_modal_edit');
@@ -791,5 +796,10 @@ class MelisCmsSliderDetailsController extends MelisAbstractActionController
 
         return $melisTool;
 
+    }
+
+    private function getSiteIdByPageId($pageId)
+    {
+        return $this->getServiceManager()->get('MelisEnginePage')->getDatasPage($pageId)->getMelisTemplate()->tpl_site_id ?? null;
     }
 }
