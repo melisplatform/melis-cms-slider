@@ -81,9 +81,9 @@ return array(
                                                 'open_tool' => array(
                                                     'tool_name' => 'tr_MelisCmsSlider_manager',
                                                     'tooltip' => 'tr_MelisCmsSlider_manager edit',
-                                                    'tool_icon' => 'fa-columns',
-                                                    'tool_id' => 'id_MelisCmsSlider_list',
-                                                    'tool_meliskey' => 'MelisCmsSlider_left_menu',
+                                                    'tool_icon' => 'fa-image',                                                  
+                                                    'tool_id' => 'id_meliscms_slider_tools_section',
+                                                    'tool_meliskey' => 'meliscms_slider_tools_section',
                                                 ),
                                             ),
                                             'attributes' => array(
