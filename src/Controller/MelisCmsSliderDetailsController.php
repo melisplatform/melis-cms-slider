@@ -497,7 +497,7 @@ class MelisCmsSliderDetailsController extends MelisAbstractActionController
                                 if ($sliderDetailsId) {
                                     if (!empty($sliderDetailsData)) {
                                         // if the file exists, delete the file after update
-                                        if (file_exists('public' . $sliderDetailsData->mcsdetail_img)) {
+                                        if ($sliderDetailsData->mcsdetail_img && file_exists('public' . $sliderDetailsData->mcsdetail_img)) {
                                             unlink('public' . $sliderDetailsData->mcsdetail_img);
                                         }
                                     }
