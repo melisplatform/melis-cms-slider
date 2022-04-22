@@ -380,6 +380,50 @@ return [
                         ],
                     ],
                 ],
+                //for blog use
+                'meliscmsslider_select_slider_blog_form' => [
+                    'attributes' => [
+                        'name' => 'selectSliderForm',
+                        'id' => 'selectSliderForm',
+                        'method' => 'POST',
+                        'action' => '',
+                    ],
+                    'hydrator'  => 'Laminas\Hydrator\ArraySerializableHydrator',
+                    'elements' => [
+                        [
+                            'spec' => [
+                                'name' => 'cblog_slider_id',
+                                'type' => 'CmsSliderSelect',
+                                'options' => [
+                                    'label' => 'tr_MelisCmsSliderDetails_slider_name',
+                                    'tooltip' => 'tr_MelisCmsSliderDetails_slider_name tooltip',
+                                    'empty_option' => 'tr_meliscmsliderdetails_common_label_choose',
+                                    'disable_inarray_validator' => true,
+                                ],
+                                'attributes' => [
+                                    'id' => 'cblog_slider_id',
+                                ],
+                            ],
+                        ],
+                        [
+                            'spec' => [
+                                'name' => 'mcslide_id',
+                                'type' => 'hidden',
+                            ],
+                        ],
+                    ],
+                    'input_filter' => [
+                        'cblog_slider_id' => [
+                            'name'     => 'cblog_slider_id',
+                            'required' => false,
+                            'validators' => [],
+                            'filters'  => [
+                                ['name' => 'StripTags'],
+                                ['name' => 'StringTrim'],
+                            ],
+                        ],
+                    ],
+                ],
             ],
         ],
     ],
