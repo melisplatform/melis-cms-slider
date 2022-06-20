@@ -351,6 +351,31 @@ class MelisCmsSliderDetailsController extends MelisAbstractActionController
         return $view;
     }
 
+    /*for CMS Blog use*/
+    public function renderSelectSliderBlogAction()
+    {        
+        $blogId = (int) $this->params()->fromQuery('blogId', '');
+        $melisCoreConfig = $this->getServiceManager()->get('MelisCoreConfig');
+        $appConfigForm = $melisCoreConfig->getFormMergedAndOrdered('MelisCmsSlider/forms/meliscmsslider_select_slider_blog_form','meliscmsslider_select_slider_blog_form');
+        $factory = new Factory();
+        $formElements = $this->getServiceManager()->get('FormElementManager');
+        $factory->setFormElementManager($formElements);
+        $form = $factory->createForm($appConfigForm);
+        if(!empty($blogId)){
+            $blogSvc = $this->getServiceManager()->get('MelisCmsBlogService');
+            $data = $blogSvc->getBlogById($blogId);
+            if (!empty($data) && is_array($data)) {
+                $data = $data[0];
+            }
+            $form->setData((array) $data);
+        }
+        $view = new ViewModel();
+        $view->setTemplate('melis-cms-slider/melis-cms-slider-details/render-select-slider');
+        $melisKey = $this->params()->fromRoute('melisKey', '');
+        $view->melisKey = $melisKey;
+        $view->form = $form;
+        return $view;
+    }
     public function removeFileName($fileName)
     {
         $file = pathinfo($fileName, PATHINFO_FILENAME);
@@ -497,7 +522,7 @@ class MelisCmsSliderDetailsController extends MelisAbstractActionController
                                 if ($sliderDetailsId) {
                                     if (!empty($sliderDetailsData)) {
                                         // if the file exists, delete the file after update
-                                        if (file_exists('public' . $sliderDetailsData->mcsdetail_img)) {
+                                        if ($sliderDetailsData->mcsdetail_img && file_exists('public' . $sliderDetailsData->mcsdetail_img)) {
                                             unlink('public' . $sliderDetailsData->mcsdetail_img);
                                         }
                                     }

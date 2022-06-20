@@ -409,6 +409,18 @@ return [
                         'action' => 'render-select-slider',
                     ],
                 ],
+                'meliscmsslider_select_slider_blog' => [
+                    'conf' => [
+                        'id' => 'id_meliscmsslider_select_slider_blog',
+                        'name' => 'tr_meliscmsslider_select_slider_blog',
+                        'melisKey' => 'meliscmsslider_select_slider_blog',
+                    ],
+                    'forward' => [
+                        'module' => 'MelisCmsSlider',
+                        'controller' => 'MelisCmsSliderDetails',
+                        'action' => 'render-select-slider-blog',
+                    ],
+                ],
                 'MelisCmsSlider_modal' => [
                     'conf' => [
                         'id' => 'id_MelisCmsSlider_modal',
