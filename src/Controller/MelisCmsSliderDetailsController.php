@@ -830,6 +830,9 @@ class MelisCmsSliderDetailsController extends MelisAbstractActionController
 
     private function getSiteIdByPageId($pageId)
     {
-        return $this->getServiceManager()->get('MelisEnginePage')->getDatasPage($pageId)->getMelisTemplate()->tpl_site_id ?? null;
+        if ($pageId) {
+            return $this->getServiceManager()->get('MelisEnginePage')->getDatasPage($pageId)->getMelisTemplate()->tpl_site_id ?? null;
+        }
+        return null;
     }
 }
