@@ -622,7 +622,7 @@ class MelisCmsSliderDetailsController extends MelisAbstractActionController
         $tableData = array();
 
         $sliderSvc = $this->getServiceManager()->get('MelisCmsSliderService');
-        $img = '<img src="%s" width="50" height="50">';
+        $img = '<img src="%s" width="50" height="auto">';
         if($this->getRequest()->isPost()) {
             $colId = array_keys($this->getTool()->getColumns());
             $sliderId = $this->getRequest()->getPost('sliderId');
