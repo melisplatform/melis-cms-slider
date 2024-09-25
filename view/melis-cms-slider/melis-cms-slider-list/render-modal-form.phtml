@@ -11,8 +11,10 @@ if (!empty($this->zoneconfig['conf']['id']))
 			<div class="widget widget-tabs widget-tabs-double widget-tabs-responsive margin-none border-none">
                 <div class="widget-head">
                 	<ul class="nav nav-tabs">
-                		<li class="active"><a href="#<?php echo $this->zoneconfig['conf']['id'] ?>" class="glyphicons notes" data-toggle="tab" aria-expanded="true"><i></i><?php echo $this->title; ?> 
-                		</a></li>
+                		<li class="nav-item active">
+							<a data-bs-target="#<?php echo $this->zoneconfig['conf']['id'] ?>" href="#<?php echo $this->zoneconfig['conf']['id'] ?>" class="nav-link glyphicons notes" data-bs-toggle="tab" aria-expanded="true"><i></i><?php echo $this->title; ?> 
+                			</a>
+						</li>
             		</ul>
         		</div>
         		<div class="widget-body innerAll inner-2x">
@@ -20,15 +22,13 @@ if (!empty($this->zoneconfig['conf']['id']))
         				<div class="tab-pane active" <?php echo $id ?>>
                             <div class="row">
                             	<div class="col-md-12" id="sliderNew">
-                            		
-                                          <?php 
-                                          echo $this->form()->openTag($this->form);
-                                          echo $this->melisFieldCollection($this->form);
-                                          echo $this->form()->closeTag();
-                                          ?>
-                                          	            
+									<?php 
+										echo $this->form()->openTag($this->form);
+										echo $this->melisFieldCollection($this->form);
+										echo $this->form()->closeTag();
+									?>        
                                  	<div class="footer-modal d-flex flex-row justify-content-between">
-                                 		<button data-dismiss="modal" class="btn btn-danger"><i class="fa fa-times"></i> <?php echo $this->translate('tr_MelisCmsSliderDetails_form_btn_cancel')?></button>
+                                 		<button data-bs-dismiss="modal" class="btn btn-danger"><i class="fa fa-times"></i> <?php echo $this->translate('tr_MelisCmsSliderDetails_form_btn_cancel')?></button>
                                  		<button class="btn btn-success" id="saveNewSlider" data-detailid="<?= $this->detailid?>"><i class="fa fa-save"></i>  <?php echo $this->translate('tr_MelisCmsSliderDetails_form_btn_save') ?></button>
                                  	</div>                                 	
                             	</div>

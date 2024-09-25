@@ -11,8 +11,10 @@ if (!empty($this->zoneconfig['conf']['id']))
 			<div class="widget widget-tabs widget-tabs-double widget-tabs-responsive margin-none border-none">
                 <div class="widget-head">
                 	<ul class="nav nav-tabs">
-                		<li class="active"><a href="#<?php echo $this->zoneconfig['conf']['id'] ?>" class="glyphicons notes" data-toggle="tab" aria-expanded="true"><i></i><?php echo $this->title; ?>  
-                		</a></li>
+                		<li class="nav-item active">
+                            <a href="#<?php echo $this->zoneconfig['conf']['id'] ?>" class="nav-link glyphicons notes" data-bs-toggle="tab" aria-expanded="true"><i></i><?php echo $this->title; ?>  
+                            </a>
+                        </li>
             		</ul>
         		</div>
         		<div class="widget-body innerAll inner-2x">
@@ -30,24 +32,24 @@ if (!empty($this->zoneconfig['conf']['id']))
                                     <script type="text/javascript">
                                     	$("#<?= $id ?>_mcsdetail_status").bootstrapSwitch();
                                     </script>	
-                                          <?php 
-                                          echo $this->form()->openTag($this->form);
-                                          echo $this->melisFieldCollection($this->form);
-                                          echo $this->form()->closeTag();
-                                          ?>
-                                          	<script type="text/javascript">
-                                            	$(":file").filestyle({buttonBefore: true, input: true, buttonText: '<?php echo $this->translate('tr_MelisCmsSliderDetails_input_file')?>', placeholder : '<?= str_replace("'", "\'", $this->file); ?>'});
-                                            </script>
-                                          	<div class="progressContent hidden">
-                                                <?= $this->translate('tr_MelisCmsSliderDetails_save_upload'); ?>
-                                                <div class="progress">
-                                                	<span class="status float-right text-danger hidden">0%</span>
-                                                  <div class="progress-bar progress-bar-danger progress-bar-striped" role="progressbar" aria-valuenow=0 aria-valuemin="0" aria-valuemax="100" style="width: 0%">
-                                                  </div>
-                                                </div><br/>
-                        					</div>                     
+                                    <?php 
+                                        echo $this->form()->openTag($this->form);
+                                        echo $this->melisFieldCollection($this->form);
+                                        echo $this->form()->closeTag();
+                                    ?>
+                                    <script type="text/javascript">
+                                        $(":file").filestyle({buttonBefore: true, input: true, buttonText: '<?php echo $this->translate('tr_MelisCmsSliderDetails_input_file')?>', placeholder : '<?php if($this->file != null) { echo str_replace("'", "\'", $this->file); } ?>'});
+                                    </script>
+                                    <div class="progressContent hidden">
+                                        <?= $this->translate('tr_MelisCmsSliderDetails_save_upload'); ?>
+                                        <div class="progress">
+                                            <span class="status float-right text-danger hidden">0%</span>
+                                            <div class="progress-bar progress-bar-danger progress-bar-striped" role="progressbar" aria-valuenow=0 aria-valuemin="0" aria-valuemax="100" style="width: 0%">
+                                            </div>
+                                        </div><br/>
+                                    </div>                     
                                  	<div class="footer-modal d-flex flex-row justify-content-between">
-                                 		<button data-dismiss="modal" class="btn btn-danger"><i class="fa fa-times"></i> <?php echo $this->translate('tr_MelisCmsSliderDetails_form_btn_cancel')?></button>
+                                 		<button data-bs-dismiss="modal" class="btn btn-danger"><i class="fa fa-times"></i> <?php echo $this->translate('tr_MelisCmsSliderDetails_form_btn_cancel')?></button>
                                  		<button class="btn btn-success" id="saveSliderDetails" data-detailid="<?= $this->detailid?>"><i class="fa fa-save"></i>  <?php echo $this->translate('tr_MelisCmsSliderDetails_form_btn_save') ?></button>
                                  	</div>                                 	
                             	</div>

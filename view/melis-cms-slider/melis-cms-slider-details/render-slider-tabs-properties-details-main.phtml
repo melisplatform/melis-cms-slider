@@ -40,11 +40,12 @@
 	<script type="text/javascript">
         // this script cannot be separated to this file since all table configuration and initialization are done here
         // render table to DataTable plugin
-        <?php echo $this->getToolDataTableConfig; ?>
+        $(function() {
+            <?php echo $this->getToolDataTableConfig; ?>
 
-        $(document).on("init.dt", function(e, settings) {
-            $("#<?= $this->sliderId?>_sliderDetails_wrapper").find(".filter-bar").hide();
+            $(document).on("init.dt", function(e, settings) {
+                $("#<?= $this->sliderId?>_sliderDetails_wrapper").find(".filter-bar").hide();
+            });
         });
-
 	</script>
 </div>
