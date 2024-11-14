@@ -12,8 +12,10 @@ $(function(){
 		//removes modal elements when clicking outside
 		$body.on("click", function (e) {
 			if ( $(e.target).hasClass('modal') ) {
-				$('#id_MMelisCmsSlider_slider_new_container').modal('hide');
-				$('#id_MelisCmsSlider_modal_form_container').modal('hide');
+				/* $('#id_MMelisCmsSlider_slider_new_container').modal('hide');
+				$('#id_MelisCmsSlider_modal_form_container').modal('hide'); */
+				melisCoreTool.hideModal("id_MMelisCmsSlider_slider_new_container");
+				melisCoreTool.hideModal("id_MelisCmsSlider_modal_form_container");
 			}
 		});
 			
@@ -101,7 +103,9 @@ $(function(){
 				encode		: true,
 			}).done(function(data){
 				if(data.success){
-						$("#id_MMelisCmsSlider_slider_new_container").modal("hide");
+						// $("#id_MMelisCmsSlider_slider_new_container").modal("hide");
+						melisCoreTool.hide("id_MMelisCmsSlider_slider_new_container");
+
 						melisHelper.melisOkNotification( data.textTitle, data.textMessage );
 						melisHelper.zoneReload("id_MelisCmsSlider_list_content_table", "MelisCmsSlider_list_content_table", {});
 						melisCore.flashMessenger();
@@ -153,7 +157,10 @@ $(function(){
 				}).done(function(data){
 					if(data.success){
 							$("div.progressContent").addClass("hidden");
-							$("#id_MelisCmsSlider_modal_form_container").modal("hide");
+
+							// $("#id_MelisCmsSlider_modal_form_container").modal("hide");
+							melisCoreTool.hideModal("id_MelisCmsSlider_modal_form_container");
+
 							melisHelper.melisOkNotification( data.textTitle, data.textMessage );
 							melisHelper.zoneReload(sliderId+"_id_MelisCmsSlider_content_tabs_properties_details", "MelisCmsSlider_content_tabs_properties_details", {'sliderId' : sliderId});
 					}else{
