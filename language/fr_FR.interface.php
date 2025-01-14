@@ -92,6 +92,8 @@
 	    'tr_MelisCmsSliderShowSliderPlugin_Description' => 'Le plugin slider affiche un slider spécifique basé sur l\'outil slider',
         'tr_MelisCmsSliderShowSliderPlugin_slider_id_invalid' => 'Invalid slider selected',
         'tr_MelisCmsSliderShowSliderPlugin_slider_id_empty'   => 'Please select a slide',
+
+        'tr_MelisCmsSliderDetails_wrong_extension  => Extensions de fichiers autorisées: jpg,jpeg,gif,png,webp',
 	    
 	);
 ?>

@@ -93,5 +93,7 @@
         'tr_MelisCmsSliderShowSliderPlugin_slider_id_invalid' => 'Invalid slider selected',
         'tr_MelisCmsSliderShowSliderPlugin_slider_id_empty'   => 'Please select a slide',
 
+        'tr_MelisCmsSliderDetails_wrong_extension'   => 'File extension allowed: jpg,jpeg,gif,png,webp',
+
 	);
 ?>
