@@ -9,6 +9,7 @@
 
 namespace MelisCmsSlider\Controller;
 
+use Laminas\Validator\File\Extension;
 use MelisCore\Controller\MelisAbstractActionController;
 use MelisCore\Service\MelisCoreToolService;
 use Laminas\File\Transfer\Adapter\Http;
@@ -431,6 +432,7 @@ class MelisCmsSliderDetailsController extends MelisAbstractActionController
             $confSlidersPath = $confSlidersUpload['imagesPath'];
 
             $uploadedFile = $this->getRequest()->getFiles()->toArray()['mcsdetail_img'];
+            $postValues = array_merge($postValues, $this->getRequest()->getFiles()->toArray());
 
             if (empty($uploadedFile['name'])) {
                 $form->setData($postValues);
@@ -537,7 +539,8 @@ class MelisCmsSliderDetailsController extends MelisAbstractActionController
                 } else {
                     $errors = $form->getMessages();
                     foreach ($errors as $keyError => $valueError) {
-                        foreach ($appConfigForm as $keyForm => $valueForm) {
+                        foreach ($appConfigForm['elements'] as $keyForm => $valueForm)
+                        {
                             if ($valueForm['spec']['name'] == $keyError &&
                                 !empty($valueForm['spec']['options']['label']))
                                 $errors[$keyError]['label'] = $valueForm['spec']['options']['label'];

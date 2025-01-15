@@ -216,6 +216,19 @@ return [
                             'name'     => 'mcsdetail_img',
                             'required' => false,
                             'validators' => [
+                                [
+                                    'name'    => 'FileExtension',
+                                    'break_chain_on_failure' => true,
+                                    'options' => [
+                                        'case' => true,
+                                        'extension' => [
+                                            'jpg','jpeg','gif','png','webp'
+                                        ],
+                                        'messages' => [
+                                            \Laminas\Validator\File\Extension::FALSE_EXTENSION => 'tr_MelisCmsSliderDetails_wrong_extension',
+                                        ]
+                                    ]
+                                ],
                             ],
                             'filters'  => [
                                 ['name' => 'StripTags'],
