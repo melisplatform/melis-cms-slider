@@ -297,15 +297,18 @@ var toolSlider = {
 };
 
 window.initSliderDetails = function(data, tblSettings) {
-	var sliderId = $("#" + tblSettings.sTableId).data("sliderid");
+	var sliderId 			= $("#" + tblSettings.sTableId).data("sliderid"),
+		sliderDetailsId 	= '#' + CSS.escape(sliderId + '_sliderDetails'),
+		$sliderDetailsTable = $(sliderDetailsId).DataTable();
 
 		data.sliderId = sliderId;
-	
-		$('#'+sliderId+'_sliderDetails').on( 'row-reorder.dt', function ( e, diff, edit ) {
+		
+		// $('#'+sliderId+'_sliderDetails')
+		$sliderDetailsTable.on( 'row-reorder.dt', function ( e, diff, edit ) {
 			var result = 'Reorder started on row: '+edit.triggerRow.data()[1]+'<br>';
 
 				for ( var i=0, ien=diff.length ; i<ien ; i++ ) {
-					var rowData = eval('$'+sliderId+'_sliderDetails').row( diff[i].node ).data();
+					var rowData = $sliderDetailsTable.row( diff[i].node ).data();
 
 						result += rowData[1]+' updated to be in position '+ diff[i].newData+' (was '+diff[i].oldData+')<br>';
 				}
