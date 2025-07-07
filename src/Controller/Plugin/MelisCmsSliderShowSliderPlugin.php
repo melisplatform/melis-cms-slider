@@ -64,7 +64,7 @@ class MelisCmsSliderShowSliderPlugin extends MelisTemplatingPlugin
     {
         // Get the parameters and config from $this->pluginFrontConfig (default > hardcoded > get > post)
         $id   = isset($this->pluginFrontConfig['sliderId']) ? $this->pluginFrontConfig['sliderId'] : null;
-        
+
         // Retrieving the Slider Data from Slider Service
         $sliderSrv = $this->getServiceManager()->get('MelisCmsSliderService');
         $sliderEntity = $sliderSrv->getSlider($id, 1);

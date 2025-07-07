@@ -34,13 +34,13 @@ class MelisCmsSliderDetailTable extends MelisGenericTable
         $select = $this->getTableGateway()->getSql()->select();
         $clause = array();
         
-        $select->where('mcsdetail_mcslider_id ='.$sliderId);
+        $select->where('mcsdetail_mcslider_id ='.(int)$sliderId);
         if(!is_null($status)){
             $select->where('mcsdetail_status ='.$status);
         }
         
         $select->order('mcsdetail_order ASC');
-        
+
         $resultData = $this->getTableGateway()->selectWith($select);
         
         return $resultData;
@@ -49,7 +49,7 @@ class MelisCmsSliderDetailTable extends MelisGenericTable
     public function getLastOrderNum($sliderId)
     {
         $select = $this->getTableGateway()->getSql()->select();
-        $select->where('mcsdetail_mcslider_id ='.$sliderId);
+        $select->where('mcsdetail_mcslider_id ='.(int)$sliderId);
         $select->order('mcsdetail_order DESC');
         $select->limit(1);
     
