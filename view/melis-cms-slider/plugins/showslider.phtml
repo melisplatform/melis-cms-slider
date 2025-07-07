@@ -7,18 +7,19 @@
 <div id="<?php echo $this->pluginId?>">
     <?php if (!empty($this->showSlider)){?>
     	<div class="container">
-            <div id="cms-slider" class="carousel slide" data-ride="carousel">
+            <!-- data-bs-ride="carousel" -->
+            <div id="cms-slider" class="carousel slide">
                 <!-- Indicators -->
               	<ol class="carousel-indicators">
-                    <li data-bs-target="#carousel-example-generic" data-slide-to="0" class="active"></li>
-                    <li data-bs-target="#carousel-example-generic" data-slide-to="1"></li>
-                    <li data-bs-target="#carousel-example-generic" data-slide-to="2"></li>
+                    <li data-bs-target="#cms-slider" data-bs-slide-to="0" class="active"></li>
+                    <li data-bs-target="#cms-slider" data-bs-slide-to="1"></li>
+                    <li data-bs-target="#cms-slider" data-bs-slide-to="2"></li>
               	</ol>
               	
                 <!-- Wrapper for slides -->
                 <div class="carousel-inner" role="listbox">
                 	<?php foreach ($this->showSlider As $key => $val){?>
-                    	<div class="item <?php echo ($key == 0) ? 'active' : ''?>">
+                    	<div class="carousel-item item <?php echo ($key == 0) ? 'active' : ''?>">
                           	<img src="<?php echo $val->mcsdetail_img?>" alt="...">
                           	<div class="carousel-caption">
                             	<h3><?php echo $val->mcsdetail_title ?> </h3>
@@ -29,13 +30,17 @@
                 </div>
                 
                 <!-- Controls -->
-                <a class="left carousel-control" href="#cms-slider" role="button" data-slide="prev">
-                    <span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span>
-                    <span class="sr-only">Previous</span>
+                <a class="left carousel-control-prev" data-bs-target="#cms-slider" role="button" data-bs-slide="prev">
+                    <!-- glyphicon glyphicon-chevron-left -->
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <!-- sr-only -->
+                    <span class="visually-hidden">Previous</span>
                 </a>
-                <a class="right carousel-control" href="#cms-slider" role="button" data-slide="next">
-                    <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
-                    <span class="sr-only">Next</span>
+                <a class="right carousel-control-next" data-bs-target="#cms-slider" role="button" data-bs-slide="next">
+                    <!-- glyphicon glyphicon-chevron-right -->
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <!-- sr-only -->
+                    <span class="visually-hidden">Next</span>
                 </a>
             </div>
         </div>
