@@ -13,13 +13,12 @@ return array(
                         'template_path' => array('MelisCmsSlider/showslider'),
                         'id' => 'showslider',
                         'sliderId' => 1,
-                        
+
                         // List the files to be automatically included for the correct display of the plugin
                         // To overide a key, just add it again in your site module
                         // To delete an entry, use the keyword "disable" instead of the file path for the same key
                         'files' => array(
-                            'css' => array(
-                            ),
+                            'css' => array(),
                             'js' => array(
                                 '/MelisCmsSlider/plugins/js/plugin.cmsSlider.init.js'
                             ),
@@ -31,8 +30,7 @@ return array(
                         'thumbnail' => '/MelisCmsSlider/plugins/images/MelisCmsSliderShowSliderPlugin_thumb.jpg',
                         'description' => 'tr_MelisCmsSliderShowSliderPlugin_Description',
                         'files' => array(
-                            'css' => array(
-                            ),
+                            'css' => array(),
                             'js' => array(
                                 '/MelisCmsSlider/plugins/js/plugin.cmsSlider.init.js'
                             ),
@@ -81,9 +79,9 @@ return array(
                                                 'open_tool' => array(
                                                     'tool_name' => 'tr_MelisCmsSlider_manager',
                                                     'tooltip' => 'tr_MelisCmsSlider_manager edit',
-                                                    'tool_icon' => 'fa-columns',
-                                                    'tool_id' => 'id_MelisCmsSlider_list',
-                                                    'tool_meliskey' => 'MelisCmsSlider_left_menu',
+                                                    'tool_icon' => 'fa-image',
+                                                    'tool_id' => 'id_meliscms_slider_tools_section',
+                                                    'tool_meliskey' => 'meliscms_slider_tools_section',
                                                 ),
                                             ),
                                             'attributes' => array(
@@ -108,8 +106,7 @@ return array(
                                                 ),
                                             ),
                                         ),
-                                        'filters'  => array(
-                                        ),
+                                        'filters'  => array(),
                                     ),
                                     'sliderId' => array(
                                         'name'     => 'sliderId',
@@ -124,15 +121,14 @@ return array(
                                                 ),
                                             ),
                                         ),
-                                        'filters'  => array(
-                                        ),
+                                        'filters'  => array(),
                                     ),
                                 )
                             )
                         )
                     ),
                 ),
-             ),
+            ),
         ),
-     ),
+    ),
 );
