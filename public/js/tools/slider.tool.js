@@ -301,11 +301,12 @@ window.initSliderDetails = function(data, tblSettings) {
 
 		data.sliderId = sliderId;
 	
-		$('#'+sliderId+'_sliderDetails').on( 'row-reorder.dt', function ( e, diff, edit ) {
+		$('#'+sliderId+'_sliderDetails').on('row-reorder.dt', function ( e, diff, edit ) {
+			var sliderDetailsTable = $('#'+sliderId+'_sliderDetails').DataTable();
 			var result = 'Reorder started on row: '+edit.triggerRow.data()[1]+'<br>';
 
 				for ( var i=0, ien=diff.length ; i<ien ; i++ ) {
-					var rowData = eval('$'+sliderId+'_sliderDetails').row( diff[i].node ).data();
+					var rowData = sliderDetailsTable.row( diff[i].node ).data();
 
 						result += rowData[1]+' updated to be in position '+ diff[i].newData+' (was '+diff[i].oldData+')<br>';
 				}

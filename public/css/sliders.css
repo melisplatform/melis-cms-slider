@@ -18,6 +18,23 @@
     float: right;
 }
 
+.dt-rowReorder-float-parent {
+    display: inline-block;
+    height: 90px !important;
+    max-width: 100% !important;
+}
+
+.dt-rowReorder-float-parent table.dt-rowReorder-float {
+    width: 100%;
+    height: 90px;
+    table-layout: auto;
+}
+
+.dt-rowReorder-float-parent tr,
+.dt-rowReorder-float-parent td {
+    height: 90px;
+}
+
 @media (max-width: 767px) {
     .is-draggable td:nth-child(2){
         cursor: move;
