@@ -160,11 +160,11 @@ defines the **slider container** — `mcslide_name` (required) and `mcslide_page
 (optional landing page). The **same modal** is reused to rename/re-point an existing
 slider. Saving goes through `saveSliderAction` → `MelisCmsSliderService::saveSlider()`.
 
-![Slider list with filters and actions](./images/slider-list.png)
+![Slider list with filters and actions](./images/meliscmsslider-tool-slider-list.png)
 *Caption: the Slider list — every slider on the platform; header Add button, limit filter,
 search box, the results table (ID, name, page id) and per-row Edit / Info / Delete actions.*
 
-![Create / rename slider modal (name + landing page id)](./images/slider-new.png)
+![Create / rename slider modal (name + landing page id)](./images/meliscmsslider-tool-slider-new.png)
 *Caption: the create/rename-slider modal — slider name and the optional associated page id.*
 
 #### b) Level 2 — inside a slider: its slides (`MelisCmsSliderDetails`)
@@ -186,7 +186,7 @@ From this slides list you can:
 - **Reorder slides**: drag-and-drop (`reOrderSliderDetailsAction` →
   `updateSliderDetailsOrdering()`, via the `mcsdetail_order` column).
 
-![Slider page — Properties tab with the slides list](./images/slider-edit-slidelist-tab-properties.png)
+![Slider page — Properties tab with the slides list](./images/meliscmsslider-tool-slider-edit-slidelist-tab-properties.png)
 *Caption: a slider's own page — Properties tab listing that slider's slides (order, id,
 status, image, title, sub1, link) with an Add-slide button and per-row Info/Delete.*
 
@@ -204,7 +204,7 @@ Slide fields (`MelisTechnologySlider_details_form`): `mcsdetail_title`, `mcsdeta
 > `config/app.interface.php` (key `MelisCmsSlider.conf.sliders`:
 > `minUploadSize`, `maxUploadSize`, `imagesPath`).
 
-![Add / edit slide modal form](./images/slider-edit-properties-slide-edit.png)
+![Add / edit slide modal form](./images/meliscmsslider-tool-slider-edit-properties-slide-edit.png)
 *Caption: the add/edit-slide modal — image upload, title, three subtitles, link and the
 slide order.*
 
@@ -233,11 +233,11 @@ plugin config as XML inside the page.
 
 Plugin selector thumbnail: `public/plugins/images/MelisCmsSliderShowSliderPlugin_thumb.jpg`.
 
-![Show Slider plugin in the page editor's plugin selector](./images/slider-page-menu-plugins-selector.png)
+![Show Slider plugin in the page editor's plugin selector](./images/meliscmsslider-page-menu-plugins-selector.png)
 *Caption: the Melis page editor's plugin selector (MelisCms section) showing the Show
 Slider plugin thumbnail that can be dragged into a page template.*
 
-![Show Slider plugin config — Properties tab](./images/slider-plugin-slider-config-properties-tab.png)
+![Show Slider plugin config — Properties tab](./images/meliscmsslider-page-plugin-slider-config-properties-tab.png)
 *Caption: Show Slider › Properties tab — the rendering template and the slider selector
 (`CmsSliderSelect`) used to pick which slider to display.*
 
@@ -435,12 +435,12 @@ each row's caption in the body gives the text-only description of what the image
 
 | Image file | Content |
 |---|---|
-| `slider-list.png` | Slider list — the tool's landing page (table, filters, actions) |
-| `slider-new.png` | Create/edit-slider modal (name + landing page id) |
-| `slider-edit-slidelist-tab-properties.png` | Slider details editor — Properties tab with the slides table |
-| `slider-edit-properties-slide-edit.png` | Add/edit-slide modal (image, title, subtitles, link, order) |
-| `slider-page-menu-plugins-selector.png` | Show Slider plugin in the page editor's plugin selector |
-| `slider-plugin-slider-config-properties-tab.png` | Show Slider plugin config — Properties tab |
+| `meliscmsslider-tool-slider-list.png` | Slider list — the tool's landing page (table, filters, actions) |
+| `meliscmsslider-tool-slider-new.png` | Create/edit-slider modal (name + landing page id) |
+| `meliscmsslider-tool-slider-edit-slidelist-tab-properties.png` | Slider details editor — Properties tab with the slides table |
+| `meliscmsslider-tool-slider-edit-properties-slide-edit.png` | Add/edit-slide modal (image, title, subtitles, link, order) |
+| `meliscmsslider-page-menu-plugins-selector.png` | Show Slider plugin in the page editor's plugin selector |
+| `meliscmsslider-page-plugin-slider-config-properties-tab.png` | Show Slider plugin config — Properties tab |
 
 ---
 
