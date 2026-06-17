@@ -1,0 +1,8 @@
+{
+  "id": "slider",
+  "route": "/slider",
+  "label": "Slider",
+  "forwardKey": "MelisCmsSlider/MelisCmsSliderList",
+  "melisKey": "MelisCmsSlider_left_menu",
+  "entry": "brick.js"
+}
