@@ -1,4 +1,4 @@
-<?php 
+<?php
 $id = '';
 if (!empty($this->zoneconfig['conf']['id']))
     $id = $this->zoneconfig['conf']['id'];
@@ -12,7 +12,7 @@ if (!empty($this->zoneconfig['conf']['id']))
                 <div class="widget-head">
                 	<ul class="nav nav-tabs">
                 		<li class="nav-item active">
-                            <a href="#<?php echo $this->zoneconfig['conf']['id'] ?>" class="nav-link glyphicons notes" data-bs-toggle="tab" aria-expanded="true"><i></i><?php echo $this->title; ?>  
+                            <a href="#<?php echo $this->zoneconfig['conf']['id'] ?>" class="nav-link glyphicons notes" data-bs-toggle="tab" aria-expanded="true"><i></i><?php echo $this->title; ?>
                             </a>
                         </li>
             		</ul>
@@ -31,7 +31,7 @@ if (!empty($this->zoneconfig['conf']['id']))
                                     </div>
                                     <script type="text/javascript">
                                     	$("#<?= $id ?>_mcsdetail_status").bootstrapSwitch();
-                                    </script>	
+                                    </script>
                                     <?php
                                         echo $this->form()->openTag($this->form);
                                         echo $this->melisFieldCollection($this->form);
@@ -60,8 +60,8 @@ if (!empty($this->zoneconfig['conf']['id']))
                                             // Append directly to the input-group so Bootstrap renders
                                             // it flush against the file field (no wrapping span, which
                                             // BS5 would not treat as an input-group child).
-                                            var $btn = $('<button type="button" class="btn btn-default slide-image-clear"><i class="fa fa-trash"></i></button>').attr('title', txtRemove);
-                                            $wrap.append($btn);
+                                            var $btn = $('<button type="button" class="mb-2 btn btn-default slide-image-clear"><i class="fa fa-trash"></i></button>').attr('title', txtRemove);
+                                            $wrap.append($('<span class="group-span-filestyle input-group-btn"></span>').append($btn));
 
                                             function hasNewFile() {
                                                 return !!($fileInput[0].files && $fileInput[0].files.length);
@@ -70,7 +70,7 @@ if (!empty($this->zoneconfig['conf']['id']))
                                                 var removed = $removeFlag.val() === '1';
                                                 $btn.find('i').toggleClass('fa-undo', removed).toggleClass('fa-trash', !removed);
                                                 $btn.attr('title', removed ? txtUndo : txtRemove);
-                                                $btn.toggleClass('hidden', !(hasExisting || hasNewFile()));
+                                                $btn.parent().toggleClass('hidden', !(hasExisting || hasNewFile()));
                                             }
 
                                             $btn.on('click', function () {
@@ -110,11 +110,11 @@ if (!empty($this->zoneconfig['conf']['id']))
                                             <div class="progress-bar progress-bar-danger progress-bar-striped" role="progressbar" aria-valuenow=0 aria-valuemin="0" aria-valuemax="100" style="width: 0%">
                                             </div>
                                         </div><br/>
-                                    </div>                     
+                                    </div>
                                  	<div class="footer-modal d-flex flex-row justify-content-between">
                                  		<button data-bs-dismiss="modal" class="btn btn-danger"><i class="fa fa-times"></i> <?php echo $this->translate('tr_MelisCmsSliderDetails_form_btn_cancel')?></button>
                                  		<button class="btn btn-success" id="saveSliderDetails" data-detailid="<?= $this->detailid?>"><i class="fa fa-save"></i>  <?php echo $this->translate('tr_MelisCmsSliderDetails_form_btn_save') ?></button>
-                                 	</div>                                 	
+                                 	</div>
                             	</div>
                             </div>
                         </div>
