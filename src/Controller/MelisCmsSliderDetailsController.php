@@ -447,10 +447,28 @@ class MelisCmsSliderDetailsController extends MelisAbstractActionController
                     }
 
                     unset($data['mcsdetail_id']);
-                    unset($data['mcsdetail_img']);
+
+                    // Allow removing the current image: when the user flags it for
+                    // removal, clear the column (and delete the file afterwards)
+                    // instead of preserving the previously saved image.
+                    $removeImage = !empty($postValues['mcsdetail_remove_img']);
+                    if ($removeImage) {
+                        $oldDetails = $melisSliderSvc->getSliderDetails($detailsId);
+                        $data['mcsdetail_img'] = '';
+                    } else {
+                        unset($data['mcsdetail_img']);
+                    }
+
                     $data['mcsdetail_status'] = $postValues['mcsdetail_status'];
                     $sliderDetailsId = $melisSliderSvc->saveSliderDetails($data, $detailsId);
                     if ($sliderDetailsId) {
+                        // delete the previously uploaded file from disk
+                        if ($removeImage && !empty($oldDetails) && !empty($oldDetails->mcsdetail_img)) {
+                            $oldFile = 'public' . $oldDetails->mcsdetail_img;
+                            if (file_exists($oldFile) && is_writable($oldFile)) {
+                                @unlink($oldFile);
+                            }
+                        }
                         $success = 1;
                         $textMessage = 'tr_MelisCmsSliderDetails_save_success';
                     }

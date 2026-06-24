@@ -32,13 +32,76 @@ if (!empty($this->zoneconfig['conf']['id']))
                                     <script type="text/javascript">
                                     	$("#<?= $id ?>_mcsdetail_status").bootstrapSwitch();
                                     </script>	
-                                    <?php 
+                                    <?php
                                         echo $this->form()->openTag($this->form);
                                         echo $this->melisFieldCollection($this->form);
+                                        // Hidden flag sent with the form. A value of "1" tells the
+                                        // controller to clear the current image on save.
+                                        echo '<input type="hidden" name="mcsdetail_remove_img" id="mcsdetail_remove_img" value="0">';
                                         echo $this->form()->closeTag();
                                     ?>
                                     <script type="text/javascript">
                                         $(":file").filestyle({buttonBefore: true, input: true, buttonText: '<?php echo $this->translate('tr_MelisCmsSliderDetails_input_file')?>', placeholder : '<?php if($this->file != null) { echo str_replace("'", "\'", $this->file); } ?>'});
+
+                                        // Add a clear/remove control to the existing file input element.
+                                        // It clears a newly picked file, or toggles removal of the
+                                        // current image (undo restores it). No extra preview block.
+                                        (function () {
+                                            var $fileInput   = $('#mcsdetail_img');
+                                            var $wrap        = $fileInput.next('.bootstrap-filestyle');
+                                            var $text        = $wrap.find(':text');
+                                            var $removeFlag  = $('#mcsdetail_remove_img');
+                                            var hasExisting  = <?php echo $this->file != null ? 'true' : 'false'; ?>;
+                                            var existingName = '<?php echo $this->file != null ? str_replace("'", "\\'", $this->file) : ''; ?>';
+                                            var txtRemove    = '<?php echo str_replace("'", "\\'", $this->translate('tr_MelisCmsSliderDetails_remove_image')); ?>';
+                                            var txtUndo      = '<?php echo str_replace("'", "\\'", $this->translate('tr_MelisCmsSliderDetails_remove_image_undo')); ?>';
+                                            var txtPending   = '<?php echo str_replace("'", "\\'", $this->translate('tr_MelisCmsSliderDetails_remove_image_pending')); ?>';
+
+                                            // Append directly to the input-group so Bootstrap renders
+                                            // it flush against the file field (no wrapping span, which
+                                            // BS5 would not treat as an input-group child).
+                                            var $btn = $('<button type="button" class="btn btn-default slide-image-clear"><i class="fa fa-trash"></i></button>').attr('title', txtRemove);
+                                            $wrap.append($btn);
+
+                                            function hasNewFile() {
+                                                return !!($fileInput[0].files && $fileInput[0].files.length);
+                                            }
+                                            function refresh() {
+                                                var removed = $removeFlag.val() === '1';
+                                                $btn.find('i').toggleClass('fa-undo', removed).toggleClass('fa-trash', !removed);
+                                                $btn.attr('title', removed ? txtUndo : txtRemove);
+                                                $btn.toggleClass('hidden', !(hasExisting || hasNewFile()));
+                                            }
+
+                                            $btn.on('click', function () {
+                                                if (hasNewFile()) {
+                                                    // discard the newly selected file, keep the current image
+                                                    $fileInput.filestyle('clear');
+                                                    $removeFlag.val('0');
+                                                    $text.attr('placeholder', existingName);
+                                                } else if (hasExisting) {
+                                                    // toggle removal of the current image
+                                                    if ($removeFlag.val() === '1') {
+                                                        $removeFlag.val('0');
+                                                        $text.attr('placeholder', existingName);
+                                                    } else {
+                                                        $removeFlag.val('1');
+                                                        $text.val('').attr('placeholder', txtPending);
+                                                    }
+                                                }
+                                                refresh();
+                                            });
+
+                                            $fileInput.on('change', function () {
+                                                if (hasNewFile()) {
+                                                    $removeFlag.val('0');
+                                                    $text.attr('placeholder', existingName);
+                                                }
+                                                refresh();
+                                            });
+
+                                            refresh();
+                                        })();
                                     </script>
                                     <div class="progressContent hidden">
                                         <?= $this->translate('tr_MelisCmsSliderDetails_save_upload'); ?>
