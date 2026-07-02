@@ -2125,7 +2125,7 @@
 										width: 34,
 										height: 20,
 										borderRadius: 999,
-										background: status ? "var(--color-primary)" : "var(--color-border)",
+										background: status ? "#10b981" : "#ef4444",
 										position: "relative",
 										transition: "background .15s"
 									},
@@ -2440,7 +2440,7 @@
 											width: 10,
 											height: 10,
 											borderRadius: 999,
-											background: s.status ? "#22c55e" : "#9ca3af"
+											background: s.status ? "#22c55e" : "#ef4444"
 										}
 									})
 								}),

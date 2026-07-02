@@ -100,7 +100,7 @@ export default function SliderEditor({ sliderId, sliderName, onSaved }: {
                 <td style={{ ...td, color: 'var(--color-muted-foreground)', textAlign: 'center' }}><GripIcon /></td>
                 <td style={{ ...td, color: 'var(--color-muted-foreground)', fontVariantNumeric: 'tabular-nums' }}>{s.order}</td>
                 <td style={td}>
-                  <span title={s.status ? t('active') : t('inactive')} style={{ display: 'inline-block', width: 10, height: 10, borderRadius: 999, background: s.status ? '#22c55e' : '#9ca3af' }} />
+                  <span title={s.status ? t('active') : t('inactive')} style={{ display: 'inline-block', width: 10, height: 10, borderRadius: 999, background: s.status ? '#22c55e' : '#ef4444' }} />
                 </td>
                 <td style={td}>
                   {s.img

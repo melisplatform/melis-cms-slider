@@ -113,7 +113,7 @@ export default function SlideEditor({ sliderId, slideId, onBack, onSaved }: {
               <label style={label}>{t('f_status')}</label>
               <button onClick={() => setStatus((s) => (s ? 0 : 1))}
                 style={{ display: 'inline-flex', alignItems: 'center', gap: 8, height: 36, padding: '0 12px', borderRadius: 8, border: '1px solid var(--color-border)', background: 'var(--color-card)', cursor: 'pointer', fontSize: 14, color: 'var(--color-foreground)' }}>
-                <span style={{ width: 34, height: 20, borderRadius: 999, background: status ? 'var(--color-primary)' : 'var(--color-border)', position: 'relative', transition: 'background .15s' }}>
+                <span style={{ width: 34, height: 20, borderRadius: 999, background: status ? '#10b981' : '#ef4444', position: 'relative', transition: 'background .15s' }}>
                   <span style={{ position: 'absolute', top: 2, left: status ? 16 : 2, width: 16, height: 16, borderRadius: 999, background: '#fff', transition: 'left .15s' }} />
                 </span>
                 {status ? t('active') : t('inactive')}
