@@ -24,7 +24,7 @@ const DICT: Record<Lang, Record<string, string>> = {
     refresh: 'Rafraîchir', loading: 'Chargement…', saved: 'Enregistré ✓', none: '—',
     del_slider_title: 'Supprimer le slider', del_slider_confirm: 'Supprimer « {n} » et toutes ses slides ? Action irréversible.',
     new_slider_title: 'Nouveau slider', rename_slider_title: 'Renommer le slider',
-    f_name: 'Nom du slider', f_name_ph: 'Mon slider', f_page: 'ID de page liée (optionnel)', f_page_ph: 'ex. 42',
+    f_name: 'Nom du slider', f_name_ph: 'Mon slider', f_page: 'Page liée (optionnel)', f_page_ph: '— Choisir une page —', f_page_none: '— Aucune —',
     err_save: 'Erreur lors de la sauvegarde', no_access: 'Vous n’avez pas les droits pour consulter cette liste.',
     // niveau slides
     slides_of: 'Slides de « {n} »', add_slide: 'Ajouter une slide', no_slides: 'Aucune slide. Cliquez sur « Ajouter une slide ».',
@@ -47,7 +47,7 @@ const DICT: Record<Lang, Record<string, string>> = {
     refresh: 'Refresh', loading: 'Loading…', saved: 'Saved ✓', none: '—',
     del_slider_title: 'Delete slider', del_slider_confirm: 'Delete “{n}” and all its slides? This is irreversible.',
     new_slider_title: 'New slider', rename_slider_title: 'Rename slider',
-    f_name: 'Slider name', f_name_ph: 'My slider', f_page: 'Linked page id (optional)', f_page_ph: 'e.g. 42',
+    f_name: 'Slider name', f_name_ph: 'My slider', f_page: 'Linked page (optional)', f_page_ph: '— Choose a page —', f_page_none: '— None —',
     err_save: 'Error while saving', no_access: 'You do not have permission to view this list.',
     slides_of: 'Slides of “{n}”', add_slide: 'Add a slide', no_slides: 'No slide yet. Click “Add a slide”.',
     s_order: 'Order', s_status: 'Status', s_image: 'Image', s_title: 'Title', s_sub1: 'Subtitle', s_link: 'Link',

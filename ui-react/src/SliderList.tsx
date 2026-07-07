@@ -10,6 +10,7 @@ import {
 } from './ui'
 import { ExportModal, DownloadIcon } from './ExportModal'
 import { ViewToggle } from './ViewToggle'
+import { PagePicker } from './PagePicker'
 
 // Outil Slider legacy (vue « Old » en iframe). melisKey = zone rendable (follow_regular_rendering:false).
 const MELIS_KEY = 'MelisCmsSlider_left_menu'
@@ -185,7 +186,8 @@ function SliderModal({ slider, onClose, onSaved }: { slider: SliderItem | null; 
   const t = useT()
   const isEdit = !!slider
   const [name, setName] = useState(slider?.name ?? '')
-  const [pageId, setPageId] = useState<string>(slider?.pageId != null ? String(slider.pageId) : '')
+  const [pageId, setPageId] = useState<number>(slider?.pageId ?? 0)
+  const [pageTitle, setPageTitle] = useState('')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -194,7 +196,7 @@ function SliderModal({ slider, onClose, onSaved }: { slider: SliderItem | null; 
     if (!name.trim()) { setError(t('f_name') + ' *'); return }
     setSaving(true)
     try {
-      await saveSlider({ id: slider?.id ?? null, name: name.trim(), pageId: pageId.trim() === '' ? null : Number(pageId) })
+      await saveSlider({ id: slider?.id ?? null, name: name.trim(), pageId: pageId ? pageId : null })
       onSaved()
     } catch (e) { setError(e instanceof Error ? e.message : t('err_save')) }
     finally { setSaving(false) }
@@ -215,7 +217,8 @@ function SliderModal({ slider, onClose, onSaved }: { slider: SliderItem | null; 
           </div>
           <div>
             <label style={label}>{t('f_page')}</label>
-            <input style={inputCss} value={pageId} onChange={(e) => setPageId(e.target.value.replace(/[^0-9]/g, ''))} placeholder={t('f_page_ph')} inputMode="numeric" />
+            <PagePicker value={pageId} title={pageTitle} onChange={(id, ttl) => { setPageId(id); setPageTitle(ttl) }}
+              placeholder={t('f_page_ph')} noneLabel={t('f_page_none')} />
           </div>
         </div>
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, padding: '12px 16px', borderTop: '1px solid var(--color-border)' }}>

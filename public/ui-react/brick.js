@@ -139,8 +139,9 @@
 			rename_slider_title: "Renommer le slider",
 			f_name: "Nom du slider",
 			f_name_ph: "Mon slider",
-			f_page: "ID de page liée (optionnel)",
-			f_page_ph: "ex. 42",
+			f_page: "Page liée (optionnel)",
+			f_page_ph: "— Choisir une page —",
+			f_page_none: "— Aucune —",
 			err_save: "Erreur lors de la sauvegarde",
 			no_access: "Vous n’avez pas les droits pour consulter cette liste.",
 			slides_of: "Slides de « {n} »",
@@ -208,8 +209,9 @@
 			rename_slider_title: "Rename slider",
 			f_name: "Slider name",
 			f_name_ph: "My slider",
-			f_page: "Linked page id (optional)",
-			f_page_ph: "e.g. 42",
+			f_page: "Linked page (optional)",
+			f_page_ph: "— Choose a page —",
+			f_page_none: "— None —",
 			err_save: "Error while saving",
 			no_access: "You do not have permission to view this list.",
 			slides_of: "Slides of “{n}”",
@@ -1372,6 +1374,201 @@
 		});
 	}
 	//#endregion
+	//#region src/PagePicker.tsx
+	async function fetchTreeNodes(nodeId) {
+		try {
+			const res = await fetch(`/melis/MelisCms/TreeSites/get-tree-pages-by-page-id?nodeId=${encodeURIComponent(String(nodeId))}`, {
+				headers: { "X-Requested-With": "XMLHttpRequest" },
+				credentials: "include"
+			});
+			if (!res.ok) return [];
+			const data = await res.json();
+			let nodes = [];
+			if (Array.isArray(data)) nodes = data;
+			else if (Array.isArray(data?.data)) nodes = data.data;
+			else if (Array.isArray(data?.tree)) nodes = data.tree;
+			nodes.forEach((n) => {
+				if (typeof n.title === "string") n.title = n.title.replace(/<[^>]*>/g, "").trim();
+			});
+			return nodes;
+		} catch {
+			return [];
+		}
+	}
+	var box = {
+		borderRadius: 8,
+		border: "1px solid var(--color-border,#e5e7eb)",
+		background: "var(--color-background,#fff)"
+	};
+	var btn = {
+		display: "inline-flex",
+		alignItems: "center",
+		justifyContent: "space-between",
+		gap: 8,
+		height: 40,
+		width: "100%",
+		boxSizing: "border-box",
+		padding: "0 12px",
+		cursor: "pointer",
+		fontSize: 14,
+		color: "var(--color-foreground)",
+		...box
+	};
+	function Node({ node, depth, onPick }) {
+		const [open, setOpen] = (0, react.useState)(false);
+		const [children, setChildren] = (0, react.useState)(null);
+		const [loading, setLoading] = (0, react.useState)(false);
+		async function toggle() {
+			if (!node.lazy) return;
+			const next = !open;
+			setOpen(next);
+			if (next && children === null) {
+				setLoading(true);
+				setChildren(await fetchTreeNodes(node.key));
+				setLoading(false);
+			}
+		}
+		return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+			style: {
+				display: "flex",
+				alignItems: "center",
+				gap: 4,
+				padding: "4px 6px",
+				paddingLeft: 6 + depth * 16
+			},
+			children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+				onClick: toggle,
+				style: {
+					width: 18,
+					height: 18,
+					border: 0,
+					background: "transparent",
+					cursor: node.lazy ? "pointer" : "default",
+					color: "var(--color-muted-foreground,#6b7280)",
+					fontSize: 11
+				},
+				children: node.lazy ? open ? "▾" : "▸" : "·"
+			}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+				onClick: () => onPick(node.key, node.title),
+				style: {
+					flex: 1,
+					textAlign: "left",
+					border: 0,
+					background: "transparent",
+					cursor: "pointer",
+					fontSize: 13,
+					padding: "2px 4px",
+					borderRadius: 6,
+					color: "var(--color-foreground)"
+				},
+				children: node.title
+			})]
+		}), open && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", { children: [loading && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+			style: {
+				paddingLeft: 24 + depth * 16,
+				fontSize: 12,
+				color: "var(--color-muted-foreground)"
+			},
+			children: "…"
+		}), (children ?? []).map((c) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)(Node, {
+			node: c,
+			depth: depth + 1,
+			onPick
+		}, c.key))] })] });
+	}
+	function PagePicker({ value, title, onChange, placeholder, noneLabel }) {
+		const [open, setOpen] = (0, react.useState)(false);
+		const [roots, setRoots] = (0, react.useState)(null);
+		const ref = (0, react.useRef)(null);
+		(0, react.useEffect)(() => {
+			function onDoc(e) {
+				if (ref.current && !ref.current.contains(e.target)) setOpen(false);
+			}
+			document.addEventListener("mousedown", onDoc);
+			return () => document.removeEventListener("mousedown", onDoc);
+		}, []);
+		async function openPanel() {
+			setOpen((o) => !o);
+			if (roots === null) setRoots(await fetchTreeNodes(-1));
+		}
+		const display = value ? title || `Page #${value}` : placeholder || "— choisir une page —";
+		return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+			ref,
+			style: { position: "relative" },
+			children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
+				style: btn,
+				onClick: openPanel,
+				type: "button",
+				children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+					style: {
+						overflow: "hidden",
+						textOverflow: "ellipsis",
+						whiteSpace: "nowrap",
+						color: value ? "inherit" : "var(--color-muted-foreground)"
+					},
+					children: display
+				}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+					style: { color: "var(--color-muted-foreground)" },
+					children: "▾"
+				})]
+			}), open && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+				style: {
+					...box,
+					position: "absolute",
+					zIndex: 70,
+					top: 44,
+					left: 0,
+					right: 0,
+					maxHeight: 320,
+					overflow: "auto",
+					boxShadow: "0 8px 24px rgba(0,0,0,.18)",
+					padding: 6
+				},
+				children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+					onClick: () => {
+						onChange(0, "");
+						setOpen(false);
+					},
+					type: "button",
+					style: {
+						width: "100%",
+						textAlign: "left",
+						border: 0,
+						background: "transparent",
+						cursor: "pointer",
+						fontSize: 13,
+						padding: "6px 8px",
+						borderRadius: 6,
+						color: "var(--color-muted-foreground)",
+						fontStyle: "italic"
+					},
+					children: noneLabel || "— Aucune —"
+				}), roots === null ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+					style: {
+						padding: 12,
+						fontSize: 13,
+						color: "var(--color-muted-foreground)"
+					},
+					children: "Chargement…"
+				}) : roots.length === 0 ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+					style: {
+						padding: 12,
+						fontSize: 13,
+						color: "var(--color-muted-foreground)"
+					},
+					children: "Aucune page"
+				}) : roots.map((n) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)(Node, {
+					node: n,
+					depth: 0,
+					onPick: (id, t) => {
+						onChange(id, t);
+						setOpen(false);
+					}
+				}, n.key))]
+			})]
+		});
+	}
+	//#endregion
 	//#region src/SliderList.tsx
 	var MELIS_KEY = "MelisCmsSlider_left_menu";
 	var can$1 = makeCan("melis_cms_slider_tool");
@@ -1758,7 +1955,8 @@
 		const t = useT();
 		const isEdit = !!slider;
 		const [name, setName] = (0, react.useState)(slider?.name ?? "");
-		const [pageId, setPageId] = (0, react.useState)(slider?.pageId != null ? String(slider.pageId) : "");
+		const [pageId, setPageId] = (0, react.useState)(slider?.pageId ?? 0);
+		const [pageTitle, setPageTitle] = (0, react.useState)("");
 		const [saving, setSaving] = (0, react.useState)(false);
 		const [error, setError] = (0, react.useState)(null);
 		async function submit() {
@@ -1772,7 +1970,7 @@
 				await saveSlider({
 					id: slider?.id ?? null,
 					name: name.trim(),
-					pageId: pageId.trim() === "" ? null : Number(pageId)
+					pageId: pageId ? pageId : null
 				});
 				onSaved();
 			} catch (e) {
@@ -1848,12 +2046,15 @@
 							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("label", {
 								style: label,
 								children: t("f_page")
-							}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
-								style: inputCss,
+							}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)(PagePicker, {
 								value: pageId,
-								onChange: (e) => setPageId(e.target.value.replace(/[^0-9]/g, "")),
+								title: pageTitle,
+								onChange: (id, ttl) => {
+									setPageId(id);
+									setPageTitle(ttl);
+								},
 								placeholder: t("f_page_ph"),
-								inputMode: "numeric"
+								noneLabel: t("f_page_none")
 							})] })
 						]
 					}),
