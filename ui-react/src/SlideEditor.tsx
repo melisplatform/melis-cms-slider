@@ -1,12 +1,16 @@
 import { useEffect, useRef, useState } from 'react'
 import { fetchSlide, saveSlide, uploadSlideImage } from './slider-api'
 import {
-  useT, card, inputCss, textareaCss, btnPrimary, btnGhost, label, hint,
+  useT, makeCan, card, inputCss, textareaCss, btnPrimary, btnGhost, label, hint,
   ImageIcon, TrashIcon,
 } from './ui'
 
 /* Niveau 3 — formulaire d'une slide (slider > slides > SLIDE). Upload d'image immédiat
- * (renvoie un chemin web stocké tel quel dans mcsdetail_img). sub2/sub3 = HTML (textarea). */
+ * (renvoie un chemin web stocké tel quel dans mcsdetail_img). sub2/sub3 = HTML (textarea).
+ * Droits avancés : bloc contenu = `slides.properties`, bloc image = `slides.image`
+ * (+ `slides.image.create` upload / `slides.image.delete` remove). */
+
+const can = makeCan('meliscms_slider_tools_section') // nœud porteur de droits (cf. react.capabilities.php)
 
 export default function SlideEditor({ sliderId, slideId, onBack, onSaved }: {
   sliderId: number
@@ -83,7 +87,8 @@ export default function SlideEditor({ sliderId, slideId, onBack, onSaved }: {
         <div style={{ padding: 48, textAlign: 'center', color: 'var(--color-muted-foreground)' }}>{t('loading')}</div>
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,2fr) minmax(0,1fr)', gap: 16, alignItems: 'start' }}>
-          {/* Colonne contenu */}
+          {/* Colonne contenu (droit slides.properties) */}
+          {can('slides.properties') && (
           <div style={{ ...card, padding: 20, display: 'flex', flexDirection: 'column', gap: 16 }}>
             <div>
               <label style={label}>{t('f_title')}</label>
@@ -106,6 +111,7 @@ export default function SlideEditor({ sliderId, slideId, onBack, onSaved }: {
               <input style={{ ...inputCss, fontFamily: 'monospace' }} value={link} onChange={(e) => setLink(e.target.value)} placeholder="https://…" />
             </div>
           </div>
+          )}
 
           {/* Colonne options */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -120,25 +126,29 @@ export default function SlideEditor({ sliderId, slideId, onBack, onSaved }: {
               </button>
             </div>
 
+            {can('slides.image') && (
             <div style={{ ...card, padding: 20 }}>
               <label style={label}>{t('f_image')}</label>
               {img ? (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   <img src={img} alt="" style={{ width: '100%', height: 'auto', maxHeight: 180, objectFit: 'contain', borderRadius: 8, border: '1px solid var(--color-border)', background: 'var(--color-muted,#f3f4f6)' }} />
                   <div style={{ display: 'flex', gap: 8 }}>
-                    <button style={{ ...btnGhost, height: 32 }} onClick={() => fileRef.current?.click()} disabled={uploading}>{uploading ? t('uploading') : t('choose_img')}</button>
-                    <button style={{ ...btnGhost, height: 32, color: 'var(--color-destructive,#ef4444)' }} onClick={() => setImg('')}><TrashIcon />{t('remove_img')}</button>
+                    {can('slides.image.create') && <button style={{ ...btnGhost, height: 32 }} onClick={() => fileRef.current?.click()} disabled={uploading}>{uploading ? t('uploading') : t('choose_img')}</button>}
+                    {can('slides.image.delete') && <button style={{ ...btnGhost, height: 32, color: 'var(--color-destructive,#ef4444)' }} onClick={() => setImg('')}><TrashIcon />{t('remove_img')}</button>}
                   </div>
                 </div>
               ) : (
+                can('slides.image.create') && (
                 <button onClick={() => fileRef.current?.click()} disabled={uploading}
                   style={{ ...card, width: '100%', minHeight: 110, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8, border: '1px dashed var(--color-border)', cursor: 'pointer', color: 'var(--color-muted-foreground)', background: 'transparent' }}>
                   <ImageIcon />{uploading ? t('uploading') : t('choose_img')}
                 </button>
+                )
               )}
               <p style={hint}>{t('f_image_hint')}</p>
               <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/gif,image/webp" style={{ display: 'none' }} onChange={onPickFile} />
             </div>
+            )}
           </div>
         </div>
       )}

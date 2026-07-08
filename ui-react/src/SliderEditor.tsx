@@ -9,7 +9,7 @@ import SlideEditor from './SlideEditor'
 /* Niveau 2 — liste des slides d'un slider (slider > SLIDES > slide). Réordonnancement
  * par glisser-déposer (HTML5 DnD) → reorderSlides. Ouvre/édite une slide via SlideEditor. */
 
-const can = makeCan('melis_cms_slider_tool')
+const can = makeCan('meliscms_slider_tools_section') // nœud porteur de droits (cf. react.capabilities.php)
 type SlideView = { kind: 'list' } | { kind: 'new' } | { kind: 'edit'; id: number }
 
 export default function SliderEditor({ sliderId, sliderName, onSaved }: {
@@ -66,9 +66,12 @@ export default function SliderEditor({ sliderId, sliderName, onSaved }: {
           <h2 style={{ fontSize: 18, fontWeight: 700, margin: 0 }}>{t('slides_of', { n: sliderName || ('#' + sliderId) })}</h2>
           <p style={{ fontSize: 13, color: 'var(--color-muted-foreground)', margin: '2px 0 0' }}>{t('reorder_hint')}</p>
         </div>
-        {can('create') && <button style={btnPrimary} onClick={() => setView({ kind: 'new' })}><PlusIcon />{t('add_slide')}</button>}
+        {can('slides.create') && <button style={btnPrimary} onClick={() => setView({ kind: 'new' })}><PlusIcon />{t('add_slide')}</button>}
       </div>
 
+      {!can('slides.list') ? (
+        <div style={{ ...card, padding: '40px 16px', textAlign: 'center', fontSize: 14, color: 'var(--color-muted-foreground)' }}>{t('no_access')}</div>
+      ) : (
       <div style={{ ...card, overflow: 'hidden' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 640 }}>
           <thead style={{ background: 'var(--color-muted,rgba(0,0,0,.03))' }}>
@@ -88,13 +91,13 @@ export default function SliderEditor({ sliderId, sliderName, onSaved }: {
               <tr><td style={{ ...td, textAlign: 'center', color: 'var(--color-muted-foreground)', padding: '40px 16px' }} colSpan={8}>{t('no_slides')}</td></tr>
             ) : slides.map((s) => (
               <tr key={s.id}
-                draggable
-                onDragStart={() => setDragId(s.id)}
+                draggable={can('slides.edit')}
+                onDragStart={() => can('slides.edit') && setDragId(s.id)}
                 onDragEnd={() => { setDragId(null); setOverId(null) }}
-                onDragOver={(e) => { e.preventDefault(); if (overId !== s.id) setOverId(s.id) }}
-                onDrop={(e) => { e.preventDefault(); handleDrop(s.id) }}
+                onDragOver={(e) => { if (!can('slides.edit')) return; e.preventDefault(); if (overId !== s.id) setOverId(s.id) }}
+                onDrop={(e) => { if (!can('slides.edit')) return; e.preventDefault(); handleDrop(s.id) }}
                 style={{
-                  cursor: 'grab', opacity: dragId === s.id ? 0.4 : 1,
+                  cursor: can('slides.edit') ? 'grab' : 'default', opacity: dragId === s.id ? 0.4 : 1,
                   background: overId === s.id && dragId !== s.id ? 'color-mix(in srgb, var(--color-primary) 8%, transparent)' : 'transparent',
                 }}>
                 <td style={{ ...td, color: 'var(--color-muted-foreground)', textAlign: 'center' }}><GripIcon /></td>
@@ -112,8 +115,8 @@ export default function SliderEditor({ sliderId, sliderName, onSaved }: {
                 <td style={{ ...td, fontFamily: 'monospace', fontSize: 12, color: 'var(--color-muted-foreground)', maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.link}</td>
                 <td style={td}>
                   <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 4 }}>
-                    {can('edit') && <button style={iconBtn} title={t('edit')} onClick={() => setView({ kind: 'edit', id: s.id })}><PencilIcon /></button>}
-                    {can('delete') && <button style={{ ...iconBtn, color: 'var(--color-destructive,#ef4444)' }} title={t('del')} onClick={() => setToDelete(s)}><TrashIcon /></button>}
+                    {can('slides.edit') && <button style={iconBtn} title={t('edit')} onClick={() => setView({ kind: 'edit', id: s.id })}><PencilIcon /></button>}
+                    {can('slides.delete') && <button style={{ ...iconBtn, color: 'var(--color-destructive,#ef4444)' }} title={t('del')} onClick={() => setToDelete(s)}><TrashIcon /></button>}
                   </div>
                 </td>
               </tr>
@@ -122,6 +125,7 @@ export default function SliderEditor({ sliderId, sliderName, onSaved }: {
         </table>
         {loading && <div style={{ padding: '10px 16px', textAlign: 'center', fontSize: 12, color: 'var(--color-muted-foreground)' }}>{t('loading')}</div>}
       </div>
+      )}
 
       {toDelete && (
         <ConfirmModal title={t('del_slide_title')} message={t('del_slide_confirm')}

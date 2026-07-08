@@ -14,7 +14,10 @@ import { PagePicker } from './PagePicker'
 
 // Outil Slider legacy (vue « Old » en iframe). melisKey = zone rendable (follow_regular_rendering:false).
 const MELIS_KEY = 'MelisCmsSlider_left_menu'
-const can = makeCan('melis_cms_slider_tool')
+// Clé de capacités = melisKey du nœud porteur de droits du menu (cf. react.capabilities.php),
+// PAS le melisKey d'accès `melis_cms_slider_tool` du contrôleur.
+const CAPS_KEY = 'meliscms_slider_tools_section'
+const can = makeCan(CAPS_KEY)
 
 const COL_LABEL: Record<string, string> = { id: 'col_id', name: 'col_name', page: 'col_page', slides: 'col_slides' }
 const DEFAULT_COLS: ColDef[] = [

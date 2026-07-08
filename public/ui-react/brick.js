@@ -1571,7 +1571,7 @@
 	//#endregion
 	//#region src/SliderList.tsx
 	var MELIS_KEY = "MelisCmsSlider_left_menu";
-	var can$1 = makeCan("melis_cms_slider_tool");
+	var can$2 = makeCan("meliscms_slider_tools_section");
 	var COL_LABEL = {
 		id: "col_id",
 		name: "col_name",
@@ -1696,7 +1696,7 @@
 								title: t("refresh"),
 								children: "↻"
 							}),
-							can$1("create") && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
+							can$2("create") && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
 								style: btnPrimary$1,
 								onClick: () => setEditSlider("new"),
 								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)(PlusIcon, {}), t("new")]
@@ -1729,7 +1729,7 @@
 						flexDirection: "column",
 						gap: 20
 					},
-					children: !can$1("list") ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+					children: !can$2("list") ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
 						style: {
 							...card$1,
 							padding: "40px 16px",
@@ -1797,7 +1797,7 @@
 										onClose: () => setShowCols(false)
 									})]
 								}),
-								can$1("export") && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
+								can$2("export") && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
 									style: {
 										...btnGhost$1,
 										height: 36
@@ -1893,13 +1893,13 @@
 												onClick: () => onOpen(s.id, s.name),
 												children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(PencilIcon, {})
 											}),
-											can$1("edit") && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+											can$2("edit") && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
 												style: iconBtn,
 												title: t("rename"),
 												onClick: () => setEditSlider(s),
 												children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(RenameIcon, {})
 											}),
-											can$1("delete") && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+											can$2("delete") && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
 												style: {
 													...iconBtn,
 													color: "var(--color-destructive,#ef4444)"
@@ -2084,6 +2084,7 @@
 	}
 	//#endregion
 	//#region src/SlideEditor.tsx
+	var can$1 = makeCan("meliscms_slider_tools_section");
 	function SlideEditor({ sliderId, slideId, onBack, onSaved }) {
 		const t = useT();
 		const isEdit = slideId !== "new";
@@ -2236,7 +2237,7 @@
 						gap: 16,
 						alignItems: "start"
 					},
-					children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+					children: [can$1("slides.properties") && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 						style: {
 							...card$1,
 							padding: 20,
@@ -2342,7 +2343,7 @@
 									} })
 								}), status ? t("active") : t("inactive")]
 							})]
-						}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+						}), can$1("slides.image") && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 							style: {
 								...card$1,
 								padding: 20
@@ -2375,7 +2376,7 @@
 											display: "flex",
 											gap: 8
 										},
-										children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+										children: [can$1("slides.image.create") && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
 											style: {
 												...btnGhost$1,
 												height: 32
@@ -2383,7 +2384,7 @@
 											onClick: () => fileRef.current?.click(),
 											disabled: uploading,
 											children: uploading ? t("uploading") : t("choose_img")
-										}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
+										}), can$1("slides.image.delete") && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
 											style: {
 												...btnGhost$1,
 												height: 32,
@@ -2393,7 +2394,7 @@
 											children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)(TrashIcon, {}), t("remove_img")]
 										})]
 									})]
-								}) : /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
+								}) : can$1("slides.image.create") && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
 									onClick: () => fileRef.current?.click(),
 									disabled: uploading,
 									style: {
@@ -2432,7 +2433,7 @@
 	}
 	//#endregion
 	//#region src/SliderEditor.tsx
-	var can = makeCan("melis_cms_slider_tool");
+	var can = makeCan("meliscms_slider_tools_section");
 	function SliderEditor({ sliderId, sliderName, onSaved }) {
 		const t = useT();
 		const [view, setView] = (0, react.useState)({ kind: "list" });
@@ -2524,13 +2525,22 @@
 							margin: "2px 0 0"
 						},
 						children: t("reorder_hint")
-					})] }), can("create") && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
+					})] }), can("slides.create") && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
 						style: btnPrimary$1,
 						onClick: () => setView({ kind: "new" }),
 						children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)(PlusIcon, {}), t("add_slide")]
 					})]
 				}),
-				/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+				!can("slides.list") ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+					style: {
+						...card$1,
+						padding: "40px 16px",
+						textAlign: "center",
+						fontSize: 14,
+						color: "var(--color-muted-foreground)"
+					},
+					children: t("no_access")
+				}) : /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 					style: {
 						...card$1,
 						overflow: "hidden"
@@ -2596,22 +2606,24 @@
 							colSpan: 8,
 							children: t("no_slides")
 						}) }) : slides.map((s) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("tr", {
-							draggable: true,
-							onDragStart: () => setDragId(s.id),
+							draggable: can("slides.edit"),
+							onDragStart: () => can("slides.edit") && setDragId(s.id),
 							onDragEnd: () => {
 								setDragId(null);
 								setOverId(null);
 							},
 							onDragOver: (e) => {
+								if (!can("slides.edit")) return;
 								e.preventDefault();
 								if (overId !== s.id) setOverId(s.id);
 							},
 							onDrop: (e) => {
+								if (!can("slides.edit")) return;
 								e.preventDefault();
 								handleDrop(s.id);
 							},
 							style: {
-								cursor: "grab",
+								cursor: can("slides.edit") ? "grab" : "default",
 								opacity: dragId === s.id ? .4 : 1,
 								background: overId === s.id && dragId !== s.id ? "color-mix(in srgb, var(--color-primary) 8%, transparent)" : "transparent"
 							},
@@ -2704,7 +2716,7 @@
 											justifyContent: "flex-end",
 											gap: 4
 										},
-										children: [can("edit") && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+										children: [can("slides.edit") && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
 											style: iconBtn,
 											title: t("edit"),
 											onClick: () => setView({
@@ -2712,7 +2724,7 @@
 												id: s.id
 											}),
 											children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(PencilIcon, {})
-										}), can("delete") && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+										}), can("slides.delete") && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
 											style: {
 												...iconBtn,
 												color: "var(--color-destructive,#ef4444)"
