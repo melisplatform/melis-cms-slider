@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import SliderList from './SliderList'
 import SliderEditor from './SliderEditor'
 import { markSliderListStale } from './slider-api'
@@ -14,6 +14,17 @@ import { useT } from './ui'
 
 type View = { kind: 'list' } | { kind: 'edit'; id: number }
 interface OpenTab { id: number; name: string }
+
+/**
+ * Reflète le sous-onglet actif dans l'URL : /[section]/[tool]/:id (comme l'outil Utilisateurs).
+ * COSMÉTIQUE (history.replaceState) — PAS de navigation React Router (pattern sous-onglets in-tool,
+ * état local). Le host (ToolTabBar) ne réécrit pas l'URL de cet outil (SELF_MANAGED_SUBTABS).
+ */
+function reflectSubTabUrl(seg: string | number | null) {
+  const base = window.location.pathname.replace(/\/(?:new|\d+)$/, '')
+  const next = seg != null && seg !== '' ? `${base}/${seg}` : base
+  if (window.location.pathname !== next) window.history.replaceState(window.history.state, '', next)
+}
 
 const LayersIcon = () => (
   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
@@ -68,7 +79,47 @@ export default function SliderPage() {
     })
   }
 
+  // ── Vue « Old » (iframe legacy) : router l'édition vers l'ÉDITEUR REACT ─────────
+  // La liste legacy en iframe (SliderList mode Old) ouvre l'édition d'un slider dans SA propre
+  // pile d'onglets (postée à l'hôte via __melisToolTabs). Plutôt que de laisser l'hôte afficher
+  // une 2ᵉ barre (ToolTabBar) empilée sur notre SubTabBar, on intercepte le message ici : on ouvre
+  // le SliderEditor React (même sous-onglet unique) et on referme l'onglet dans l'iframe pour
+  // qu'elle revienne à sa liste (le SliderEditor React prend le relais). Même pattern que Sites.
+  const seenEditTabs = useRef<Set<string>>(new Set())
+  useEffect(() => {
+    function onMsg(e: MessageEvent) {
+      const d = e.data as { __melisToolTabs?: boolean; melisKey?: string; tabs?: { id: string; label: string; active: boolean; primary?: boolean }[] } | null
+      if (!d || !d.__melisToolTabs || d.melisKey !== 'MelisCmsSlider_left_menu') return
+      const tabs = Array.isArray(d.tabs) ? d.tabs : []
+      const primary = tabs.find((t) => t.primary)
+      const present = new Set<string>()
+      for (const t of tabs) {
+        if (t.primary) continue
+        present.add(t.id)
+        if (seenEditTabs.current.has(t.id)) continue
+        seenEditTabs.current.add(t.id)
+        // id des onglets d'édition : "<sliderId>_id_MelisCmsSlider_page" (cf. slider.tool.js tabOpen).
+        const m = t.id.match(/^(\d+)_id_MelisCmsSlider_page$/)
+        if (!m) continue
+        const sliderId = Number(m[1])
+        openEditor(sliderId, t.label || `#${sliderId}`)
+        // Referme l'onglet dans l'iframe legacy → elle repasse sur sa liste.
+        const frame = document.querySelector('iframe[title="Slider — Vue Melis"]') as HTMLIFrameElement | null
+        try { frame?.contentWindow?.postMessage({ __melisToolTabCmd: true, melisKey: 'MelisCmsSlider_left_menu', cmd: 'close', id: t.id, next: primary?.id ?? null }, '*') } catch { /* ignore */ }
+      }
+      // Purge les ids d'onglets fermés (pour re-router une prochaine édition du même slider).
+      for (const id of Array.from(seenEditTabs.current)) if (!present.has(id)) seenEditTabs.current.delete(id)
+    }
+    window.addEventListener('message', onMsg)
+    return () => window.removeEventListener('message', onMsg)
+    // openEditor n'utilise que des setters stables → capture initiale suffisante.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   const activeId = view.kind === 'edit' ? view.id : null
+
+  // URL = /[section]/[tool]/:id, reflétée à chaque changement de sous-onglet actif.
+  useEffect(() => { reflectSubTabUrl(activeId) }, [activeId])
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>

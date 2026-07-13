@@ -2759,6 +2759,16 @@
 	}
 	//#endregion
 	//#region src/SliderPage.tsx
+	/**
+	* Reflète le sous-onglet actif dans l'URL : /[section]/[tool]/:id (comme l'outil Utilisateurs).
+	* COSMÉTIQUE (history.replaceState) — PAS de navigation React Router (pattern sous-onglets in-tool,
+	* état local). Le host (ToolTabBar) ne réécrit pas l'URL de cet outil (SELF_MANAGED_SUBTABS).
+	*/
+	function reflectSubTabUrl(seg) {
+		const base = window.location.pathname.replace(/\/(?:new|\d+)$/, "");
+		const next = seg != null && seg !== "" ? `${base}/${seg}` : base;
+		if (window.location.pathname !== next) window.history.replaceState(window.history.state, "", next);
+	}
 	var LayersIcon = () => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("svg", {
 		width: "13",
 		height: "13",
@@ -2889,7 +2899,43 @@
 				return rest;
 			});
 		}
+		const seenEditTabs = (0, react.useRef)(/* @__PURE__ */ new Set());
+		(0, react.useEffect)(() => {
+			function onMsg(e) {
+				const d = e.data;
+				if (!d || !d.__melisToolTabs || d.melisKey !== "MelisCmsSlider_left_menu") return;
+				const tabs = Array.isArray(d.tabs) ? d.tabs : [];
+				const primary = tabs.find((t) => t.primary);
+				const present = /* @__PURE__ */ new Set();
+				for (const t of tabs) {
+					if (t.primary) continue;
+					present.add(t.id);
+					if (seenEditTabs.current.has(t.id)) continue;
+					seenEditTabs.current.add(t.id);
+					const m = t.id.match(/^(\d+)_id_MelisCmsSlider_page$/);
+					if (!m) continue;
+					const sliderId = Number(m[1]);
+					openEditor(sliderId, t.label || `#${sliderId}`);
+					const frame = document.querySelector("iframe[title=\"Slider — Vue Melis\"]");
+					try {
+						frame?.contentWindow?.postMessage({
+							__melisToolTabCmd: true,
+							melisKey: "MelisCmsSlider_left_menu",
+							cmd: "close",
+							id: t.id,
+							next: primary?.id ?? null
+						}, "*");
+					} catch {}
+				}
+				for (const id of Array.from(seenEditTabs.current)) if (!present.has(id)) seenEditTabs.current.delete(id);
+			}
+			window.addEventListener("message", onMsg);
+			return () => window.removeEventListener("message", onMsg);
+		}, []);
 		const activeId = view.kind === "edit" ? view.id : null;
+		(0, react.useEffect)(() => {
+			reflectSubTabUrl(activeId);
+		}, [activeId]);
 		return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 			style: {
 				display: "flex",
