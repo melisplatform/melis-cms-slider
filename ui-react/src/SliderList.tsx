@@ -5,7 +5,7 @@ import {
 } from './slider-api'
 import {
   useT, makeCan, card, inputCss, btnPrimary, btnGhost, iconBtn, th, td, label, hint, pageWrap,
-  PencilIcon, TrashIcon, PlusIcon, LayersIcon, GripIcon, Kpi, ConfirmModal,
+  PencilIcon, TrashIcon, PlusIcon, LayersIcon, GripIcon, ResetIcon, Kpi, ConfirmModal,
   ColManager, makeColStore, visibleCols, type ColDef,
 } from './ui'
 import { ExportModal, DownloadIcon } from './ExportModal'
@@ -55,6 +55,17 @@ export default function SliderList({ active, onOpen }: { active: boolean; onOpen
 
   const sorted = useMemo(() => [...items].sort((a, b) => (sortAsc ? a.id - b.id : b.id - a.id)), [items, sortAsc])
 
+  // Réinitialise recherche + tri par défaut, puis recharge. `setItems([])` est obligatoire :
+  // sans ça les anciennes lignes restent affichées et le clic paraît sans effet.
+  // `tick` est bumpé pour forcer le refetch même quand aucun filtre n'était posé.
+  function resetFilters() {
+    setSearchInput('')
+    setSearch('')
+    setSortAsc(false)
+    setItems([])
+    setTick((x) => x + 1)
+  }
+
   async function confirmDelete() {
     if (!toDelete) return
     try { await deleteSlider(toDelete.id); setToDelete(null); setTick((x) => x + 1) }
@@ -100,6 +111,7 @@ export default function SliderList({ active, onOpen }: { active: boolean; onOpen
               onChange={(e) => setSearchInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && setSearch(searchInput.trim())}
               placeholder={t('search')} />
+            <button style={{ ...btnGhost, height: 36 }} onClick={resetFilters}><ResetIcon />{t('reset_filters')}</button>
             <div style={{ position: 'relative' }}>
               <button style={{ ...btnGhost, height: 36 }} onClick={() => setShowCols((v) => !v)}><GripIcon />{t('columns')}</button>
               {showCols && <ColManager cols={cols} labelFor={(id) => t(COL_LABEL[id])} onChange={setCols} onSave={colStore.save} defaults={colStore.defaults} onClose={() => setShowCols(false)} />}

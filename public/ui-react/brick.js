@@ -122,6 +122,7 @@
 			cols_hidden: "Masquées",
 			drag_here: "Glisser ici",
 			reset: "Réinitialiser",
+			reset_filters: "Réinitialiser les filtres",
 			edit: "Modifier",
 			open: "Ouvrir les slides",
 			rename: "Renommer",
@@ -192,6 +193,7 @@
 			cols_hidden: "Hidden",
 			drag_here: "Drag here",
 			reset: "Reset",
+			reset_filters: "Reset filters",
 			edit: "Edit",
 			open: "Open slides",
 			rename: "Rename",
@@ -470,6 +472,16 @@
 				r: "1.5"
 			})
 		]
+	});
+	var ResetIcon = () => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("svg", {
+		style: sIcon$1,
+		viewBox: "0 0 24 24",
+		fill: "none",
+		stroke: "currentColor",
+		strokeWidth: "2",
+		strokeLinecap: "round",
+		strokeLinejoin: "round",
+		children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("path", { d: "M3 2v6h6" }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("path", { d: "M3 13a9 9 0 1 0 3-7.7L3 8" })]
 	});
 	function Kpi({ label: lbl, value }) {
 		return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
@@ -1642,6 +1654,13 @@
 			if (active && consumeSliderListStale()) setTick((x) => x + 1);
 		}, [active]);
 		const sorted = (0, react.useMemo)(() => [...items].sort((a, b) => sortAsc ? a.id - b.id : b.id - a.id), [items, sortAsc]);
+		function resetFilters() {
+			setSearchInput("");
+			setSearch("");
+			setSortAsc(false);
+			setItems([]);
+			setTick((x) => x + 1);
+		}
 		async function confirmDelete() {
 			if (!toDelete) return;
 			try {
@@ -1778,6 +1797,14 @@
 									onChange: (e) => setSearchInput(e.target.value),
 									onKeyDown: (e) => e.key === "Enter" && setSearch(searchInput.trim()),
 									placeholder: t("search")
+								}),
+								/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
+									style: {
+										...btnGhost$1,
+										height: 36
+									},
+									onClick: resetFilters,
+									children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)(ResetIcon, {}), t("reset_filters")]
 								}),
 								/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 									style: { position: "relative" },

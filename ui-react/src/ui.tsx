@@ -20,6 +20,7 @@ const DICT: Record<Lang, Record<string, string>> = {
     kpi_sliders: 'Sliders', kpi_slides: 'Slides', kpi_active: 'Slides actives',
     col_id: 'ID', col_name: 'Nom', col_page: 'Page liée', col_slides: 'Slides',
     columns: 'Colonnes', export: 'Exporter', cols_visible: 'Visibles', cols_hidden: 'Masquées', drag_here: 'Glisser ici', reset: 'Réinitialiser',
+    reset_filters: 'Réinitialiser les filtres',
     edit: 'Modifier', open: 'Ouvrir les slides', rename: 'Renommer', del: 'Supprimer', cancel: 'Annuler', save: 'Enregistrer', back: 'Retour',
     refresh: 'Rafraîchir', loading: 'Chargement…', saved: 'Enregistré ✓', none: '—',
     del_slider_title: 'Supprimer le slider', del_slider_confirm: 'Supprimer « {n} » et toutes ses slides ? Action irréversible.',
@@ -43,6 +44,7 @@ const DICT: Record<Lang, Record<string, string>> = {
     kpi_sliders: 'Sliders', kpi_slides: 'Slides', kpi_active: 'Active slides',
     col_id: 'ID', col_name: 'Name', col_page: 'Linked page', col_slides: 'Slides',
     columns: 'Columns', export: 'Export', cols_visible: 'Visible', cols_hidden: 'Hidden', drag_here: 'Drag here', reset: 'Reset',
+    reset_filters: 'Reset filters',
     edit: 'Edit', open: 'Open slides', rename: 'Rename', del: 'Delete', cancel: 'Cancel', save: 'Save', back: 'Back',
     refresh: 'Refresh', loading: 'Loading…', saved: 'Saved ✓', none: '—',
     del_slider_title: 'Delete slider', del_slider_confirm: 'Delete “{n}” and all its slides? This is irreversible.',
@@ -94,6 +96,7 @@ export const PlusIcon = () => <svg style={sIcon} viewBox="0 0 24 24" fill="none"
 export const ImageIcon = () => <svg style={sIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="9" cy="9" r="2" /><path d="m21 15-3.1-3.1a2 2 0 0 0-2.8 0L6 21" /></svg>
 export const LayersIcon = () => <svg style={sIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 2 9 5-9 5-9-5 9-5Z" /><path d="m3 12 9 5 9-5" /><path d="m3 17 9 5 9-5" /></svg>
 export const GripIcon = () => <svg style={{ width: 13, height: 13, flexShrink: 0, color: 'var(--color-muted-foreground)' }} viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.5" /><circle cx="15" cy="6" r="1.5" /><circle cx="9" cy="12" r="1.5" /><circle cx="15" cy="12" r="1.5" /><circle cx="9" cy="18" r="1.5" /><circle cx="15" cy="18" r="1.5" /></svg>
+export const ResetIcon = () => <svg style={sIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 2v6h6" /><path d="M3 13a9 9 0 1 0 3-7.7L3 8" /></svg>
 
 // ── KPI ──
 export function Kpi({ label: lbl, value }: { label: string; value: number | null }) {
