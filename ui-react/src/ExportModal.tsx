@@ -88,8 +88,10 @@ export function ExportModal<T>({ cols, labelFor, fetchAll, getCell, filename, sh
     const isOver = over?.id === col.id && over?.panel === panel
     return (
       <div key={col.id} draggable
-        onDragStart={() => setDragId(col.id)} onDragEnd={() => { setDragId(null); setOver(null) }}
-        onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); if (over?.id !== col.id || over?.panel !== panel) setOver({ id: col.id, panel }) }}
+        // setData() obligatoire : sans lui, Firefox/Safari annulent le drag (cf. SliderEditor).
+        onDragStart={(e) => { e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', col.id); setDragId(col.id) }}
+        onDragEnd={() => { setDragId(null); setOver(null) }}
+        onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); e.dataTransfer.dropEffect = 'move'; if (over?.id !== col.id || over?.panel !== panel) setOver({ id: col.id, panel }) }}
         onDrop={(e) => { e.preventDefault(); drop(panel) }}
         style={{ display: 'flex', alignItems: 'center', gap: 8, borderRadius: 8, padding: '6px 8px', fontSize: 14, cursor: 'grab', userSelect: 'none', opacity: dragId === col.id ? 0.4 : 1, background: isOver ? 'color-mix(in srgb, var(--color-primary) 12%, transparent)' : 'transparent', boxShadow: isOver ? '0 0 0 1px color-mix(in srgb, var(--color-primary) 35%, transparent)' : 'none' }}>
         <GripIcon /><span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{labelFor(col.id)}</span>

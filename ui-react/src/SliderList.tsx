@@ -126,7 +126,8 @@ export default function SliderList({ active, onOpen, mode, onModeChange }: {
             {can('export') && <button style={{ ...btnGhost, height: 36 }} onClick={() => setShowExport(true)}><DownloadIcon />{t('export')}</button>}
           </div>
 
-          <div style={{ ...card, overflow: 'hidden' }}>
+          {/* flexShrink:0 : cf. SliderEditor — sinon la carte est comprimée et rogne ses lignes. */}
+          <div style={{ ...card, overflow: 'hidden', flexShrink: 0 }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 560 }}>
               <thead style={{ background: 'var(--color-muted,rgba(0,0,0,.03))' }}>
                 <tr>

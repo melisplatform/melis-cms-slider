@@ -29,6 +29,7 @@ const DICT: Record<Lang, Record<string, string>> = {
     err_save: 'Erreur lors de la sauvegarde', no_access: 'Vous n’avez pas les droits pour consulter cette liste.',
     // niveau slides
     slides_of: 'Slides de « {n} »', add_slide: 'Ajouter une slide', no_slides: 'Aucune slide. Cliquez sur « Ajouter une slide ».',
+    count_slides: '{n} slides — fin de la liste',
     s_order: 'Ordre', s_status: 'Statut', s_image: 'Image', s_title: 'Titre', s_sub1: 'Sous-titre', s_link: 'Lien',
     active: 'Active', inactive: 'Inactive', reorder_hint: 'Glissez une ligne pour réordonner.',
     del_slide_title: 'Supprimer la slide', del_slide_confirm: 'Supprimer cette slide ? Action irréversible.',
@@ -52,6 +53,7 @@ const DICT: Record<Lang, Record<string, string>> = {
     f_name: 'Slider name', f_name_ph: 'My slider', f_page: 'Linked page (optional)', f_page_ph: '— Choose a page —', f_page_none: '— None —',
     err_save: 'Error while saving', no_access: 'You do not have permission to view this list.',
     slides_of: 'Slides of “{n}”', add_slide: 'Add a slide', no_slides: 'No slide yet. Click “Add a slide”.',
+    count_slides: '{n} slides — end of list',
     s_order: 'Order', s_status: 'Status', s_image: 'Image', s_title: 'Title', s_sub1: 'Subtitle', s_link: 'Link',
     active: 'Active', inactive: 'Inactive', reorder_hint: 'Drag a row to reorder.',
     del_slide_title: 'Delete slide', del_slide_confirm: 'Delete this slide? This is irreversible.',
@@ -168,8 +170,10 @@ export function ColManager({ cols, labelFor, onChange, onSave, defaults, onClose
     const isOver = over?.id === col.id && over?.panel === panel
     return (
       <div key={col.id} draggable
-        onDragStart={() => setDragId(col.id)} onDragEnd={() => { setDragId(null); setOver(null) }}
-        onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); if (over?.id !== col.id || over?.panel !== panel) setOver({ id: col.id, panel }) }}
+        // setData() obligatoire : sans lui, Firefox/Safari annulent le drag (cf. SliderEditor).
+        onDragStart={(e) => { e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', col.id); setDragId(col.id) }}
+        onDragEnd={() => { setDragId(null); setOver(null) }}
+        onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); e.dataTransfer.dropEffect = 'move'; if (over?.id !== col.id || over?.panel !== panel) setOver({ id: col.id, panel }) }}
         onDrop={(e) => { e.preventDefault(); drop(panel) }}
         style={{ display: 'flex', alignItems: 'center', gap: 8, borderRadius: 8, padding: '6px 8px', fontSize: 14, cursor: 'grab', userSelect: 'none', opacity: dragId === col.id ? 0.4 : 1, background: isOver ? 'color-mix(in srgb, var(--color-primary) 12%, transparent)' : 'transparent', boxShadow: isOver ? '0 0 0 1px color-mix(in srgb, var(--color-primary) 35%, transparent)' : 'none' }}>
         <GripIcon /><span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{labelFor(col.id)}</span>

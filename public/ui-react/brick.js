@@ -148,6 +148,7 @@
 			slides_of: "Slides de « {n} »",
 			add_slide: "Ajouter une slide",
 			no_slides: "Aucune slide. Cliquez sur « Ajouter une slide ».",
+			count_slides: "{n} slides — fin de la liste",
 			s_order: "Ordre",
 			s_status: "Statut",
 			s_image: "Image",
@@ -219,6 +220,7 @@
 			slides_of: "Slides of “{n}”",
 			add_slide: "Add a slide",
 			no_slides: "No slide yet. Click “Add a slide”.",
+			count_slides: "{n} slides — end of list",
 			s_order: "Order",
 			s_status: "Status",
 			s_image: "Image",
@@ -615,7 +617,11 @@
 			const isOver = over?.id === col.id && over?.panel === panel;
 			return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 				draggable: true,
-				onDragStart: () => setDragId(col.id),
+				onDragStart: (e) => {
+					e.dataTransfer.effectAllowed = "move";
+					e.dataTransfer.setData("text/plain", col.id);
+					setDragId(col.id);
+				},
 				onDragEnd: () => {
 					setDragId(null);
 					setOver(null);
@@ -623,6 +629,7 @@
 				onDragOver: (e) => {
 					e.preventDefault();
 					e.stopPropagation();
+					e.dataTransfer.dropEffect = "move";
 					if (over?.id !== col.id || over?.panel !== panel) setOver({
 						id: col.id,
 						panel
@@ -1078,7 +1085,11 @@
 			const isOver = over?.id === col.id && over?.panel === panel;
 			return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 				draggable: true,
-				onDragStart: () => setDragId(col.id),
+				onDragStart: (e) => {
+					e.dataTransfer.effectAllowed = "move";
+					e.dataTransfer.setData("text/plain", col.id);
+					setDragId(col.id);
+				},
 				onDragEnd: () => {
 					setDragId(null);
 					setOver(null);
@@ -1086,6 +1097,7 @@
 				onDragOver: (e) => {
 					e.preventDefault();
 					e.stopPropagation();
+					e.dataTransfer.dropEffect = "move";
 					if (over?.id !== col.id || over?.panel !== panel) setOver({
 						id: col.id,
 						panel
@@ -1853,7 +1865,8 @@
 						/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 							style: {
 								...card$1,
-								overflow: "hidden"
+								overflow: "hidden",
+								flexShrink: 0
 							},
 							children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("table", {
 								style: {
@@ -2478,13 +2491,18 @@
 	//#region src/SliderEditor.tsx
 	var can = makeCan("meliscms_slider_tools_section");
 	var COL_LABEL = {
+		id: "col_id",
 		status: "s_status",
 		image: "s_image",
 		title: "s_title",
 		sub1: "s_sub1",
 		link: "s_link"
 	};
-	var colStore = makeColStore("melis-slider-slides-cols-v1", [
+	var colStore = makeColStore("melis-slider-slides-cols-v2", [
+		{
+			id: "id",
+			visible: true
+		},
 		{
 			id: "status",
 			visible: true
@@ -2537,13 +2555,14 @@
 				setToDelete(null);
 			}
 		}
-		async function handleDrop(targetId) {
-			if (dragId == null || dragId === targetId) {
+		async function handleDrop(targetId, e) {
+			const srcId = dragId ?? (Number(e.dataTransfer.getData("text/plain")) || null);
+			if (srcId == null || srcId === targetId) {
 				setDragId(null);
 				setOverId(null);
 				return;
 			}
-			const from = slides.findIndex((s) => s.id === dragId);
+			const from = slides.findIndex((s) => s.id === srcId);
 			const to = slides.findIndex((s) => s.id === targetId);
 			if (from === -1 || to === -1) {
 				setDragId(null);
@@ -2640,7 +2659,8 @@
 				}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 					style: {
 						...card$1,
-						overflow: "hidden"
+						overflow: "hidden",
+						flexShrink: 0
 					},
 					children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("table", {
 						style: {
@@ -2665,7 +2685,7 @@
 								visibleCols(cols).map(({ id }) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("th", {
 									style: {
 										...th,
-										...id === "status" ? { width: 70 } : id === "image" ? { width: 80 } : {}
+										...id === "id" ? { width: 70 } : id === "status" ? { width: 70 } : id === "image" ? { width: 80 } : {}
 									},
 									children: t(COL_LABEL[id])
 								}, id)),
@@ -2685,7 +2705,12 @@
 							children: t("no_slides")
 						}) }) : slides.map((s) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("tr", {
 							draggable: can("slides.edit"),
-							onDragStart: () => can("slides.edit") && setDragId(s.id),
+							onDragStart: (e) => {
+								if (!can("slides.edit")) return;
+								e.dataTransfer.effectAllowed = "move";
+								e.dataTransfer.setData("text/plain", String(s.id));
+								setDragId(s.id);
+							},
 							onDragEnd: () => {
 								setDragId(null);
 								setOverId(null);
@@ -2693,12 +2718,13 @@
 							onDragOver: (e) => {
 								if (!can("slides.edit")) return;
 								e.preventDefault();
+								e.dataTransfer.dropEffect = "move";
 								if (overId !== s.id) setOverId(s.id);
 							},
 							onDrop: (e) => {
 								if (!can("slides.edit")) return;
 								e.preventDefault();
-								handleDrop(s.id);
+								handleDrop(s.id, e);
 							},
 							style: {
 								cursor: can("slides.edit") ? "grab" : "default",
@@ -2725,6 +2751,10 @@
 								visibleCols(cols).map(({ id }) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("td", {
 									style: {
 										...td,
+										...id === "id" ? {
+											color: "var(--color-muted-foreground)",
+											fontVariantNumeric: "tabular-nums"
+										} : {},
 										...id === "sub1" ? {
 											color: "var(--color-muted-foreground)",
 											maxWidth: 220,
@@ -2743,6 +2773,7 @@
 										} : {}
 									},
 									children: [
+										id === "id" && s.id,
 										id === "status" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
 											title: s.status ? t("active") : t("inactive"),
 											style: {
@@ -2807,14 +2838,14 @@
 								})
 							]
 						}, s.id)) })]
-					}), loading && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+					}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
 						style: {
 							padding: "10px 16px",
 							textAlign: "center",
 							fontSize: 12,
 							color: "var(--color-muted-foreground)"
 						},
-						children: t("loading")
+						children: loading ? t("loading") : t("count_slides", { n: slides.length })
 					})]
 				})] }),
 				toDelete && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(ConfirmModal, {

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type DragEvent } from 'react'
 import { fetchSlides, deleteSlide, reorderSlides, type SlideItem } from './slider-api'
 import {
   useT, makeCan, card, btnPrimary, btnGhost, iconBtn, th, td, pageWrap,
@@ -13,12 +13,14 @@ import SlideEditor from './SlideEditor'
 const can = makeCan('meliscms_slider_tools_section') // nœud porteur de droits (cf. react.capabilities.php)
 type SlideView = { kind: 'list' } | { kind: 'new' } | { kind: 'edit'; id: number }
 
-const COL_LABEL: Record<string, string> = { status: 's_status', image: 's_image', title: 's_title', sub1: 's_sub1', link: 's_link' }
+const COL_LABEL: Record<string, string> = { id: 'col_id', status: 's_status', image: 's_image', title: 's_title', sub1: 's_sub1', link: 's_link' }
 const DEFAULT_COLS: ColDef[] = [
-  { id: 'status', visible: true }, { id: 'image', visible: true }, { id: 'title', visible: true },
-  { id: 'sub1', visible: true }, { id: 'link', visible: true },
+  { id: 'id', visible: true }, { id: 'status', visible: true }, { id: 'image', visible: true },
+  { id: 'title', visible: true }, { id: 'sub1', visible: true }, { id: 'link', visible: true },
 ]
-const colStore = makeColStore('melis-slider-slides-cols-v1', DEFAULT_COLS)
+// v2 : ajout de la colonne ID. Bump de la clé → l'ordre par défaut s'applique (sinon `loadCols`
+// appenderait la nouvelle colonne EN FIN de la liste déjà persistée en localStorage).
+const colStore = makeColStore('melis-slider-slides-cols-v2', DEFAULT_COLS)
 
 export default function SliderEditor({ sliderId, sliderName, onSaved }: {
   sliderId: number
@@ -48,9 +50,12 @@ export default function SliderEditor({ sliderId, sliderName, onSaved }: {
     catch { setToDelete(null) }
   }
 
-  async function handleDrop(targetId: number) {
-    if (dragId == null || dragId === targetId) { setDragId(null); setOverId(null); return }
-    const from = slides.findIndex((s) => s.id === dragId)
+  async function handleDrop(targetId: number, e: DragEvent<HTMLTableRowElement>) {
+    // `dragId` (état React) suffit en pratique, mais on retombe sur la charge du dataTransfer :
+    // c'est la source de vérité du navigateur, et elle survit à un remount pendant le drag.
+    const srcId = dragId ?? (Number(e.dataTransfer.getData('text/plain')) || null)
+    if (srcId == null || srcId === targetId) { setDragId(null); setOverId(null); return }
+    const from = slides.findIndex((s) => s.id === srcId)
     const to = slides.findIndex((s) => s.id === targetId)
     if (from === -1 || to === -1) { setDragId(null); setOverId(null); return }
     const next = [...slides]
@@ -88,14 +93,17 @@ export default function SliderEditor({ sliderId, sliderName, onSaved }: {
           {showCols && <ColManager cols={cols} labelFor={(id) => t(COL_LABEL[id])} onChange={setCols} onSave={colStore.save} defaults={colStore.defaults} onClose={() => setShowCols(false)} />}
         </div>
       </div>
-      <div style={{ ...card, overflow: 'hidden' }}>
+      {/* flexShrink:0 — sans lui, la carte (flex-item de `pageWrap`, en colonne) se COMPRIME à la
+          hauteur restante et, comme elle est `overflow:hidden`, les lignes en trop sont ROGNÉES au
+          lieu de faire défiler la page. */}
+      <div style={{ ...card, overflow: 'hidden', flexShrink: 0 }}>
         <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 640 }}>
           <thead style={{ background: 'var(--color-muted,rgba(0,0,0,.03))' }}>
             <tr>
               <th style={{ ...th, width: 40 }} />
               <th style={{ ...th, width: 50 }}>{t('s_order')}</th>
               {visibleCols(cols).map(({ id }) => (
-                <th key={id} style={{ ...th, ...(id === 'status' ? { width: 70 } : id === 'image' ? { width: 80 } : {}) }}>{t(COL_LABEL[id])}</th>
+                <th key={id} style={{ ...th, ...(id === 'id' ? { width: 70 } : id === 'status' ? { width: 70 } : id === 'image' ? { width: 80 } : {}) }}>{t(COL_LABEL[id])}</th>
               ))}
               <th style={{ ...th, width: 80 }} />
             </tr>
@@ -106,10 +114,18 @@ export default function SliderEditor({ sliderId, sliderName, onSaved }: {
             ) : slides.map((s) => (
               <tr key={s.id}
                 draggable={can('slides.edit')}
-                onDragStart={() => can('slides.edit') && setDragId(s.id)}
+                // ⚠️ setData() est OBLIGATOIRE : sans au moins une entrée dans le drag data store,
+                // Firefox et Safari ANNULENT le drag au dragstart → dragover/drop ne se déclenchent
+                // jamais et le réordonnancement ne partait pas (Chromium, lui, tolère l'oubli).
+                onDragStart={(e) => {
+                  if (!can('slides.edit')) return
+                  e.dataTransfer.effectAllowed = 'move'
+                  e.dataTransfer.setData('text/plain', String(s.id))
+                  setDragId(s.id)
+                }}
                 onDragEnd={() => { setDragId(null); setOverId(null) }}
-                onDragOver={(e) => { if (!can('slides.edit')) return; e.preventDefault(); if (overId !== s.id) setOverId(s.id) }}
-                onDrop={(e) => { if (!can('slides.edit')) return; e.preventDefault(); handleDrop(s.id) }}
+                onDragOver={(e) => { if (!can('slides.edit')) return; e.preventDefault(); e.dataTransfer.dropEffect = 'move'; if (overId !== s.id) setOverId(s.id) }}
+                onDrop={(e) => { if (!can('slides.edit')) return; e.preventDefault(); handleDrop(s.id, e) }}
                 style={{
                   cursor: can('slides.edit') ? 'grab' : 'default', opacity: dragId === s.id ? 0.4 : 1,
                   background: overId === s.id && dragId !== s.id ? 'color-mix(in srgb, var(--color-primary) 8%, transparent)' : 'transparent',
@@ -119,9 +135,11 @@ export default function SliderEditor({ sliderId, sliderName, onSaved }: {
                 {visibleCols(cols).map(({ id }) => (
                   <td key={id} style={{
                     ...td,
+                    ...(id === 'id' ? { color: 'var(--color-muted-foreground)', fontVariantNumeric: 'tabular-nums' } : {}),
                     ...(id === 'sub1' ? { color: 'var(--color-muted-foreground)', maxWidth: 220, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } : {}),
                     ...(id === 'link' ? { fontFamily: 'monospace', fontSize: 12, color: 'var(--color-muted-foreground)', maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } : {}),
                   }}>
+                    {id === 'id' && s.id}
                     {id === 'status' && (
                       <span title={s.status ? t('active') : t('inactive')} style={{ display: 'inline-block', width: 10, height: 10, borderRadius: 999, background: s.status ? '#22c55e' : '#ef4444' }} />
                     )}
@@ -145,7 +163,9 @@ export default function SliderEditor({ sliderId, sliderName, onSaved }: {
             ))}
           </tbody>
         </table>
-        {loading && <div style={{ padding: '10px 16px', textAlign: 'center', fontSize: 12, color: 'var(--color-muted-foreground)' }}>{t('loading')}</div>}
+        <div style={{ padding: '10px 16px', textAlign: 'center', fontSize: 12, color: 'var(--color-muted-foreground)' }}>
+          {loading ? t('loading') : t('count_slides', { n: slides.length })}
+        </div>
       </div>
       </>)}
 
