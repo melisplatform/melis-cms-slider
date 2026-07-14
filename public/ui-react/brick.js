@@ -42,6 +42,9 @@
 	async function fetchSliderStats() {
 		return apiFetch(`${BASE}/stats`);
 	}
+	async function fetchSlider(id) {
+		return apiFetch(`${BASE}/${id}`);
+	}
 	async function saveSlider(payload) {
 		return apiFetch(`${BASE}/save`, {
 			method: "POST",
@@ -2870,6 +2873,55 @@
 		const next = seg != null && seg !== "" ? `${base}/${seg}` : base;
 		if (window.location.pathname !== next) window.history.replaceState(window.history.state, "", next);
 	}
+	/**
+	* Sous-onglets ouverts, RESTAURÉS APRÈS UN F5.
+	*
+	* L'URL ne suffit pas : le bundle de la brique est chargé en différé (React.lazy) et l'hôte peut
+	* avoir remis l'URL sur la base avant que SliderPage ne fasse son 1er rendu — l'id lu à ce
+	* moment-là est alors déjà perdu. On persiste donc la liste des sliders ouverts (et l'onglet actif)
+	* en sessionStorage, comme le fait le store d'onglets de l'hôte (`melis-open-tabs`), et
+	* `reflectSubTabUrl` remet ensuite l'id dans l'URL. L'URL reste un point d'entrée valable
+	* (deep-link depuis l'extérieur) : elle alimente l'état de boot quand le storage est vide.
+	*/
+	var SUBTABS_KEY = "melis-slider-subtabs";
+	function sliderIdFromUrl() {
+		const m = window.location.pathname.match(/\/(\d+)$/);
+		return m ? Number(m[1]) : null;
+	}
+	/** Id présent dans l'URL au chargement du bundle — snapshot le plus précoce possible. */
+	var URL_BOOT_ID = sliderIdFromUrl();
+	function loadBootState() {
+		let open = [];
+		let activeId = null;
+		try {
+			const raw = sessionStorage.getItem(SUBTABS_KEY);
+			if (raw) {
+				const p = JSON.parse(raw);
+				if (Array.isArray(p.open)) open = p.open.filter((o) => o && typeof o.id === "number");
+				if (typeof p.activeId === "number") activeId = p.activeId;
+			}
+		} catch {}
+		if (URL_BOOT_ID != null) {
+			if (!open.some((o) => o.id === URL_BOOT_ID)) open = [...open, {
+				id: URL_BOOT_ID,
+				name: ""
+			}];
+			activeId = URL_BOOT_ID;
+		}
+		if (activeId != null && !open.some((o) => o.id === activeId)) activeId = null;
+		return {
+			open,
+			activeId
+		};
+	}
+	function saveBootState(open, activeId) {
+		try {
+			sessionStorage.setItem(SUBTABS_KEY, JSON.stringify({
+				open,
+				activeId
+			}));
+		} catch {}
+	}
 	var LayersIcon = () => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("svg", {
 		width: "13",
 		height: "13",
@@ -2975,12 +3027,28 @@
 		});
 	}
 	function SliderPage() {
-		const [view, setView] = (0, react.useState)({ kind: "list" });
-		const [open, setOpen] = (0, react.useState)([]);
+		const [boot] = (0, react.useState)(loadBootState);
+		const [view, setView] = (0, react.useState)(boot.activeId != null ? {
+			kind: "edit",
+			id: boot.activeId
+		} : { kind: "list" });
+		const [open, setOpen] = (0, react.useState)(boot.open);
 		const [mode, setMode] = (0, react.useState)("react");
 		(0, react.useEffect)(() => {
 			window.__melisSetToolView?.(MELIS_KEY, mode);
 		}, [mode]);
+		(0, react.useEffect)(() => {
+			for (const o of boot.open) {
+				if (o.name) continue;
+				fetchSlider(o.id).then((s) => setOpen((prev) => prev.map((p) => p.id === o.id ? {
+					...p,
+					name: s.name
+				} : p))).catch(() => {
+					setOpen((prev) => prev.filter((p) => p.id !== o.id));
+					setView((v) => v.kind === "edit" && v.id === o.id ? { kind: "list" } : v);
+				});
+			}
+		}, [boot]);
 		function changeMode(m) {
 			setMode(m);
 			if (m === "iframe") setView({ kind: "list" });
@@ -3012,6 +3080,19 @@
 		(0, react.useEffect)(() => {
 			reflectSubTabUrl(activeId);
 		}, [activeId]);
+		(0, react.useEffect)(() => {
+			saveBootState(open, activeId);
+		}, [open, activeId]);
+		(0, react.useEffect)(() => {
+			const onClosed = (e) => {
+				const path = e.detail?.path ?? "";
+				if (!/\/slider$/.test(path)) return;
+				setOpen([]);
+				setView({ kind: "list" });
+			};
+			window.addEventListener("melis:tab-closed", onClosed);
+			return () => window.removeEventListener("melis:tab-closed", onClosed);
+		}, []);
 		return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 			style: {
 				display: "flex",

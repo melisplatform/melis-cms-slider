@@ -5,5 +5,6 @@
   "forwardKey": "MelisCmsSlider/MelisCmsSliderList",
   "melisKey": "MelisCmsSlider_left_menu",
   "entry": "brick.js",
+  "subTabs": true,
   "persistent": true
 }

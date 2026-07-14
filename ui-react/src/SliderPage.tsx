@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import SliderList, { MELIS_KEY } from './SliderList'
 import SliderEditor from './SliderEditor'
-import { markSliderListStale } from './slider-api'
+import { fetchSlider, markSliderListStale } from './slider-api'
 import { useT } from './ui'
 import { type ViewMode } from './ViewToggle'
 
@@ -32,6 +32,52 @@ function reflectSubTabUrl(seg: string | number | null) {
   const base = window.location.pathname.replace(/\/(?:new|\d+)$/, '')
   const next = seg != null && seg !== '' ? `${base}/${seg}` : base
   if (window.location.pathname !== next) window.history.replaceState(window.history.state, '', next)
+}
+
+/**
+ * Sous-onglets ouverts, RESTAURÉS APRÈS UN F5.
+ *
+ * L'URL ne suffit pas : le bundle de la brique est chargé en différé (React.lazy) et l'hôte peut
+ * avoir remis l'URL sur la base avant que SliderPage ne fasse son 1er rendu — l'id lu à ce
+ * moment-là est alors déjà perdu. On persiste donc la liste des sliders ouverts (et l'onglet actif)
+ * en sessionStorage, comme le fait le store d'onglets de l'hôte (`melis-open-tabs`), et
+ * `reflectSubTabUrl` remet ensuite l'id dans l'URL. L'URL reste un point d'entrée valable
+ * (deep-link depuis l'extérieur) : elle alimente l'état de boot quand le storage est vide.
+ */
+const SUBTABS_KEY = 'melis-slider-subtabs'
+interface BootState { open: OpenTab[]; activeId: number | null }
+
+function sliderIdFromUrl(): number | null {
+  const m = window.location.pathname.match(/\/(\d+)$/)
+  return m ? Number(m[1]) : null
+}
+
+/** Id présent dans l'URL au chargement du bundle — snapshot le plus précoce possible. */
+const URL_BOOT_ID = sliderIdFromUrl()
+
+function loadBootState(): BootState {
+  let open: OpenTab[] = []
+  let activeId: number | null = null
+  try {
+    const raw = sessionStorage.getItem(SUBTABS_KEY)
+    if (raw) {
+      const p = JSON.parse(raw) as Partial<BootState>
+      if (Array.isArray(p.open)) open = p.open.filter((o) => o && typeof o.id === 'number')
+      if (typeof p.activeId === 'number') activeId = p.activeId
+    }
+  } catch { /* storage indisponible / corrompu */ }
+
+  // Deep-link : l'id de l'URL prime comme onglet actif, et s'ajoute s'il n'est pas déjà ouvert.
+  if (URL_BOOT_ID != null) {
+    if (!open.some((o) => o.id === URL_BOOT_ID)) open = [...open, { id: URL_BOOT_ID, name: '' }]
+    activeId = URL_BOOT_ID
+  }
+  if (activeId != null && !open.some((o) => o.id === activeId)) activeId = null
+  return { open, activeId }
+}
+
+function saveBootState(open: OpenTab[], activeId: number | null) {
+  try { sessionStorage.setItem(SUBTABS_KEY, JSON.stringify({ open, activeId })) } catch { /* best-effort */ }
 }
 
 const LayersIcon = () => (
@@ -72,8 +118,10 @@ function SubTabBar({ tabs, activeId, onBack, onSelect, onClose }: {
 }
 
 export default function SliderPage() {
-  const [view, setView] = useState<View>({ kind: 'list' })
-  const [open, setOpen] = useState<OpenTab[]>([])
+  // Rechargement (F5) → on rouvre les sous-onglets laissés ouverts (cf. loadBootState).
+  const [boot] = useState(loadBootState)
+  const [view, setView] = useState<View>(boot.activeId != null ? { kind: 'edit', id: boot.activeId } : { kind: 'list' })
+  const [open, setOpen] = useState<OpenTab[]>(boot.open)
   // Vue du toggle New/Old, portée ICI (et non dans SliderList) : elle conditionne aussi la barre de
   // sous-onglets React ci-dessous. Les deux vues ont chacune leur propre barre d'onglets — celle de
   // la vue Old est la ToolTabBar de l'hôte, alimentée par l'iframe legacy — et elles ne doivent
@@ -83,6 +131,21 @@ export default function SliderPage() {
   // 1) On dit à l'hôte quelle vue est active : il masque les onglets de l'iframe legacy en vue React
   //    (l'iframe reste montée en display:none et continue de les publier).
   useEffect(() => { window.__melisSetToolView?.(MELIS_KEY, mode) }, [mode])
+
+  // Noms des sous-onglets restaurés : le storage les porte déjà, mais un onglet venu d'un deep-link
+  // (ou dont le slider a été renommé ailleurs) n'a que son id → on (re)charge le nom. Slider
+  // supprimé entre-temps ou id bidon dans l'URL → on referme le sous-onglet.
+  useEffect(() => {
+    for (const o of boot.open) {
+      if (o.name) continue
+      fetchSlider(o.id)
+        .then((s) => setOpen((prev) => prev.map((p) => (p.id === o.id ? { ...p, name: s.name } : p))))
+        .catch(() => {
+          setOpen((prev) => prev.filter((p) => p.id !== o.id))
+          setView((v) => (v.kind === 'edit' && v.id === o.id ? { kind: 'list' } : v))
+        })
+    }
+  }, [boot])
 
   // 2) Passer en vue Old ramène sur la liste : c'est SliderList qui porte l'iframe, elle doit donc
   //    être visible (un SliderEditor React ouvert la masquerait).
@@ -114,6 +177,23 @@ export default function SliderPage() {
 
   // URL = /[section]/[tool]/:id, reflétée à chaque changement de sous-onglet actif.
   useEffect(() => { reflectSubTabUrl(activeId) }, [activeId])
+
+  // Sous-onglets persistés → un F5 les rouvre tels quels (cf. loadBootState).
+  useEffect(() => { saveBootState(open, activeId) }, [open, activeId])
+
+  // Fermer l'onglet PRINCIPAL de l'outil ferme ses sous-onglets — même règle que le store de
+  // l'hôte (sub-tab-store, CLOSE_ALL sur `melis:tab-closed`) : sans ça, rouvrir Slider
+  // ressusciterait les sliders ouverts avant la fermeture.
+  useEffect(() => {
+    const onClosed = (e: Event) => {
+      const path = (e as CustomEvent<{ path?: string }>).detail?.path ?? ''
+      if (!/\/slider$/.test(path)) return   // route de la brique : /[section]/slider
+      setOpen([])
+      setView({ kind: 'list' })
+    }
+    window.addEventListener('melis:tab-closed', onClosed)
+    return () => window.removeEventListener('melis:tab-closed', onClosed)
+  }, [])
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
