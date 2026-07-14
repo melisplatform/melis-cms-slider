@@ -309,6 +309,20 @@
 		fontSize: 14,
 		cursor: "pointer"
 	};
+	var ACCENT_BG = "var(--accent, var(--color-accent, rgba(0,0,0,.06)))";
+	var ACCENT_FG = "var(--accent-foreground, var(--color-accent-foreground, var(--color-foreground)))";
+	function ghostHover(baseBg = "var(--color-card)", baseFg = "var(--color-foreground)") {
+		return {
+			onMouseEnter: (e) => {
+				e.currentTarget.style.background = ACCENT_BG;
+				e.currentTarget.style.color = ACCENT_FG;
+			},
+			onMouseLeave: (e) => {
+				e.currentTarget.style.background = String(baseBg);
+				e.currentTarget.style.color = String(baseFg);
+			}
+		};
+	}
 	var iconBtn = {
 		display: "inline-flex",
 		alignItems: "center",
@@ -757,12 +771,14 @@
 							height: 30,
 							border: 0,
 							justifyContent: "center",
-							color: "var(--color-muted-foreground)"
+							color: "var(--color-muted-foreground)",
+							background: "transparent"
 						},
 						onClick: () => {
 							onChange(defaults);
 							onSave(defaults);
 						},
+						...ghostHover("transparent", "var(--color-muted-foreground)"),
 						children: t("reset")
 					})
 				})
@@ -1584,13 +1600,13 @@
 	//#region src/SliderList.tsx
 	var MELIS_KEY = "MelisCmsSlider_left_menu";
 	var can$2 = makeCan("meliscms_slider_tools_section");
-	var COL_LABEL = {
+	var COL_LABEL$1 = {
 		id: "col_id",
 		name: "col_name",
 		page: "col_page",
 		slides: "col_slides"
 	};
-	var colStore = makeColStore("melis-slider-cols-v1", [
+	var colStore$1 = makeColStore("melis-slider-cols-v1", [
 		{
 			id: "id",
 			visible: false
@@ -1627,7 +1643,7 @@
 			fill: "currentColor"
 		})]
 	});
-	function SliderList({ active, onOpen }) {
+	function SliderList({ active, onOpen, mode, onModeChange }) {
 		const t = useT();
 		const [items, setItems] = (0, react.useState)([]);
 		const [stats, setStats] = (0, react.useState)(null);
@@ -1638,11 +1654,13 @@
 		const [toDelete, setToDelete] = (0, react.useState)(null);
 		const [editSlider, setEditSlider] = (0, react.useState)(null);
 		const [tick, setTick] = (0, react.useState)(0);
-		const [cols, setCols] = (0, react.useState)(colStore.load);
+		const [cols, setCols] = (0, react.useState)(colStore$1.load);
 		const [showCols, setShowCols] = (0, react.useState)(false);
 		const [showExport, setShowExport] = (0, react.useState)(false);
-		const [mode, setMode] = (0, react.useState)("react");
 		const [frameLoaded, setFrameLoaded] = (0, react.useState)(false);
+		(0, react.useEffect)(() => {
+			if (mode === "iframe") setFrameLoaded(true);
+		}, [mode]);
 		(0, react.useEffect)(() => {
 			fetchSliderStats().then(setStats).catch(() => null);
 		}, [tick]);
@@ -1704,10 +1722,7 @@
 						children: [
 							/* @__PURE__ */ (0, react_jsx_runtime.jsx)(ViewToggle, {
 								mode,
-								onChange: (m) => {
-									setMode(m);
-									if (m === "iframe") setFrameLoaded(true);
-								}
+								onChange: onModeChange
 							}),
 							/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
 								style: btnGhost$1,
@@ -1732,7 +1747,7 @@
 						overflow: "hidden"
 					},
 					children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("iframe", {
-						src: `/melis/react-tool-page?key=${encodeURIComponent(MELIS_KEY)}`,
+						src: `/melis/react-tool-page?key=${encodeURIComponent("MelisCmsSlider_left_menu")}`,
 						style: {
 							flex: 1,
 							width: "100%",
@@ -1804,6 +1819,7 @@
 										height: 36
 									},
 									onClick: resetFilters,
+									...ghostHover("var(--color-card)", "var(--color-foreground)"),
 									children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)(ResetIcon, {}), t("reset_filters")]
 								}),
 								/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
@@ -1817,10 +1833,10 @@
 										children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)(GripIcon$1, {}), t("columns")]
 									}), showCols && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(ColManager, {
 										cols,
-										labelFor: (id) => t(COL_LABEL[id]),
+										labelFor: (id) => t(COL_LABEL$1[id]),
 										onChange: setCols,
-										onSave: colStore.save,
-										defaults: colStore.defaults,
+										onSave: colStore$1.save,
+										defaults: colStore$1.defaults,
 										onClose: () => setShowCols(false)
 									})]
 								}),
@@ -1856,7 +1872,7 @@
 											} : {}
 										},
 										onClick: id === "id" ? () => setSortAsc((v) => !v) : void 0,
-										children: [t(COL_LABEL[id]), id === "id" ? ` ${sortAsc ? "↑" : "↓"}` : ""]
+										children: [t(COL_LABEL$1[id]), id === "id" ? ` ${sortAsc ? "↑" : "↓"}` : ""]
 									}, id)), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("th", { style: {
 										...th,
 										width: 110
@@ -1967,7 +1983,7 @@
 				}),
 				showExport && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(ExportModal, {
 					cols,
-					labelFor: (id) => t(COL_LABEL[id]),
+					labelFor: (id) => t(COL_LABEL$1[id]),
 					fetchAll: async () => (await fetchSliders({ search })).items,
 					getCell: (s, id) => id === "id" ? s.id : id === "name" ? s.name : id === "page" ? s.pageId ?? "" : id === "slides" ? s.slideCount : "",
 					filename: "sliders",
@@ -2461,6 +2477,35 @@
 	//#endregion
 	//#region src/SliderEditor.tsx
 	var can = makeCan("meliscms_slider_tools_section");
+	var COL_LABEL = {
+		status: "s_status",
+		image: "s_image",
+		title: "s_title",
+		sub1: "s_sub1",
+		link: "s_link"
+	};
+	var colStore = makeColStore("melis-slider-slides-cols-v1", [
+		{
+			id: "status",
+			visible: true
+		},
+		{
+			id: "image",
+			visible: true
+		},
+		{
+			id: "title",
+			visible: true
+		},
+		{
+			id: "sub1",
+			visible: true
+		},
+		{
+			id: "link",
+			visible: true
+		}
+	]);
 	function SliderEditor({ sliderId, sliderName, onSaved }) {
 		const t = useT();
 		const [view, setView] = (0, react.useState)({ kind: "list" });
@@ -2470,6 +2515,8 @@
 		const [dragId, setDragId] = (0, react.useState)(null);
 		const [overId, setOverId] = (0, react.useState)(null);
 		const [tick, setTick] = (0, react.useState)(0);
+		const [cols, setCols] = (0, react.useState)(colStore.load);
+		const [showCols, setShowCols] = (0, react.useState)(false);
 		(0, react.useEffect)(() => {
 			if (view.kind !== "list") return;
 			setLoading(true);
@@ -2567,7 +2614,30 @@
 						color: "var(--color-muted-foreground)"
 					},
 					children: t("no_access")
-				}) : /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+				}) : /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+					style: {
+						display: "flex",
+						justifyContent: "flex-end"
+					},
+					children: /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+						style: { position: "relative" },
+						children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
+							style: {
+								...btnGhost$1,
+								height: 36
+							},
+							onClick: () => setShowCols((v) => !v),
+							children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)(GripIcon$1, {}), t("columns")]
+						}), showCols && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(ColManager, {
+							cols,
+							labelFor: (id) => t(COL_LABEL[id]),
+							onChange: setCols,
+							onSave: colStore.save,
+							defaults: colStore.defaults,
+							onClose: () => setShowCols(false)
+						})]
+					})
+				}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 					style: {
 						...card$1,
 						overflow: "hidden"
@@ -2592,32 +2662,13 @@
 									},
 									children: t("s_order")
 								}),
-								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("th", {
+								visibleCols(cols).map(({ id }) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("th", {
 									style: {
 										...th,
-										width: 70
+										...id === "status" ? { width: 70 } : id === "image" ? { width: 80 } : {}
 									},
-									children: t("s_status")
-								}),
-								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("th", {
-									style: {
-										...th,
-										width: 80
-									},
-									children: t("s_image")
-								}),
-								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("th", {
-									style: th,
-									children: t("s_title")
-								}),
-								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("th", {
-									style: th,
-									children: t("s_sub1")
-								}),
-								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("th", {
-									style: th,
-									children: t("s_link")
-								}),
+									children: t(COL_LABEL[id])
+								}, id)),
 								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("th", { style: {
 									...th,
 									width: 80
@@ -2630,7 +2681,7 @@
 								color: "var(--color-muted-foreground)",
 								padding: "40px 16px"
 							},
-							colSpan: 8,
+							colSpan: visibleCols(cols).length + 3,
 							children: t("no_slides")
 						}) }) : slides.map((s) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("tr", {
 							draggable: can("slides.edit"),
@@ -2671,70 +2722,62 @@
 									},
 									children: s.order
 								}),
-								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("td", {
-									style: td,
-									children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-										title: s.status ? t("active") : t("inactive"),
-										style: {
-											display: "inline-block",
-											width: 10,
-											height: 10,
-											borderRadius: 999,
-											background: s.status ? "#22c55e" : "#ef4444"
-										}
-									})
-								}),
-								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("td", {
-									style: td,
-									children: s.img ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("img", {
-										src: s.img,
-										alt: "",
-										style: {
-											width: 56,
-											height: 34,
-											objectFit: "cover",
-											borderRadius: 4,
-											border: "1px solid var(--color-border)"
-										}
-									}) : /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-										style: {
+								visibleCols(cols).map(({ id }) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("td", {
+									style: {
+										...td,
+										...id === "sub1" ? {
 											color: "var(--color-muted-foreground)",
-											display: "inline-flex"
-										},
-										children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(ImageIcon, {})
-									})
-								}),
-								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("td", {
-									style: td,
-									children: s.title || /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-										style: { color: "var(--color-muted-foreground)" },
-										children: "—"
-									})
-								}),
-								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("td", {
-									style: {
-										...td,
-										color: "var(--color-muted-foreground)",
-										maxWidth: 220,
-										overflow: "hidden",
-										textOverflow: "ellipsis",
-										whiteSpace: "nowrap"
+											maxWidth: 220,
+											overflow: "hidden",
+											textOverflow: "ellipsis",
+											whiteSpace: "nowrap"
+										} : {},
+										...id === "link" ? {
+											fontFamily: "monospace",
+											fontSize: 12,
+											color: "var(--color-muted-foreground)",
+											maxWidth: 180,
+											overflow: "hidden",
+											textOverflow: "ellipsis",
+											whiteSpace: "nowrap"
+										} : {}
 									},
-									children: s.sub1
-								}),
-								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("td", {
-									style: {
-										...td,
-										fontFamily: "monospace",
-										fontSize: 12,
-										color: "var(--color-muted-foreground)",
-										maxWidth: 180,
-										overflow: "hidden",
-										textOverflow: "ellipsis",
-										whiteSpace: "nowrap"
-									},
-									children: s.link
-								}),
+									children: [
+										id === "status" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+											title: s.status ? t("active") : t("inactive"),
+											style: {
+												display: "inline-block",
+												width: 10,
+												height: 10,
+												borderRadius: 999,
+												background: s.status ? "#22c55e" : "#ef4444"
+											}
+										}),
+										id === "image" && (s.img ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("img", {
+											src: s.img,
+											alt: "",
+											style: {
+												width: 56,
+												height: 34,
+												objectFit: "cover",
+												borderRadius: 4,
+												border: "1px solid var(--color-border)"
+											}
+										}) : /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+											style: {
+												color: "var(--color-muted-foreground)",
+												display: "inline-flex"
+											},
+											children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(ImageIcon, {})
+										})),
+										id === "title" && (s.title || /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+											style: { color: "var(--color-muted-foreground)" },
+											children: "—"
+										})),
+										id === "sub1" && s.sub1,
+										id === "link" && s.link
+									]
+								}, id)),
 								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("td", {
 									style: td,
 									children: /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
@@ -2773,7 +2816,7 @@
 						},
 						children: t("loading")
 					})]
-				}),
+				})] }),
 				toDelete && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(ConfirmModal, {
 					title: t("del_slide_title"),
 					message: t("del_slide_confirm"),
@@ -2903,6 +2946,14 @@
 	function SliderPage() {
 		const [view, setView] = (0, react.useState)({ kind: "list" });
 		const [open, setOpen] = (0, react.useState)([]);
+		const [mode, setMode] = (0, react.useState)("react");
+		(0, react.useEffect)(() => {
+			window.__melisSetToolView?.(MELIS_KEY, mode);
+		}, [mode]);
+		function changeMode(m) {
+			setMode(m);
+			if (m === "iframe") setView({ kind: "list" });
+		}
 		function openEditor(id, name) {
 			setOpen((prev) => prev.some((o) => o.id === id) ? prev.map((o) => o.id === id ? {
 				...o,
@@ -2936,7 +2987,7 @@
 				flexDirection: "column",
 				height: "100%"
 			},
-			children: [open.length > 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(SubTabBar, {
+			children: [mode === "react" && open.length > 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(SubTabBar, {
 				tabs: open,
 				activeId,
 				onBack: () => setView({ kind: "list" }),
@@ -2957,7 +3008,9 @@
 					},
 					children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(SliderList, {
 						active: view.kind === "list",
-						onOpen: openEditor
+						onOpen: openEditor,
+						mode,
+						onModeChange: changeMode
 					})
 				}), open.map((o) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
 					style: {

@@ -1,8 +1,16 @@
 import { useState, useEffect } from 'react'
-import SliderList from './SliderList'
+import SliderList, { MELIS_KEY } from './SliderList'
 import SliderEditor from './SliderEditor'
 import { markSliderListStale } from './slider-api'
 import { useT } from './ui'
+import { type ViewMode } from './ViewToggle'
+
+declare global {
+  interface Window {
+    // Exposé par l'hôte (melis-core, lib/tool-view-mode) : dit quelle vue du toggle est active.
+    __melisSetToolView?: (melisKey: string, view: ViewMode) => void
+  }
+}
 
 /**
  * Conteneur de l'outil Slider (brique MelisCmsSlider), monté une fois par le shell sur
@@ -66,6 +74,22 @@ function SubTabBar({ tabs, activeId, onBack, onSelect, onClose }: {
 export default function SliderPage() {
   const [view, setView] = useState<View>({ kind: 'list' })
   const [open, setOpen] = useState<OpenTab[]>([])
+  // Vue du toggle New/Old, portée ICI (et non dans SliderList) : elle conditionne aussi la barre de
+  // sous-onglets React ci-dessous. Les deux vues ont chacune leur propre barre d'onglets — celle de
+  // la vue Old est la ToolTabBar de l'hôte, alimentée par l'iframe legacy — et elles ne doivent
+  // JAMAIS s'afficher ensemble (sinon deux onglets pour le même slider).
+  const [mode, setMode] = useState<ViewMode>('react')
+
+  // 1) On dit à l'hôte quelle vue est active : il masque les onglets de l'iframe legacy en vue React
+  //    (l'iframe reste montée en display:none et continue de les publier).
+  useEffect(() => { window.__melisSetToolView?.(MELIS_KEY, mode) }, [mode])
+
+  // 2) Passer en vue Old ramène sur la liste : c'est SliderList qui porte l'iframe, elle doit donc
+  //    être visible (un SliderEditor React ouvert la masquerait).
+  function changeMode(m: ViewMode) {
+    setMode(m)
+    if (m === 'iframe') setView({ kind: 'list' })
+  }
 
   function openEditor(id: number, name: string) {
     setOpen((prev) => (prev.some((o) => o.id === id) ? prev.map((o) => (o.id === id ? { ...o, name } : o)) : [...prev, { id, name }]))
@@ -93,14 +117,14 @@ export default function SliderPage() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-      {open.length > 0 && (
+      {mode === 'react' && open.length > 0 && (
         <SubTabBar tabs={open} activeId={activeId}
           onBack={() => setView({ kind: 'list' })} onSelect={(id) => setView({ kind: 'edit', id })} onClose={closeEditor} />
       )}
 
       <div style={{ flex: 1, minHeight: 0 }}>
         <div style={{ height: '100%', display: view.kind === 'list' ? 'block' : 'none' }}>
-          <SliderList active={view.kind === 'list'} onOpen={openEditor} />
+          <SliderList active={view.kind === 'list'} onOpen={openEditor} mode={mode} onModeChange={changeMode} />
         </div>
 
         {open.map((o) => (

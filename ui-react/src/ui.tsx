@@ -1,4 +1,4 @@
-import { useState, type CSSProperties } from 'react'
+import { useState, type CSSProperties, type MouseEvent } from 'react'
 
 /* ──────────────────────────────────────────────────────────────────────────
  * Briques partagées de l'outil Slider (brique MelisCmsSlider) : i18n FR/EN,
@@ -81,6 +81,16 @@ export const inputCss: CSSProperties = { height: 40, width: '100%', boxSizing: '
 export const textareaCss: CSSProperties = { ...inputCss, height: 'auto', minHeight: 90, padding: '10px 12px', resize: 'vertical', fontFamily: 'inherit' }
 export const btnPrimary: CSSProperties = { display: 'inline-flex', alignItems: 'center', gap: 6, height: 36, padding: '0 14px', borderRadius: 8, border: 0, background: 'var(--color-primary)', color: 'var(--color-primary-foreground,#fff)', fontSize: 14, fontWeight: 500, cursor: 'pointer' }
 export const btnGhost: CSSProperties = { display: 'inline-flex', alignItems: 'center', gap: 6, height: 36, padding: '0 12px', borderRadius: 8, border: '1px solid var(--color-border)', background: 'var(--color-card)', color: 'var(--color-foreground)', fontSize: 14, cursor: 'pointer' }
+// Bricks ne peuvent pas utiliser les classes Tailwind `hover:` de l'hôte (build séparé) : hover simulé
+// via onMouseEnter/onMouseLeave, calqué sur le style outline (bg-accent) des boutons natifs MelisCore.
+export const ACCENT_BG = 'var(--accent, var(--color-accent, rgba(0,0,0,.06)))'
+export const ACCENT_FG = 'var(--accent-foreground, var(--color-accent-foreground, var(--color-foreground)))'
+export function ghostHover(baseBg: CSSProperties['background'] = 'var(--color-card)', baseFg: CSSProperties['color'] = 'var(--color-foreground)') {
+  return {
+    onMouseEnter: (e: MouseEvent<HTMLButtonElement>) => { e.currentTarget.style.background = ACCENT_BG; e.currentTarget.style.color = ACCENT_FG },
+    onMouseLeave: (e: MouseEvent<HTMLButtonElement>) => { e.currentTarget.style.background = String(baseBg); e.currentTarget.style.color = String(baseFg) },
+  }
+}
 export const iconBtn: CSSProperties = { display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 28, height: 28, borderRadius: 6, border: 0, background: 'transparent', color: 'var(--color-muted-foreground)', cursor: 'pointer' }
 export const th: CSSProperties = { textAlign: 'left', padding: '10px 16px', fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.04em', color: 'var(--color-muted-foreground)', whiteSpace: 'nowrap' }
 export const td: CSSProperties = { padding: '10px 16px', fontSize: 14, color: 'var(--color-foreground)', borderTop: '1px solid var(--color-border)' }
@@ -188,8 +198,8 @@ export function ColManager({ cols, labelFor, onChange, onSave, defaults, onClose
         </div>
       </div>
       <div style={{ borderTop: '1px solid var(--color-border)', padding: 6 }}>
-        <button style={{ ...btnGhost, width: '100%', height: 30, border: 0, justifyContent: 'center', color: 'var(--color-muted-foreground)' }}
-          onClick={() => { onChange(defaults); onSave(defaults) }}>{t('reset')}</button>
+        <button style={{ ...btnGhost, width: '100%', height: 30, border: 0, justifyContent: 'center', color: 'var(--color-muted-foreground)', background: 'transparent' }}
+          onClick={() => { onChange(defaults); onSave(defaults) }} {...ghostHover('transparent', 'var(--color-muted-foreground)')}>{t('reset')}</button>
       </div>
     </div>
   )

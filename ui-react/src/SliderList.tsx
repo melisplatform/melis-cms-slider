@@ -6,14 +6,14 @@ import {
 import {
   useT, makeCan, card, inputCss, btnPrimary, btnGhost, iconBtn, th, td, label, hint, pageWrap,
   PencilIcon, TrashIcon, PlusIcon, LayersIcon, GripIcon, ResetIcon, Kpi, ConfirmModal,
-  ColManager, makeColStore, visibleCols, type ColDef,
+  ColManager, makeColStore, visibleCols, ghostHover, type ColDef,
 } from './ui'
 import { ExportModal, DownloadIcon } from './ExportModal'
-import { ViewToggle } from './ViewToggle'
+import { ViewToggle, type ViewMode } from './ViewToggle'
 import { PagePicker } from './PagePicker'
 
 // Outil Slider legacy (vue « Old » en iframe). melisKey = zone rendable (follow_regular_rendering:false).
-const MELIS_KEY = 'MelisCmsSlider_left_menu'
+export const MELIS_KEY = 'MelisCmsSlider_left_menu'
 // Clé de capacités = melisKey du nœud porteur de droits du menu (cf. react.capabilities.php),
 // PAS le melisKey d'accès `melis_cms_slider_tool` du contrôleur.
 const CAPS_KEY = 'meliscms_slider_tools_section'
@@ -28,7 +28,13 @@ const colStore = makeColStore('melis-slider-cols-v1', DEFAULT_COLS)
 // Icône « renommer » (étiquette) — distincte du crayon, qui sert à éditer les slides.
 const RenameIcon = () => <svg style={{ width: 15, height: 15, flexShrink: 0 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.41 2.41 0 0 0 3.414 0l6.586-6.586a2.41 2.41 0 0 0 0-3.414z" /><circle cx="7.5" cy="7.5" r="1.2" fill="currentColor" /></svg>
 
-export default function SliderList({ active, onOpen }: { active: boolean; onOpen: (id: number, name: string) => void }) {
+// `mode` est piloté par SliderPage (il conditionne aussi la barre de sous-onglets React) — cf. SliderPage.
+export default function SliderList({ active, onOpen, mode, onModeChange }: {
+  active: boolean
+  onOpen: (id: number, name: string) => void
+  mode: ViewMode
+  onModeChange: (m: ViewMode) => void
+}) {
   const t = useT()
   const [items, setItems] = useState<SliderItem[]>([])
   const [stats, setStats] = useState<SliderStats | null>(null)
@@ -42,8 +48,9 @@ export default function SliderList({ active, onOpen }: { active: boolean; onOpen
   const [cols, setCols] = useState<ColDef[]>(colStore.load)
   const [showCols, setShowCols] = useState(false)
   const [showExport, setShowExport] = useState(false)
-  const [mode, setMode] = useState<'react' | 'iframe'>('react')
+  // L'iframe « Old » est montée à la 1ʳᵉ activation puis GARDÉE montée (display:none) — état préservé.
   const [frameLoaded, setFrameLoaded] = useState(false)
+  useEffect(() => { if (mode === 'iframe') setFrameLoaded(true) }, [mode])
 
   useEffect(() => { fetchSliderStats().then(setStats).catch(() => null) }, [tick])
   useEffect(() => {
@@ -80,7 +87,7 @@ export default function SliderList({ active, onOpen }: { active: boolean; onOpen
           <p style={{ fontSize: 14, color: 'var(--color-muted-foreground)', margin: '2px 0 0' }}>{t('subtitle')}</p>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <ViewToggle mode={mode} onChange={(m) => { setMode(m); if (m === 'iframe') setFrameLoaded(true) }} />
+          <ViewToggle mode={mode} onChange={onModeChange} />
           <button style={btnGhost} onClick={() => setTick((x) => x + 1)} title={t('refresh')}>↻</button>
           {can('create') && <button style={btnPrimary} onClick={() => setEditSlider('new')}><PlusIcon />{t('new')}</button>}
         </div>
@@ -111,7 +118,7 @@ export default function SliderList({ active, onOpen }: { active: boolean; onOpen
               onChange={(e) => setSearchInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && setSearch(searchInput.trim())}
               placeholder={t('search')} />
-            <button style={{ ...btnGhost, height: 36 }} onClick={resetFilters}><ResetIcon />{t('reset_filters')}</button>
+            <button style={{ ...btnGhost, height: 36 }} onClick={resetFilters} {...ghostHover('var(--color-card)', 'var(--color-foreground)')}><ResetIcon />{t('reset_filters')}</button>
             <div style={{ position: 'relative' }}>
               <button style={{ ...btnGhost, height: 36 }} onClick={() => setShowCols((v) => !v)}><GripIcon />{t('columns')}</button>
               {showCols && <ColManager cols={cols} labelFor={(id) => t(COL_LABEL[id])} onChange={setCols} onSave={colStore.save} defaults={colStore.defaults} onClose={() => setShowCols(false)} />}
