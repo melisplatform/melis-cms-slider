@@ -1,4 +1,4 @@
-import { useEffect, useState, type DragEvent } from 'react'
+import { useEffect, useRef, useState, type DragEvent } from 'react'
 import { fetchSlides, deleteSlide, reorderSlides, type SlideItem } from './slider-api'
 import {
   useT, makeCan, card, btnPrimary, btnGhost, iconBtn, th, td, pageWrap,
@@ -36,6 +36,7 @@ export default function SliderEditor({ sliderId, sliderName, onSaved }: {
   const [overId, setOverId] = useState<number | null>(null)
   const [tick, setTick] = useState(0)
   const [cols, setCols] = useState<ColDef[]>(colStore.load)
+  const colsAnchorRef = useRef<HTMLDivElement>(null)
   const [showCols, setShowCols] = useState(false)
 
   useEffect(() => {
@@ -88,9 +89,9 @@ export default function SliderEditor({ sliderId, sliderName, onSaved }: {
         <div style={{ ...card, padding: '40px 16px', textAlign: 'center', fontSize: 14, color: 'var(--color-muted-foreground)' }}>{t('no_access')}</div>
       ) : (<>
       <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-        <div style={{ position: 'relative' }}>
+        <div ref={colsAnchorRef} style={{ position: 'relative' }}>
           <button style={{ ...btnGhost, height: 36 }} onClick={() => setShowCols((v) => !v)}><GripIcon />{t('columns')}</button>
-          {showCols && <ColManager cols={cols} labelFor={(id) => t(COL_LABEL[id])} onChange={setCols} onSave={colStore.save} defaults={colStore.defaults} onClose={() => setShowCols(false)} />}
+          {showCols && <ColManager anchorRef={colsAnchorRef} cols={cols} labelFor={(id) => t(COL_LABEL[id])} onChange={setCols} onSave={colStore.save} defaults={colStore.defaults} onClose={() => setShowCols(false)} />}
         </div>
       </div>
       {/* flexShrink:0 — sans lui, la carte (flex-item de `pageWrap`, en colonne) se COMPRIME à la

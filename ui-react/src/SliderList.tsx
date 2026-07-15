@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import {
   fetchSliders, fetchSliderStats, saveSlider, deleteSlider,
   consumeSliderListStale, type SliderItem, type SliderStats,
@@ -46,6 +46,7 @@ export default function SliderList({ active, onOpen, mode, onModeChange }: {
   const [editSlider, setEditSlider] = useState<SliderItem | 'new' | null>(null)
   const [tick, setTick] = useState(0)
   const [cols, setCols] = useState<ColDef[]>(colStore.load)
+  const colsAnchorRef = useRef<HTMLDivElement>(null)
   const [showCols, setShowCols] = useState(false)
   const [showExport, setShowExport] = useState(false)
   // L'iframe « Old » est montée à la 1ʳᵉ activation puis GARDÉE montée (display:none) — état préservé.
@@ -119,9 +120,9 @@ export default function SliderList({ active, onOpen, mode, onModeChange }: {
               onKeyDown={(e) => e.key === 'Enter' && setSearch(searchInput.trim())}
               placeholder={t('search')} />
             <button style={{ ...btnGhost, height: 36 }} onClick={resetFilters} {...ghostHover('var(--color-card)', 'var(--color-foreground)')}><ResetIcon />{t('reset_filters')}</button>
-            <div style={{ position: 'relative' }}>
+            <div ref={colsAnchorRef} style={{ position: 'relative' }}>
               <button style={{ ...btnGhost, height: 36 }} onClick={() => setShowCols((v) => !v)}><GripIcon />{t('columns')}</button>
-              {showCols && <ColManager cols={cols} labelFor={(id) => t(COL_LABEL[id])} onChange={setCols} onSave={colStore.save} defaults={colStore.defaults} onClose={() => setShowCols(false)} />}
+              {showCols && <ColManager anchorRef={colsAnchorRef} cols={cols} labelFor={(id) => t(COL_LABEL[id])} onChange={setCols} onSave={colStore.save} defaults={colStore.defaults} onClose={() => setShowCols(false)} />}
             </div>
             {can('export') && <button style={{ ...btnGhost, height: 36 }} onClick={() => setShowExport(true)}><DownloadIcon />{t('export')}</button>}
           </div>

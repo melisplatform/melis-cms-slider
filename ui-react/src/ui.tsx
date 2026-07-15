@@ -1,4 +1,4 @@
-import { useState, type CSSProperties, type MouseEvent } from 'react'
+import { useLayoutEffect, useState, type CSSProperties, type MouseEvent, type RefObject } from 'react'
 
 /* ──────────────────────────────────────────────────────────────────────────
  * Briques partagées de l'outil Slider (brique MelisCmsSlider) : i18n FR/EN,
@@ -141,15 +141,31 @@ export function makeColStore(key: string, defaults: ColDef[]) {
 const panelCss: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 2, minHeight: 130, maxHeight: 'min(48vh, 320px)', overflowY: 'auto', minWidth: 0, borderRadius: 8, border: '1px dashed var(--color-border)', padding: 6 }
 const panelTitle: CSSProperties = { padding: '0 6px 4px', fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.06em', color: 'var(--color-muted-foreground)' }
 
-export function ColManager({ cols, labelFor, onChange, onSave, defaults, onClose }: {
-  cols: ColDef[]; labelFor: (id: string) => string; onChange: (c: ColDef[]) => void
+export function ColManager({ anchorRef, cols, labelFor, onChange, onSave, defaults, onClose }: {
+  anchorRef: RefObject<HTMLElement | null>; cols: ColDef[]; labelFor: (id: string) => string; onChange: (c: ColDef[]) => void
   onSave: (c: ColDef[]) => void; defaults: ColDef[]; onClose: () => void
 }) {
   const t = useT()
   const [dragId, setDragId] = useState<string | null>(null)
   const [over, setOver] = useState<{ id: string; panel: 'visible' | 'hidden' } | null>(null)
+  const [pos, setPos] = useState<{ top?: number; bottom?: number; right: number; maxHeight: number } | null>(null)
   const shown = cols.filter((c) => c.visible)
   const hidden = cols.filter((c) => !c.visible)
+
+  useLayoutEffect(() => {
+    const anchor = anchorRef.current
+    if (!anchor) return
+    const rect = anchor.getBoundingClientRect()
+    const margin = 8
+    const spaceBelow = window.innerHeight - rect.bottom - margin
+    const spaceAbove = rect.top - margin
+    const right = Math.max(margin, window.innerWidth - rect.right)
+    if (spaceBelow >= 200 || spaceBelow >= spaceAbove) {
+      setPos({ top: rect.bottom + 6, right, maxHeight: Math.max(160, spaceBelow - 6) })
+    } else {
+      setPos({ bottom: window.innerHeight - rect.top + 6, right, maxHeight: Math.max(160, spaceAbove - 6) })
+    }
+  }, [anchorRef])
 
   function drop(panel: 'visible' | 'hidden') {
     if (!dragId) return
@@ -181,8 +197,13 @@ export function ColManager({ cols, labelFor, onChange, onSave, defaults, onClose
     )
   }
 
+  if (!pos) return null
   return (
-    <div style={{ ...card, position: 'absolute', right: 0, top: '100%', marginTop: 6, zIndex: 50, width: 380, maxWidth: 'calc(100vw - 1rem)' }}>
+    <div style={{
+      ...card, position: 'fixed', right: pos.right, zIndex: 50, width: 380, maxWidth: 'calc(100vw - 1rem)',
+      maxHeight: pos.maxHeight, overflowY: 'auto', display: 'flex', flexDirection: 'column',
+      ...(pos.top != null ? { top: pos.top } : { bottom: pos.bottom }),
+    }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 12px', borderBottom: '1px solid var(--color-border)' }}>
         <span style={{ fontSize: 14, fontWeight: 600 }}>{t('columns')}</span>
         <button style={{ ...iconBtn, width: 22, height: 22 }} onClick={onClose}>✕</button>
