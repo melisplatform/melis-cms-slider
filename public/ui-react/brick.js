@@ -1979,13 +1979,13 @@
 											gap: 4
 										},
 										children: [
-											/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+											can$2("open") && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
 												style: iconBtn,
 												title: t("open"),
 												onClick: () => onOpen(s.id, s.name),
 												children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(PencilIcon, {})
 											}),
-											can$2("edit") && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+											can$2("rename") && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
 												style: iconBtn,
 												title: t("rename"),
 												onClick: () => setEditSlider(s),

@@ -30,8 +30,13 @@ return [
         // RightsTreeView utilise pour rattacher les capacités — PAS `melis_cms_slider_tool` (garde
         // d'accès du contrôleur react-api, avec rights_checkbox_disable=true → pas de cases de droits).
         'meliscms_slider_tools_section' => [
-            // Niveau 1 — liste des sliders (SliderList).
-            'actions' => ['list', 'create', 'edit', 'delete', 'export'],
+            // Niveau 1 — liste des sliders (SliderList). Les 3 actions de LIGNE sont `open`
+            // (entrer dans les slides), `rename` (renommer le slider) et `delete`.
+            // `open` était la seule action non gardée : on pouvait toujours ouvrir les slides d'un
+            // slider quels que soient les droits. `rename` s'appelait `edit`, ce qui laissait croire
+            // qu'il couvrait l'édition du CONTENU (les slides) alors qu'il ne renomme que le slider —
+            // celle-ci est gardée séparément par les capacités `slides.*` ci-dessous.
+            'actions' => ['list', 'create', 'open', 'rename', 'delete', 'export'],
             'tabs' => [
                 [
                     // Niveau 2 — slides d'un slider (SliderEditor). CRUD propre sur les slides.

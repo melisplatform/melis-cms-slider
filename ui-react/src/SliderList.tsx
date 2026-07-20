@@ -165,8 +165,8 @@ export default function SliderList({ active, onOpen, mode, onModeChange }: {
                     ))}
                     <td style={td}>
                       <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 4 }}>
-                        <button style={iconBtn} title={t('open')} onClick={() => onOpen(s.id, s.name)}><PencilIcon /></button>
-                        {can('edit') && <button style={iconBtn} title={t('rename')} onClick={() => setEditSlider(s)}><RenameIcon /></button>}
+                        {can('open') && <button style={iconBtn} title={t('open')} onClick={() => onOpen(s.id, s.name)}><PencilIcon /></button>}
+                        {can('rename') && <button style={iconBtn} title={t('rename')} onClick={() => setEditSlider(s)}><RenameIcon /></button>}
                         {can('delete') && <button style={{ ...iconBtn, color: 'var(--color-destructive,#ef4444)' }} title={t('del')} onClick={() => setToDelete(s)}><TrashIcon /></button>}
                       </div>
                     </td>
