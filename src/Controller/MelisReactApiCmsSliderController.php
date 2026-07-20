@@ -41,8 +41,17 @@ class MelisReactApiCmsSliderController extends MelisAbstractActionController
 {
     use CapabilityGuardTrait;
 
-    /** melisKey de l'outil (nœud grantable de l'arbre de droits) — garde de droits. */
-    private const MELIS_KEY = 'melis_cms_slider_tool';
+    /** melisKey of the RIGHTS-BEARING menu node (rights_checkbox_disable=false) — same convention as
+     *  MelisCmsNews / MelisCmsProspects / MelisCmsSiteRobot / MelisNewsletter. It serves BOTH uses of
+     *  this constant: the canAccess() gate below and, via CapabilityGuardTrait, the capability lookup.
+     *
+     *  It used to be `melis_cms_slider_tool` — the wrapper, which is NOT where capabilities are
+     *  declared (react.capabilities.php keys them on `meliscms_slider_tools_section`). Capabilities
+     *  resolve through MELIS_KEY, and Capabilities::isAllowed is DEFAULT-ALLOW on an unknown tool, so
+     *  every denyUnlessCan() in this controller silently passed: a non-admin denied edit/delete in the
+     *  rights UI was still served by the API. The wrapper stays reachable either way — it is inferred
+     *  from this granted child via configIsParentOf. */
+    private const MELIS_KEY = 'meliscms_slider_tools_section';
 
     private const IMG_EXT = ['jpg', 'jpeg', 'gif', 'png', 'webp'];
 
