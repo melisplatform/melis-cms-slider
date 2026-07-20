@@ -25,7 +25,17 @@ return [
                                         'melisKey' => 'melis_cms_slider_tool'
                                     ],
                                     'interface' => [
-                                        'MelisCmsSlider_left' => [
+                                        // Array key aligned with this node's own melisKey: the legacy
+                                        // rights modal (getToolsKeys) ticks/stores the ARRAY KEY, whereas
+                                        // React stores the melisKey (see react.capabilities.php, keyed on
+                                        // `meliscms_slider_tools_section`) — hence a box left unticked in
+                                        // legacy even though the right is granted and the menu entry shows
+                                        // in both back-offices.
+                                        // This node declares its melisKey itself (the `conf.type` link only
+                                        // pulls in the target's forward), so renaming is collision-free and
+                                        // the melisKey path still runs through `melis_cms_slider_tool` —
+                                        // which is what grants the parent via configIsParentOf.
+                                        'meliscms_slider_tools_section' => [
                                             'conf' => [
                                                 'id' => 'id_meliscms_slider_tools_section',
                                                 'name' => 'tr_MelisCmsSlider_manager',
