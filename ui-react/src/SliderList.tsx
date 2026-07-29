@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import {
   fetchSliders, fetchSliderStats, saveSlider, deleteSlider,
   consumeSliderListStale, type SliderItem, type SliderStats,
@@ -11,6 +11,15 @@ import {
 import { ExportModal, DownloadIcon } from './ExportModal'
 import { ViewToggle, type ViewMode } from './ViewToggle'
 import { PagePicker } from './PagePicker'
+import { useKeysetList } from './use-keyset-list'
+
+/** Icône de tri neutre/asc/desc — mêmes tracés que lucide ArrowUpDown/ArrowUp/ArrowDown. */
+function SortIcon({ dir }: { dir: 'asc' | 'desc' | null }) {
+  const p = { width: 12, height: 12, viewBox: '0 0 24 24', fill: 'none' as const, stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const, style: { flexShrink: 0, opacity: dir ? 1 : 0.3 } }
+  if (dir === 'asc')  return <svg {...p}><path d="m5 12 7-7 7 7" /><path d="M12 19V5" /></svg>
+  if (dir === 'desc') return <svg {...p}><path d="M12 5v14" /><path d="m19 12-7 7-7-7" /></svg>
+  return <svg {...p}><path d="m21 16-4 4-4-4" /><path d="M17 20V4" /><path d="m3 8 4-4 4 4" /><path d="M7 4v16" /></svg>
+}
 
 // Outil Slider legacy (vue « Old » en iframe). melisKey = zone rendable (follow_regular_rendering:false).
 export const MELIS_KEY = 'MelisCmsSlider_left_menu'
@@ -36,12 +45,9 @@ export default function SliderList({ active, onOpen, mode, onModeChange }: {
   onModeChange: (m: ViewMode) => void
 }) {
   const t = useT()
-  const [items, setItems] = useState<SliderItem[]>([])
   const [stats, setStats] = useState<SliderStats | null>(null)
-  const [loading, setLoading] = useState(false)
   const [searchInput, setSearchInput] = useState('')
   const [search, setSearch] = useState('')
-  const [sortAsc, setSortAsc] = useState(false)
   const [toDelete, setToDelete] = useState<SliderItem | null>(null)
   const [editSlider, setEditSlider] = useState<SliderItem | 'new' | null>(null)
   const [tick, setTick] = useState(0)
@@ -54,29 +60,30 @@ export default function SliderList({ active, onOpen, mode, onModeChange }: {
   useEffect(() => { if (mode === 'iframe') setFrameLoaded(true) }, [mode])
 
   useEffect(() => { fetchSliderStats().then(setStats).catch(() => null) }, [tick])
-  useEffect(() => {
-    setLoading(true)
-    fetchSliders({ search }).then((r) => setItems(r.items)).catch(() => null).finally(() => setLoading(false))
-  }, [search, tick])
+
+  // Scroll infini + tri server-side + keyset (le tri client `sorted` est supprimé).
+  const {
+    items, total, loading, hasMore, sentinelRef, sortCol, sortDir, toggleSort, reload, removeLocal,
+  } = useKeysetList<SliderItem>({
+    fetcher: (a) => fetchSliders({ ...a, search }),
+    deps: [search, tick],
+    defaultSort: 'id',
+    defaultDir: 'desc',
+  })
+
   // Rafraîchir quand on revient sur la liste après un changement (flag stale).
   useEffect(() => { if (active && consumeSliderListStale()) setTick((x) => x + 1) }, [active])
 
-  const sorted = useMemo(() => [...items].sort((a, b) => (sortAsc ? a.id - b.id : b.id - a.id)), [items, sortAsc])
-
-  // Réinitialise recherche + tri par défaut, puis recharge. `setItems([])` est obligatoire :
-  // sans ça les anciennes lignes restent affichées et le clic paraît sans effet.
-  // `tick` est bumpé pour forcer le refetch même quand aucun filtre n'était posé.
+  // Réinitialise recherche puis recharge depuis le début (`reload`).
   function resetFilters() {
     setSearchInput('')
     setSearch('')
-    setSortAsc(false)
-    setItems([])
-    setTick((x) => x + 1)
+    reload()
   }
 
   async function confirmDelete() {
     if (!toDelete) return
-    try { await deleteSlider(toDelete.id); setToDelete(null); setTick((x) => x + 1) }
+    try { await deleteSlider(toDelete.id); removeLocal((s) => s.id === toDelete.id); setToDelete(null); setTick((x) => x + 1) }
     catch { setToDelete(null) }
   }
 
@@ -133,18 +140,18 @@ export default function SliderList({ active, onOpen, mode, onModeChange }: {
               <thead style={{ background: 'var(--color-muted,rgba(0,0,0,.03))' }}>
                 <tr>
                   {visibleCols(cols).map(({ id }) => (
-                    <th key={id} style={{ ...th, ...(id === 'id' ? { cursor: 'pointer', width: 70 } : {}) }}
-                      onClick={id === 'id' ? () => setSortAsc((v) => !v) : undefined}>
-                      {t(COL_LABEL[id])}{id === 'id' ? ` ${sortAsc ? '↑' : '↓'}` : ''}
+                    <th key={id} style={{ ...th, cursor: 'pointer', ...(id === 'id' ? { width: 70 } : {}), ...(sortCol === id ? { color: 'var(--color-primary)' } : {}) }}
+                      onClick={() => toggleSort(id)}>
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>{t(COL_LABEL[id])}<SortIcon dir={sortCol === id ? sortDir : null} /></span>
                     </th>
                   ))}
                   <th style={{ ...th, width: 110 }} />
                 </tr>
               </thead>
               <tbody>
-                {sorted.length === 0 && !loading ? (
+                {items.length === 0 && !loading ? (
                   <tr><td style={{ ...td, textAlign: 'center', color: 'var(--color-muted-foreground)', padding: '40px 16px' }} colSpan={visibleCols(cols).length + 1}>{t('empty')}</td></tr>
-                ) : sorted.map((s) => (
+                ) : items.map((s) => (
                   <tr key={s.id}>
                     {visibleCols(cols).map(({ id }) => (
                       <td key={id} style={{ ...td, ...(id === 'id' ? { color: 'var(--color-muted-foreground)', fontVariantNumeric: 'tabular-nums' } : {}) }}>
@@ -174,8 +181,10 @@ export default function SliderList({ active, onOpen, mode, onModeChange }: {
                 ))}
               </tbody>
             </table>
+            {/* Sentinel scroll infini : sa visibilité déclenche le lot suivant (keyset). */}
+            <div ref={sentinelRef} style={{ height: 1 }} />
             <div style={{ padding: '10px 16px', textAlign: 'center', fontSize: 12, color: 'var(--color-muted-foreground)' }}>
-              {loading ? t('loading') : t('count', { n: items.length })}
+              {loading ? t('loading') : (!hasMore && items.length > 0 ? t('count', { n: total }) : '')}
             </div>
           </div>
         </>)}
@@ -196,9 +205,20 @@ export default function SliderList({ active, onOpen, mode, onModeChange }: {
         <ExportModal<SliderItem>
           cols={cols}
           labelFor={(id) => t(COL_LABEL[id])}
-          fetchAll={async () => (await fetchSliders({ search })).items}
+          fetchAll={async () => {
+            // Export = tout le jeu filtré : on boucle sur nextCursor (keyset) au lieu de limit:9999.
+            const all: SliderItem[] = []
+            let after: string | undefined
+            for (;;) {
+              const r = await fetchSliders({ search, sort: sortCol, dir: sortDir, after, limit: 100 })
+              all.push(...r.items)
+              if (!r.nextCursor) break
+              after = r.nextCursor
+            }
+            return all
+          }}
           getCell={(s, id) => id === 'id' ? s.id : id === 'name' ? s.name : id === 'page' ? (s.pageId ?? '') : id === 'slides' ? s.slideCount : ''}
-          filename="sliders" sheetName={t('title')} total={items.length}
+          filename="sliders" sheetName={t('title')} total={total}
           onClose={() => setShowExport(false)} />
       )}
     </div>

@@ -35,9 +35,12 @@
 	var BASE = "/melis/react-api/sliders";
 	async function fetchSliders(params = {}) {
 		const qs = new URLSearchParams();
+		qs.set("limit", String(params.limit ?? 25));
 		if (params.search) qs.set("search", params.search);
-		const q = qs.toString();
-		return apiFetch(`${BASE}${q ? `?${q}` : ""}`);
+		if (params.sort) qs.set("sort", params.sort);
+		if (params.dir) qs.set("dir", params.dir);
+		if (params.after) qs.set("after", params.after);
+		return apiFetch(`${BASE}?${qs}`);
 	}
 	async function fetchSliderStats() {
 		return apiFetch(`${BASE}/stats`);
@@ -1642,7 +1645,152 @@
 		});
 	}
 	//#endregion
+	//#region src/use-keyset-list.ts
+	function useKeysetList(opts) {
+		const LIMIT = opts.limit ?? 25;
+		const [items, setItems] = (0, react.useState)(opts.initial?.items ?? []);
+		const [total, setTotal] = (0, react.useState)(opts.initial?.total ?? 0);
+		const [loading, setLoading] = (0, react.useState)(false);
+		const [hasMore, setHasMore] = (0, react.useState)(opts.initial?.hasMore ?? false);
+		const [sortCol, setSortCol] = (0, react.useState)(opts.initial?.sortCol ?? opts.defaultSort ?? "id");
+		const [sortDir, setSortDir] = (0, react.useState)(opts.initial?.sortDir ?? opts.defaultDir ?? "desc");
+		const cursorRef = (0, react.useRef)(opts.initial?.cursor ?? null);
+		const loadingRef = (0, react.useRef)(false);
+		const reqIdRef = (0, react.useRef)(0);
+		const sentinelRef = (0, react.useRef)(null);
+		const fetcherRef = (0, react.useRef)(opts.fetcher);
+		fetcherRef.current = opts.fetcher;
+		const runLoad = (0, react.useCallback)(async (reset) => {
+			if (!reset && loadingRef.current) return;
+			const myReq = ++reqIdRef.current;
+			loadingRef.current = true;
+			setLoading(true);
+			const after = reset ? void 0 : cursorRef.current ?? void 0;
+			try {
+				const res = await fetcherRef.current({
+					limit: LIMIT,
+					sort: sortCol,
+					dir: sortDir,
+					after
+				});
+				if (myReq !== reqIdRef.current) return;
+				cursorRef.current = res.nextCursor;
+				setHasMore(res.nextCursor !== null);
+				setTotal(res.total);
+				setItems((prev) => reset ? res.items : [...prev, ...res.items]);
+			} catch {} finally {
+				if (myReq === reqIdRef.current) {
+					setLoading(false);
+					loadingRef.current = false;
+				}
+			}
+		}, [
+			sortCol,
+			sortDir,
+			LIMIT
+		]);
+		const didInitRef = (0, react.useRef)(false);
+		(0, react.useEffect)(() => {
+			if (!didInitRef.current) {
+				didInitRef.current = true;
+				if (opts.skipInitial) return;
+			}
+			runLoad(true);
+		}, [
+			...opts.deps,
+			sortCol,
+			sortDir
+		]);
+		(0, react.useEffect)(() => {
+			if (!sentinelRef.current || !hasMore) return;
+			const obs = new IntersectionObserver(([entry]) => {
+				if (entry.isIntersecting) runLoad(false);
+			}, { rootMargin: "120px" });
+			obs.observe(sentinelRef.current);
+			return () => obs.disconnect();
+		}, [hasMore, runLoad]);
+		const toggleSort = (0, react.useCallback)((id) => {
+			setSortCol((cur) => {
+				if (cur === id) {
+					setSortDir((d) => d === "asc" ? "desc" : "asc");
+					return cur;
+				}
+				setSortDir(id === "id" ? "desc" : "asc");
+				return id;
+			});
+		}, []);
+		/** Force un rechargement depuis le début (refresh / reset filtres). */
+		const reload = (0, react.useCallback)(() => {
+			cursorRef.current = null;
+			runLoad(true);
+		}, [runLoad]);
+		/** Retire un élément localement (après delete) sans recharger. */
+		const removeLocal = (0, react.useCallback)((pred) => {
+			setItems((prev) => prev.filter((it) => !pred(it)));
+			setTotal((t) => Math.max(0, t - 1));
+		}, []);
+		/** Snapshot pour le cache module-level. */
+		const snapshot = () => ({
+			items,
+			total,
+			cursor: cursorRef.current,
+			hasMore,
+			sortCol,
+			sortDir
+		});
+		return {
+			items,
+			setItems,
+			total,
+			loading,
+			hasMore,
+			sentinelRef,
+			sortCol,
+			sortDir,
+			setSortCol,
+			setSortDir,
+			toggleSort,
+			reload,
+			removeLocal,
+			snapshot
+		};
+	}
+	//#endregion
 	//#region src/SliderList.tsx
+	/** Icône de tri neutre/asc/desc — mêmes tracés que lucide ArrowUpDown/ArrowUp/ArrowDown. */
+	function SortIcon({ dir }) {
+		const p = {
+			width: 12,
+			height: 12,
+			viewBox: "0 0 24 24",
+			fill: "none",
+			stroke: "currentColor",
+			strokeWidth: 2,
+			strokeLinecap: "round",
+			strokeLinejoin: "round",
+			style: {
+				flexShrink: 0,
+				opacity: dir ? 1 : .3
+			}
+		};
+		if (dir === "asc") return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("svg", {
+			...p,
+			children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("path", { d: "m5 12 7-7 7 7" }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("path", { d: "M12 19V5" })]
+		});
+		if (dir === "desc") return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("svg", {
+			...p,
+			children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("path", { d: "M12 5v14" }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("path", { d: "m19 12-7 7-7-7" })]
+		});
+		return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("svg", {
+			...p,
+			children: [
+				/* @__PURE__ */ (0, react_jsx_runtime.jsx)("path", { d: "m21 16-4 4-4-4" }),
+				/* @__PURE__ */ (0, react_jsx_runtime.jsx)("path", { d: "M17 20V4" }),
+				/* @__PURE__ */ (0, react_jsx_runtime.jsx)("path", { d: "m3 8 4-4 4 4" }),
+				/* @__PURE__ */ (0, react_jsx_runtime.jsx)("path", { d: "M7 4v16" })
+			]
+		});
+	}
 	var MELIS_KEY = "MelisCmsSlider_left_menu";
 	var can$2 = makeCan("meliscms_slider_tools_section");
 	var COL_LABEL$1 = {
@@ -1690,12 +1838,9 @@
 	});
 	function SliderList({ active, onOpen, mode, onModeChange }) {
 		const t = useT();
-		const [items, setItems] = (0, react.useState)([]);
 		const [stats, setStats] = (0, react.useState)(null);
-		const [loading, setLoading] = (0, react.useState)(false);
 		const [searchInput, setSearchInput] = (0, react.useState)("");
 		const [search, setSearch] = (0, react.useState)("");
-		const [sortAsc, setSortAsc] = (0, react.useState)(false);
 		const [toDelete, setToDelete] = (0, react.useState)(null);
 		const [editSlider, setEditSlider] = (0, react.useState)(null);
 		const [tick, setTick] = (0, react.useState)(0);
@@ -1710,25 +1855,28 @@
 		(0, react.useEffect)(() => {
 			fetchSliderStats().then(setStats).catch(() => null);
 		}, [tick]);
-		(0, react.useEffect)(() => {
-			setLoading(true);
-			fetchSliders({ search }).then((r) => setItems(r.items)).catch(() => null).finally(() => setLoading(false));
-		}, [search, tick]);
+		const { items, total, loading, hasMore, sentinelRef, sortCol, sortDir, toggleSort, reload, removeLocal } = useKeysetList({
+			fetcher: (a) => fetchSliders({
+				...a,
+				search
+			}),
+			deps: [search, tick],
+			defaultSort: "id",
+			defaultDir: "desc"
+		});
 		(0, react.useEffect)(() => {
 			if (active && consumeSliderListStale()) setTick((x) => x + 1);
 		}, [active]);
-		const sorted = (0, react.useMemo)(() => [...items].sort((a, b) => sortAsc ? a.id - b.id : b.id - a.id), [items, sortAsc]);
 		function resetFilters() {
 			setSearchInput("");
 			setSearch("");
-			setSortAsc(false);
-			setItems([]);
-			setTick((x) => x + 1);
+			reload();
 		}
 		async function confirmDelete() {
 			if (!toDelete) return;
 			try {
 				await deleteSlider(toDelete.id);
+				removeLocal((s) => s.id === toDelete.id);
 				setToDelete(null);
 				setTick((x) => x + 1);
 			} catch {
@@ -1904,114 +2052,127 @@
 								overflow: "hidden",
 								flexShrink: 0
 							},
-							children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("table", {
-								style: {
-									width: "100%",
-									borderCollapse: "collapse",
-									minWidth: 560
-								},
-								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("thead", {
-									style: { background: "var(--color-muted,rgba(0,0,0,.03))" },
-									children: /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("tr", { children: [visibleCols(cols).map(({ id }) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("th", {
-										style: {
-											...th,
-											...id === "id" ? {
+							children: [
+								/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("table", {
+									style: {
+										width: "100%",
+										borderCollapse: "collapse",
+										minWidth: 560
+									},
+									children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("thead", {
+										style: { background: "var(--color-muted,rgba(0,0,0,.03))" },
+										children: /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("tr", { children: [visibleCols(cols).map(({ id }) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("th", {
+											style: {
+												...th,
 												cursor: "pointer",
-												width: 70
+												...id === "id" ? { width: 70 } : {},
+												...sortCol === id ? { color: "var(--color-primary)" } : {}
+											},
+											onClick: () => toggleSort(id),
+											children: /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", {
+												style: {
+													display: "inline-flex",
+													alignItems: "center",
+													gap: 4
+												},
+												children: [t(COL_LABEL$1[id]), /* @__PURE__ */ (0, react_jsx_runtime.jsx)(SortIcon, { dir: sortCol === id ? sortDir : null })]
+											})
+										}, id)), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("th", { style: {
+											...th,
+											width: 110
+										} })] })
+									}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("tbody", { children: items.length === 0 && !loading ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("tr", { children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("td", {
+										style: {
+											...td,
+											textAlign: "center",
+											color: "var(--color-muted-foreground)",
+											padding: "40px 16px"
+										},
+										colSpan: visibleCols(cols).length + 1,
+										children: t("empty")
+									}) }) : items.map((s) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("tr", { children: [visibleCols(cols).map(({ id }) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("td", {
+										style: {
+											...td,
+											...id === "id" ? {
+												color: "var(--color-muted-foreground)",
+												fontVariantNumeric: "tabular-nums"
 											} : {}
 										},
-										onClick: id === "id" ? () => setSortAsc((v) => !v) : void 0,
-										children: [t(COL_LABEL$1[id]), id === "id" ? ` ${sortAsc ? "↑" : "↓"}` : ""]
-									}, id)), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("th", { style: {
-										...th,
-										width: 110
-									} })] })
-								}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("tbody", { children: sorted.length === 0 && !loading ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("tr", { children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("td", {
-									style: {
-										...td,
-										textAlign: "center",
-										color: "var(--color-muted-foreground)",
-										padding: "40px 16px"
-									},
-									colSpan: visibleCols(cols).length + 1,
-									children: t("empty")
-								}) }) : sorted.map((s) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("tr", { children: [visibleCols(cols).map(({ id }) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("td", {
-									style: {
-										...td,
-										...id === "id" ? {
-											color: "var(--color-muted-foreground)",
-											fontVariantNumeric: "tabular-nums"
-										} : {}
-									},
-									children: [
-										id === "id" && s.id,
-										id === "name" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
-											onClick: () => onOpen(s.id, s.name),
-											style: {
-												background: "transparent",
-												border: 0,
-												padding: 0,
-												color: "var(--color-foreground)",
-												fontSize: 14,
-												fontWeight: 600,
-												cursor: "pointer",
-												textAlign: "left"
-											},
-											children: s.name || t("none")
-										}),
-										id === "page" && (s.pageId ?? t("none")),
-										id === "slides" && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", {
-											style: {
-												display: "inline-flex",
-												alignItems: "center",
-												gap: 6,
-												color: "var(--color-muted-foreground)"
-											},
-											children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)(LayersIcon$1, {}), s.slideCount]
-										})
-									]
-								}, id)), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("td", {
-									style: td,
-									children: /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-										style: {
-											display: "flex",
-											justifyContent: "flex-end",
-											gap: 4
-										},
 										children: [
-											can$2("open") && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
-												style: iconBtn,
-												title: t("open"),
+											id === "id" && s.id,
+											id === "name" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
 												onClick: () => onOpen(s.id, s.name),
-												children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(PencilIcon, {})
-											}),
-											can$2("rename") && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
-												style: iconBtn,
-												title: t("rename"),
-												onClick: () => setEditSlider(s),
-												children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(RenameIcon, {})
-											}),
-											can$2("delete") && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
 												style: {
-													...iconBtn,
-													color: "var(--color-destructive,#ef4444)"
+													background: "transparent",
+													border: 0,
+													padding: 0,
+													color: "var(--color-foreground)",
+													fontSize: 14,
+													fontWeight: 600,
+													cursor: "pointer",
+													textAlign: "left"
 												},
-												title: t("del"),
-												onClick: () => setToDelete(s),
-												children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(TrashIcon, {})
+												children: s.name || t("none")
+											}),
+											id === "page" && (s.pageId ?? t("none")),
+											id === "slides" && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", {
+												style: {
+													display: "inline-flex",
+													alignItems: "center",
+													gap: 6,
+													color: "var(--color-muted-foreground)"
+												},
+												children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)(LayersIcon$1, {}), s.slideCount]
 											})
 										]
-									})
-								})] }, s.id)) })]
-							}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
-								style: {
-									padding: "10px 16px",
-									textAlign: "center",
-									fontSize: 12,
-									color: "var(--color-muted-foreground)"
-								},
-								children: loading ? t("loading") : t("count", { n: items.length })
-							})]
+									}, id)), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("td", {
+										style: td,
+										children: /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+											style: {
+												display: "flex",
+												justifyContent: "flex-end",
+												gap: 4
+											},
+											children: [
+												can$2("open") && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+													style: iconBtn,
+													title: t("open"),
+													onClick: () => onOpen(s.id, s.name),
+													children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(PencilIcon, {})
+												}),
+												can$2("rename") && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+													style: iconBtn,
+													title: t("rename"),
+													onClick: () => setEditSlider(s),
+													children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(RenameIcon, {})
+												}),
+												can$2("delete") && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+													style: {
+														...iconBtn,
+														color: "var(--color-destructive,#ef4444)"
+													},
+													title: t("del"),
+													onClick: () => setToDelete(s),
+													children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(TrashIcon, {})
+												})
+											]
+										})
+									})] }, s.id)) })]
+								}),
+								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+									ref: sentinelRef,
+									style: { height: 1 }
+								}),
+								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+									style: {
+										padding: "10px 16px",
+										textAlign: "center",
+										fontSize: 12,
+										color: "var(--color-muted-foreground)"
+									},
+									children: loading ? t("loading") : !hasMore && items.length > 0 ? t("count", { n: total }) : ""
+								})
+							]
 						})
 					] })
 				}),
@@ -2033,11 +2194,27 @@
 				showExport && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(ExportModal, {
 					cols,
 					labelFor: (id) => t(COL_LABEL$1[id]),
-					fetchAll: async () => (await fetchSliders({ search })).items,
+					fetchAll: async () => {
+						const all = [];
+						let after;
+						for (;;) {
+							const r = await fetchSliders({
+								search,
+								sort: sortCol,
+								dir: sortDir,
+								after,
+								limit: 100
+							});
+							all.push(...r.items);
+							if (!r.nextCursor) break;
+							after = r.nextCursor;
+						}
+						return all;
+					},
 					getCell: (s, id) => id === "id" ? s.id : id === "name" ? s.name : id === "page" ? s.pageId ?? "" : id === "slides" ? s.slideCount : "",
 					filename: "sliders",
 					sheetName: t("title"),
-					total: items.length,
+					total,
 					onClose: () => setShowExport(false)
 				})
 			]

@@ -6,6 +6,7 @@ use MelisReactApi\Controller\CapabilityGuardTrait;
 
 use Laminas\Http\PhpEnvironment\Response as HttpResponse;
 use MelisCore\Controller\MelisAbstractActionController;
+use MelisCore\Controller\MelisReactKeysetListTrait;
 
 /**
  * API REST pour l'outil Slider de MelisCmsSlider
@@ -40,6 +41,7 @@ use MelisCore\Controller\MelisAbstractActionController;
 class MelisReactApiCmsSliderController extends MelisAbstractActionController
 {
     use CapabilityGuardTrait;
+    use MelisReactKeysetListTrait;
 
     /** melisKey of the RIGHTS-BEARING menu node (rights_checkbox_disable=false) — same convention as
      *  MelisCmsNews / MelisCmsProspects / MelisCmsSiteRobot / MelisNewsletter. It serves BOTH uses of
@@ -64,27 +66,49 @@ class MelisReactApiCmsSliderController extends MelisAbstractActionController
         if ($denyCap = $this->denyUnlessCan('list')) { return $denyCap; }
 
         try {
+            $limit  = min(9999, max(1, (int) $this->params()->fromQuery('limit', 25)));
             $search = trim((string) ($this->params()->fromQuery('search', '') ?? ''));
+            $sort   = (string) $this->params()->fromQuery('sort', 'id');
+            $dir    = (string) $this->params()->fromQuery('dir', 'desc');
+            $after  = (string) $this->params()->fromQuery('after', '');
+
             $db = $this->getServiceManager()->get('Laminas\Db\Adapter\AdapterInterface');
 
-            $where = '';
-            $params = [];
+            // Filtres (garde le scoping recherche existant : nom OU id).
+            $filterWhere  = [];
+            $filterParams = [];
             if ($search !== '') {
-                $like = '%' . $search . '%';
-                $where = 'WHERE s.mcslide_name LIKE ? OR s.mcslide_id LIKE ?';
-                $params = [$like, $like];
+                $like           = '%' . $search . '%';
+                $filterWhere[]  = '(s.mcslide_name LIKE ? OR CAST(s.mcslide_id AS CHAR) LIKE ?)';
+                $filterParams[] = $like;
+                $filterParams[] = $like;
             }
 
-            $rows = $db->query(
-                "SELECT s.mcslide_id, s.mcslide_name, s.mcslide_page_id,
-                        COUNT(d.mcsdetail_id) AS slide_count
-                 FROM melis_cms_slider s
-                 LEFT JOIN melis_cms_slider_details d ON d.mcsdetail_mcslider_id = s.mcslide_id
-                 $where
-                 GROUP BY s.mcslide_id, s.mcslide_name, s.mcslide_page_id
-                 ORDER BY s.mcslide_id DESC",
-                $params
-            );
+            // slide_count via sous-requête corrélée (plus de GROUP BY → compatible keyset).
+            $slideCountExpr = '(SELECT COUNT(*) FROM melis_cms_slider_details d WHERE d.mcsdetail_mcslider_id = s.mcslide_id)';
+
+            // Colonnes triables (en-tête du tableau) → expr SQL NON-NULL.
+            $sortMap = [
+                'id'     => 's.mcslide_id',
+                'name'   => "COALESCE(s.mcslide_name, '')",
+                'page'   => 'COALESCE(s.mcslide_page_id, 0)',
+                'slides' => "COALESCE($slideCountExpr, 0)",
+            ];
+
+            [$rows, $total, $next] = $this->keysetList([
+                'db'           => $db,
+                'from'         => 'melis_cms_slider s',
+                'selectCols'   => "s.mcslide_id, s.mcslide_name, s.mcslide_page_id, $slideCountExpr AS slide_count",
+                'filterWhere'  => $filterWhere,
+                'filterParams' => $filterParams,
+                'sortMap'      => $sortMap,
+                'idCol'        => 's.mcslide_id',
+                'idAlias'      => 'mcslide_id',
+                'sortKey'      => $sort,
+                'dir'          => $dir,
+                'after'        => $after,
+                'limit'        => $limit,
+            ]);
 
             $items = [];
             foreach ($rows as $row) {
@@ -93,7 +117,7 @@ class MelisReactApiCmsSliderController extends MelisAbstractActionController
 
             return $this->jsonResponse([
                 'success' => true,
-                'data'    => ['items' => $items, 'total' => count($items)],
+                'data'    => ['items' => $items, 'total' => $total, 'nextCursor' => $next],
             ]);
         } catch (\Throwable $e) {
             return $this->errorResponse($e);

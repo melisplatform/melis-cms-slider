@@ -18,7 +18,8 @@ export interface SliderItem {
   slideCount: number
 }
 export interface SliderStats { sliders: number; slides: number; active: number }
-export interface SliderListResult { items: SliderItem[]; total: number }
+export interface SliderListResult { items: SliderItem[]; total: number; nextCursor: string | null }
+export interface SliderListParams { limit?: number; search?: string; sort?: string; dir?: 'asc' | 'desc'; after?: string }
 
 export interface SlideItem {
   id: number
@@ -70,11 +71,14 @@ async function apiFetch<T>(url: string, opts?: RequestInit): Promise<T> {
 const BASE = '/melis/react-api/sliders'
 
 // ── Sliders ──────────────────────────────────────────────────────────────────
-export async function fetchSliders(params: { search?: string } = {}): Promise<SliderListResult> {
+export async function fetchSliders(params: SliderListParams = {}): Promise<SliderListResult> {
   const qs = new URLSearchParams()
+  qs.set('limit', String(params.limit ?? 25))
   if (params.search) qs.set('search', params.search)
-  const q = qs.toString()
-  return apiFetch<SliderListResult>(`${BASE}${q ? `?${q}` : ''}`)
+  if (params.sort) qs.set('sort', params.sort)
+  if (params.dir) qs.set('dir', params.dir)
+  if (params.after) qs.set('after', params.after)
+  return apiFetch<SliderListResult>(`${BASE}?${qs}`)
 }
 export async function fetchSliderStats(): Promise<SliderStats> {
   return apiFetch<SliderStats>(`${BASE}/stats`)
