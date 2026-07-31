@@ -20,10 +20,10 @@
                 <div class="carousel-inner" role="listbox">
                 	<?php foreach ($this->showSlider As $key => $val){?>
                     	<div class="carousel-item item <?php echo ($key == 0) ? 'active' : ''?>">
-                          	<img src="<?php echo $val->mcsdetail_img?>" alt="...">
+                          	<img src="<?php echo $this->escapeHtmlAttr($val->mcsdetail_img)?>" alt="...">
                           	<div class="carousel-caption">
-                            	<h3><?php echo $val->mcsdetail_title ?> </h3>
-       	 						<p><?php echo (!empty($val->mcsdetail_sub1)) ? $val->mcsdetail_sub1 : ''?></p>
+                            	<h3><?php echo $this->escapeHtml($val->mcsdetail_title) ?> </h3>
+       	 						<p><?php echo (!empty($val->mcsdetail_sub1)) ? $this->escapeHtml($val->mcsdetail_sub1) : ''?></p>
                           	</div>
                         </div>
                     <?php }?>

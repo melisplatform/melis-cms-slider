@@ -484,7 +484,12 @@ class MelisCmsSliderDetailsController extends MelisAbstractActionController
                     ],
                 ]);
 
-                $validator = [$size, $imageValidator];
+                // Allow-list d'extensions (jpg, jpeg, png, gif, webp) sur l'adapter lui-même,
+                // pas seulement sur le validateur du form → rejette tout upload non-image.
+                $allowedExt = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+                $extensionValidator = new Extension($allowedExt);
+
+                $validator = [$size, $imageValidator, $extensionValidator];
 
                 //validate form
                 $form->setData($postValues);
@@ -498,6 +503,14 @@ class MelisCmsSliderDetailsController extends MelisAbstractActionController
                         $adapter->setValidators($validator, $fileName);
 
                         if ($adapter->isValid()) {
+                            // Forcer l'extension stockée sur celle validée (allow-list, en minuscule) :
+                            // empêche un nom comme "x.php.jpg" ou une casse inattendue d'être conservé.
+                            $safeExt = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
+                            if (!in_array($safeExt, $allowedExt, true)) {
+                                $safeExt = 'jpg';
+                            }
+                            $fileName = pathinfo($fileName, PATHINFO_FILENAME) . '.' . $safeExt;
+
                             $adapter->setDestination('public' . $confSlidersPath . $data['mcsdetail_mcslider_id'] . '/');
                             $newFileName = $this->renameIfDuplicateFile($confSlidersPath . $data['mcsdetail_mcslider_id'] . '/' . $fileName);
                             $savedDocFileName = 'public' . $newFileName;
@@ -792,7 +805,7 @@ class MelisCmsSliderDetailsController extends MelisAbstractActionController
             $status = true;
         }
         else {
-            $status = mkdir($path, 0777, true);
+            $status = mkdir($path, 0755, true);
             $this->createFolder($id);
         }
 

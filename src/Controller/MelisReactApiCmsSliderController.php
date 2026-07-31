@@ -372,10 +372,17 @@ class MelisReactApiCmsSliderController extends MelisAbstractActionController
             $status = (int) (!empty($body['status']) ? 1 : 0);
             $title  = mb_substr(trim((string) ($body['title'] ?? '')), 0, 255);
             $sub1   = mb_substr(trim((string) ($body['sub1'] ?? '')), 0, 255);
-            $sub2   = (string) ($body['sub2'] ?? '');
-            $sub3   = (string) ($body['sub3'] ?? '');
+            $sub2   = mb_substr((string) ($body['sub2'] ?? ''), 0, 65535);
+            $sub3   = mb_substr((string) ($body['sub3'] ?? ''), 0, 65535);
             $link   = trim((string) ($body['link'] ?? ''));
             $img    = trim((string) ($body['img'] ?? ''));
+
+            if ($link !== '' && !$this->isSafeUrl($link)) {
+                return $this->jsonResponse([
+                    'success' => false,
+                    'error'   => 'Lien invalide : seuls http, https, mailto, tel ou une URL relative sont autorisés.',
+                ], 400);
+            }
 
             if ($id) {
                 if (!iterator_to_array($db->query('SELECT mcsdetail_id FROM melis_cms_slider_details WHERE mcsdetail_id = ?', [$id]))) {
@@ -541,6 +548,27 @@ class MelisReactApiCmsSliderController extends MelisAbstractActionController
             'img'      => (string) ($r['mcsdetail_img'] ?? ''),
             'order'    => (int) $r['mcsdetail_order'],
         ];
+    }
+
+    /**
+     * URL de lien sûre pour un href front : autorise uniquement http(s), mailto, tel,
+     * ou une URL relative (chemin/ancre/query). Rejette javascript:, data:, vbscript:
+     * et tout autre schéma (protège d'un XSS via href sur le rendu public).
+     */
+    private function isSafeUrl(string $url): bool
+    {
+        $url = trim($url);
+        if ($url === '') {
+            return true;
+        }
+        // Neutraliser les caractères de contrôle/espaces cachés dans le schéma (ex "java\tscript:").
+        $probe = preg_replace('/[\s\x00-\x1F\x7F]+/', '', $url);
+        // Pas de schéma explicite (":" avant tout "/", "?" ou "#") → URL relative, OK.
+        if (!preg_match('#^([a-zA-Z][a-zA-Z0-9+.\-]*):#', (string) $probe, $m)) {
+            return true;
+        }
+        $scheme = strtolower($m[1]);
+        return in_array($scheme, ['http', 'https', 'mailto', 'tel'], true);
     }
 
     /** Racine du dossier public (où sont servies les images). */
