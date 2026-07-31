@@ -148,7 +148,7 @@ export function ColManager({ anchorRef, cols, labelFor, onChange, onSave, defaul
   const t = useT()
   const [dragId, setDragId] = useState<string | null>(null)
   const [over, setOver] = useState<{ id: string; panel: 'visible' | 'hidden' } | null>(null)
-  const [pos, setPos] = useState<{ top?: number; bottom?: number; right: number; maxHeight: number } | null>(null)
+  const [pos, setPos] = useState<{ top?: number; bottom?: number; left: number; width: number; maxHeight: number } | null>(null)
   const shown = cols.filter((c) => c.visible)
   const hidden = cols.filter((c) => !c.visible)
 
@@ -159,11 +159,17 @@ export function ColManager({ anchorRef, cols, labelFor, onChange, onSave, defaul
     const margin = 8
     const spaceBelow = window.innerHeight - rect.bottom - margin
     const spaceAbove = rect.top - margin
-    const right = Math.max(margin, window.innerWidth - rect.right)
+    // Panneau aligné à DROITE de l'ancre par défaut, mais `left` est CLAMPÉ pour qu'il ne puisse
+    // jamais déborder du bord gauche du viewport : le bord droit de l'ancre n'est pas forcément
+    // au ras de l'écran (padding de page, boutons passés à la ligne sur mobile), donc un simple
+    // `right: innerWidth - rect.right` laissait le bord gauche du panneau devenir négatif —
+    // l'en-tête « Colonnes » se retrouvait rogné. No-op sur desktop (la place ne manque pas).
+    const width = Math.min(380, window.innerWidth - margin * 2)
+    const left = Math.min(Math.max(margin, rect.right - width), window.innerWidth - width - margin)
     if (spaceBelow >= 200 || spaceBelow >= spaceAbove) {
-      setPos({ top: rect.bottom + 6, right, maxHeight: Math.max(160, spaceBelow - 6) })
+      setPos({ top: rect.bottom + 6, left, width, maxHeight: Math.max(160, spaceBelow - 6) })
     } else {
-      setPos({ bottom: window.innerHeight - rect.top + 6, right, maxHeight: Math.max(160, spaceAbove - 6) })
+      setPos({ bottom: window.innerHeight - rect.top + 6, left, width, maxHeight: Math.max(160, spaceAbove - 6) })
     }
   }, [anchorRef])
 
@@ -200,7 +206,7 @@ export function ColManager({ anchorRef, cols, labelFor, onChange, onSave, defaul
   if (!pos) return null
   return (
     <div style={{
-      ...card, position: 'fixed', right: pos.right, zIndex: 50, width: 380, maxWidth: 'calc(100vw - 1rem)',
+      ...card, position: 'fixed', left: pos.left, zIndex: 50, width: pos.width,
       maxHeight: pos.maxHeight, overflowY: 'auto', display: 'flex', flexDirection: 'column',
       ...(pos.top != null ? { top: pos.top } : { bottom: pos.bottom }),
     }}>
@@ -235,7 +241,9 @@ export function ConfirmModal({ title, message, confirmLabel, onConfirm, onCancel
   title: string; message: string; confirmLabel: string; onConfirm: () => void; onCancel: () => void
 }) {
   return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 60, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,.5)' }}
+    // `padding` sur l'overlay : sur mobile la carte (width:100%) collerait sinon aux bords de
+    // l'écran. Inconditionnel — sans effet sur desktop, où maxWidth borne déjà la largeur.
+    <div style={{ position: 'fixed', inset: 0, zIndex: 60, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 12, boxSizing: 'border-box', background: 'rgba(0,0,0,.5)' }}
       onClick={(e) => { if (e.target === e.currentTarget) onCancel() }}>
       <div style={{ ...card, padding: 24, width: '100%', maxWidth: 380 }}>
         <h3 style={{ fontSize: 16, fontWeight: 600, margin: 0 }}>{title}</h3>

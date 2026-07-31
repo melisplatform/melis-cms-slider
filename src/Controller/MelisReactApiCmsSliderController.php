@@ -57,6 +57,22 @@ class MelisReactApiCmsSliderController extends MelisAbstractActionController
 
     private const IMG_EXT = ['jpg', 'jpeg', 'gif', 'png', 'webp'];
 
+    /**
+     * Équivalent des filtres `StripTags` + `StringTrim` que le formulaire legacy
+     * (`MelisTechnologySlider_details_form` / `_slider_form`, cf. config/app.forms.php) applique aux
+     * champs TEXTE : nom du slider, titre, sous-titre 1 et lien. Le legacy passe en plus par
+     * MelisCoreTool::sanitizePost() sur title/sub1 — même effet ici, on retire les balises avant
+     * stockage plutôt que de compter sur l'échappement à l'affichage.
+     *
+     * ⚠️ NE PAS appliquer à sub2/sub3 : ce sont les champs « Description 1/2 (HTML) », édités en
+     * TinyMCE côté legacy et volontairement stockés en HTML brut (leur input_filter n'a d'ailleurs
+     * ni filtre ni validateur).
+     */
+    private function stripTags(string $value): string
+    {
+        return trim(strip_tags($value));
+    }
+
     // ═══════════════════════════ NIVEAU SLIDER ═══════════════════════════
 
     /** GET /sliders */
@@ -187,7 +203,7 @@ class MelisReactApiCmsSliderController extends MelisAbstractActionController
             $id   = isset($body['id']) && $body['id'] ? (int) $body['id'] : null;
             if ($denyCap = $this->denyUnlessCan($id ? 'edit' : 'create')) { return $denyCap; }
 
-            $name   = trim((string) ($body['name'] ?? ''));
+            $name   = $this->stripTags((string) ($body['name'] ?? ''));
             $pageId = isset($body['pageId']) && $body['pageId'] !== '' && $body['pageId'] !== null
                 ? (int) $body['pageId'] : null;
 
@@ -370,11 +386,13 @@ class MelisReactApiCmsSliderController extends MelisAbstractActionController
             }
 
             $status = (int) (!empty($body['status']) ? 1 : 0);
-            $title  = mb_substr(trim((string) ($body['title'] ?? '')), 0, 255);
-            $sub1   = mb_substr(trim((string) ($body['sub1'] ?? '')), 0, 255);
+            // strip_tags + trim : parité avec les filtres du form legacy (cf. stripTags()).
+            // sub2/sub3 = HTML volontaire (TinyMCE côté legacy) → laissés intacts.
+            $title  = mb_substr($this->stripTags((string) ($body['title'] ?? '')), 0, 255);
+            $sub1   = mb_substr($this->stripTags((string) ($body['sub1'] ?? '')), 0, 255);
             $sub2   = mb_substr((string) ($body['sub2'] ?? ''), 0, 65535);
             $sub3   = mb_substr((string) ($body['sub3'] ?? ''), 0, 65535);
-            $link   = trim((string) ($body['link'] ?? ''));
+            $link   = $this->stripTags((string) ($body['link'] ?? ''));
             $img    = trim((string) ($body['img'] ?? ''));
 
             if ($link !== '' && !$this->isSafeUrl($link)) {

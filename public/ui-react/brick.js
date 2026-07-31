@@ -380,13 +380,13 @@
 		boxSizing: "border-box",
 		overflow: "auto"
 	};
-	var sIcon$1 = {
+	var sIcon$2 = {
 		width: 15,
 		height: 15,
 		flexShrink: 0
 	};
 	var PencilIcon = () => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("svg", {
-		style: sIcon$1,
+		style: sIcon$2,
 		viewBox: "0 0 24 24",
 		fill: "none",
 		stroke: "currentColor",
@@ -396,7 +396,7 @@
 		children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("path", { d: "M12 20h9" }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("path", { d: "M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" })]
 	});
 	var TrashIcon = () => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("svg", {
-		style: sIcon$1,
+		style: sIcon$2,
 		viewBox: "0 0 24 24",
 		fill: "none",
 		stroke: "currentColor",
@@ -405,8 +405,8 @@
 		strokeLinejoin: "round",
 		children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("path", { d: "M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2m2 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" })
 	});
-	var PlusIcon = () => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("svg", {
-		style: sIcon$1,
+	var PlusIcon$1 = () => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("svg", {
+		style: sIcon$2,
 		viewBox: "0 0 24 24",
 		fill: "none",
 		stroke: "currentColor",
@@ -416,7 +416,7 @@
 		children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("path", { d: "M12 5v14M5 12h14" })
 	});
 	var ImageIcon = () => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("svg", {
-		style: sIcon$1,
+		style: sIcon$2,
 		viewBox: "0 0 24 24",
 		fill: "none",
 		stroke: "currentColor",
@@ -440,7 +440,7 @@
 		]
 	});
 	var LayersIcon$1 = () => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("svg", {
-		style: sIcon$1,
+		style: sIcon$2,
 		viewBox: "0 0 24 24",
 		fill: "none",
 		stroke: "currentColor",
@@ -496,7 +496,7 @@
 		]
 	});
 	var ResetIcon = () => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("svg", {
-		style: sIcon$1,
+		style: sIcon$2,
 		viewBox: "0 0 24 24",
 		fill: "none",
 		stroke: "currentColor",
@@ -596,15 +596,18 @@
 			const margin = 8;
 			const spaceBelow = window.innerHeight - rect.bottom - margin;
 			const spaceAbove = rect.top - margin;
-			const right = Math.max(margin, window.innerWidth - rect.right);
+			const width = Math.min(380, window.innerWidth - margin * 2);
+			const left = Math.min(Math.max(margin, rect.right - width), window.innerWidth - width - margin);
 			if (spaceBelow >= 200 || spaceBelow >= spaceAbove) setPos({
 				top: rect.bottom + 6,
-				right,
+				left,
+				width,
 				maxHeight: Math.max(160, spaceBelow - 6)
 			});
 			else setPos({
 				bottom: window.innerHeight - rect.top + 6,
-				right,
+				left,
+				width,
 				maxHeight: Math.max(160, spaceAbove - 6)
 			});
 		}, [anchorRef]);
@@ -697,10 +700,9 @@
 			style: {
 				...card$1,
 				position: "fixed",
-				right: pos.right,
+				left: pos.left,
 				zIndex: 50,
-				width: 380,
-				maxWidth: "calc(100vw - 1rem)",
+				width: pos.width,
 				maxHeight: pos.maxHeight,
 				overflowY: "auto",
 				display: "flex",
@@ -834,6 +836,8 @@
 				display: "flex",
 				alignItems: "center",
 				justifyContent: "center",
+				padding: 12,
+				boxSizing: "border-box",
 				background: "rgba(0,0,0,.5)"
 			},
 			onClick: (e) => {
@@ -887,6 +891,22 @@
 				]
 			})
 		});
+	}
+	//#endregion
+	//#region src/shared/useIsNarrow.ts
+	/**
+	* True when the viewport is narrower than `breakpoint`. Drives every responsive decision on
+	* this brick as a JS ternary (inline styles) instead of a CSS media query — see the
+	* `melis-react-mobile-responsive` skill for why.
+	*/
+	function useIsNarrow(breakpoint = 640) {
+		const [narrow, setNarrow] = (0, react.useState)(() => window.innerWidth < breakpoint);
+		(0, react.useEffect)(() => {
+			const onResize = () => setNarrow(window.innerWidth < breakpoint);
+			window.addEventListener("resize", onResize);
+			return () => window.removeEventListener("resize", onResize);
+		}, [breakpoint]);
+		return narrow;
 	}
 	//#endregion
 	//#region src/ExportModal.tsx
@@ -1088,6 +1108,7 @@
 		children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("path", { d: "M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("path", { d: "M14 2v6h6M16 13H8M16 17H8M10 9H8" })]
 	});
 	function ExportModal({ cols, labelFor, fetchAll, getCell, filename, sheetName, total, onClose }) {
+		const narrow = useIsNarrow();
 		const xlsx = getXLSX();
 		const [included, setIncluded] = (0, react.useState)(() => cols.filter((c) => c.visible));
 		const [excluded, setExcluded] = (0, react.useState)(() => cols.filter((c) => !c.visible));
@@ -1237,6 +1258,8 @@
 				display: "flex",
 				alignItems: "center",
 				justifyContent: "center",
+				padding: 12,
+				boxSizing: "border-box",
 				background: "rgba(0,0,0,.5)"
 			},
 			onClick: (e) => {
@@ -1313,7 +1336,7 @@
 						}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 							style: {
 								display: "grid",
-								gridTemplateColumns: "1fr 1fr",
+								gridTemplateColumns: narrow ? "1fr" : "1fr 1fr",
 								gap: 8
 							},
 							children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
@@ -1382,13 +1405,13 @@
 	}
 	//#endregion
 	//#region src/ViewToggle.tsx
-	var sIcon = {
+	var sIcon$1 = {
 		width: 15,
 		height: 15,
 		flexShrink: 0
 	};
 	var SparkIcon = () => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("svg", {
-		style: sIcon,
+		style: sIcon$1,
 		viewBox: "0 0 24 24",
 		fill: "none",
 		stroke: "currentColor",
@@ -1398,7 +1421,7 @@
 		children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("path", { d: "m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z" })
 	});
 	var LayoutIcon = () => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("svg", {
-		style: sIcon,
+		style: sIcon$1,
 		viewBox: "0 0 24 24",
 		fill: "none",
 		stroke: "currentColor",
@@ -1413,13 +1436,13 @@
 			rx: "2"
 		}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("path", { d: "M3 9h18M9 21V9" })]
 	});
-	function ViewToggle({ mode, onChange }) {
+	function ViewToggle({ mode, onChange, compact = false }) {
 		const tab = (active) => ({
 			display: "inline-flex",
 			alignItems: "center",
 			gap: 6,
 			height: 30,
-			padding: "0 12px",
+			padding: compact ? "0 8px" : "0 12px",
 			borderRadius: 6,
 			border: 0,
 			fontSize: 12,
@@ -1441,11 +1464,13 @@
 			children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
 				style: tab(mode === "react"),
 				onClick: () => onChange("react"),
-				children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)(SparkIcon, {}), "New"]
+				title: compact ? "New" : void 0,
+				children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)(SparkIcon, {}), !compact && "New"]
 			}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
 				style: tab(mode === "iframe"),
 				onClick: () => onChange("iframe"),
-				children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)(LayoutIcon, {}), "Old"]
+				title: compact ? "Old" : void 0,
+				children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)(LayoutIcon, {}), !compact && "Old"]
 			})]
 		});
 	}
@@ -1756,6 +1781,116 @@
 		};
 	}
 	//#endregion
+	//#region src/shared/ExpandableRow.tsx
+	/**
+	* Per-row "+" toggle (leftmost column of a table) that reveals the columns currently hidden
+	* via column collapse on narrow viewports — same visibility source as the desktop ColManager,
+	* just surfaced per-row. Pair with <HiddenColsRow>. Inline styles only — a brick can't use the
+	* host's Tailwind classes.
+	*/
+	var sIcon = {
+		width: 13,
+		height: 13,
+		flexShrink: 0
+	};
+	var PlusIcon = () => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("svg", {
+		style: sIcon,
+		viewBox: "0 0 24 24",
+		fill: "none",
+		stroke: "currentColor",
+		strokeWidth: "2",
+		strokeLinecap: "round",
+		strokeLinejoin: "round",
+		children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("path", { d: "M12 5v14M5 12h14" })
+	});
+	var MinusIcon = () => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("svg", {
+		style: sIcon,
+		viewBox: "0 0 24 24",
+		fill: "none",
+		stroke: "currentColor",
+		strokeWidth: "2",
+		strokeLinecap: "round",
+		strokeLinejoin: "round",
+		children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("path", { d: "M5 12h14" })
+	});
+	function ExpandToggle({ expanded, onClick }) {
+		return /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+			type: "button",
+			onClick,
+			"aria-expanded": expanded,
+			style: {
+				display: "inline-flex",
+				alignItems: "center",
+				justifyContent: "center",
+				width: 24,
+				height: 24,
+				borderRadius: 6,
+				border: "1px solid var(--color-border)",
+				background: "transparent",
+				color: "var(--color-muted-foreground)",
+				cursor: "pointer",
+				padding: 0
+			},
+			children: expanded ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)(MinusIcon, {}) : /* @__PURE__ */ (0, react_jsx_runtime.jsx)(PlusIcon, {})
+		});
+	}
+	/**
+	* Detail row shown under an expanded row — one label/value pair per hidden column.
+	* Two columns side by side on desktop; a single stacked column on narrow viewports (a 2-col
+	* grid there fights for width against wrapped long values).
+	*/
+	function HiddenColsRow({ cols, labelFor, renderValue, colSpan, narrow }) {
+		const hidden = cols.filter((c) => !c.visible);
+		if (hidden.length === 0) return null;
+		return /* @__PURE__ */ (0, react_jsx_runtime.jsx)("tr", { children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("td", {
+			colSpan,
+			style: {
+				padding: "10px 16px",
+				borderTop: "1px solid var(--color-border)",
+				background: "var(--color-muted,rgba(0,0,0,.02))",
+				width: 0
+			},
+			children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+				style: {
+					display: "grid",
+					gridTemplateColumns: !narrow && hidden.length > 1 ? "repeat(2, minmax(0, 1fr))" : "minmax(0, 1fr)",
+					columnGap: 24,
+					rowGap: 10
+				},
+				children: hidden.map((c) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+					style: {
+						display: "grid",
+						gridTemplateColumns: "auto minmax(0, 1fr)",
+						alignItems: "baseline",
+						gap: 8,
+						fontSize: 13
+					},
+					children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", {
+						style: {
+							fontSize: 11,
+							fontWeight: 600,
+							textTransform: "uppercase",
+							letterSpacing: ".04em",
+							color: "var(--color-muted-foreground)"
+						},
+						children: [labelFor(c.id), ":"]
+					}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+						style: {
+							minWidth: 0,
+							maxWidth: 220,
+							overflowWrap: "break-word",
+							display: "-webkit-box",
+							WebkitLineClamp: 2,
+							WebkitBoxOrient: "vertical",
+							overflow: "hidden"
+						},
+						children: renderValue(c.id)
+					})]
+				}, c.id))
+			})
+		}) });
+	}
+	//#endregion
 	//#region src/SliderList.tsx
 	/** Icône de tri neutre/asc/desc — mêmes tracés que lucide ArrowUpDown/ArrowUp/ArrowDown. */
 	function SortIcon({ dir }) {
@@ -1817,6 +1952,7 @@
 			visible: true
 		}
 	]);
+	var ESSENTIAL_COLS$1 = new Set(["name"]);
 	var RenameIcon = () => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("svg", {
 		style: {
 			width: 15,
@@ -1838,7 +1974,9 @@
 	});
 	function SliderList({ active, onOpen, mode, onModeChange }) {
 		const t = useT();
+		const narrow = useIsNarrow();
 		const [stats, setStats] = (0, react.useState)(null);
+		const [expanded, setExpanded] = (0, react.useState)(/* @__PURE__ */ new Set());
 		const [searchInput, setSearchInput] = (0, react.useState)("");
 		const [search, setSearch] = (0, react.useState)("");
 		const [toDelete, setToDelete] = (0, react.useState)(null);
@@ -1867,6 +2005,16 @@
 		(0, react.useEffect)(() => {
 			if (active && consumeSliderListStale()) setTick((x) => x + 1);
 		}, [active]);
+		const displayCols = narrow ? cols.map((c) => ({
+			...c,
+			visible: ESSENTIAL_COLS$1.has(c.id)
+		})) : cols;
+		const hasHidden = narrow;
+		const toggleExpand = (id) => setExpanded((prev) => {
+			const next = new Set(prev);
+			if (!next.delete(id)) next.add(id);
+			return next;
+		});
 		function resetFilters() {
 			setSearchInput("");
 			setSearch("");
@@ -1884,7 +2032,10 @@
 			}
 		}
 		return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-			style: pageWrap,
+			style: {
+				...pageWrap,
+				...narrow ? { padding: 16 } : {}
+			},
 			children: [
 				/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 					style: {
@@ -1893,43 +2044,70 @@
 						justifyContent: "space-between",
 						gap: 16
 					},
-					children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("h1", {
-						style: {
-							fontSize: 20,
-							fontWeight: 700,
-							margin: 0
-						},
-						children: t("title")
-					}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", {
-						style: {
-							fontSize: 14,
-							color: "var(--color-muted-foreground)",
-							margin: "2px 0 0"
-						},
-						children: t("subtitle")
-					})] }), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+					children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+						style: narrow ? { minWidth: 0 } : void 0,
+						children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("h1", {
+							style: {
+								fontSize: 20,
+								fontWeight: 700,
+								margin: 0,
+								...narrow ? {
+									overflow: "hidden",
+									textOverflow: "ellipsis",
+									whiteSpace: "nowrap"
+								} : {}
+							},
+							children: t("title")
+						}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", {
+							style: {
+								fontSize: 14,
+								color: "var(--color-muted-foreground)",
+								margin: "2px 0 0",
+								...narrow ? {
+									overflow: "hidden",
+									textOverflow: "ellipsis",
+									whiteSpace: "nowrap"
+								} : {}
+							},
+							children: t("subtitle")
+						})]
+					}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 						style: {
 							display: "flex",
 							alignItems: "center",
-							gap: 8
+							gap: 8,
+							...narrow ? {
+								flexShrink: 0,
+								flexDirection: "column"
+							} : {}
 						},
-						children: [
-							/* @__PURE__ */ (0, react_jsx_runtime.jsx)(ViewToggle, {
+						children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+							style: narrow ? {
+								display: "flex",
+								alignItems: "center",
+								gap: 8
+							} : { display: "contents" },
+							children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)(ViewToggle, {
 								mode,
+								compact: narrow,
 								onChange: onModeChange
-							}),
-							/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+							}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
 								style: btnGhost$1,
 								onClick: () => setTick((x) => x + 1),
 								title: t("refresh"),
 								children: "↻"
-							}),
-							can$2("create") && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
-								style: btnPrimary$1,
-								onClick: () => setEditSlider("new"),
-								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)(PlusIcon, {}), t("new")]
-							})
-						]
+							})]
+						}), can$2("create") && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
+							style: {
+								...btnPrimary$1,
+								...narrow ? {
+									width: "100%",
+									justifyContent: "center"
+								} : {}
+							},
+							onClick: () => setEditSlider("new"),
+							children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)(PlusIcon$1, {}), t("new")]
+						})]
 					})]
 				}),
 				frameLoaded && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
@@ -2000,7 +2178,8 @@
 										...inputCss,
 										height: 36,
 										flex: 1,
-										minWidth: 220
+										minWidth: narrow ? 0 : 220,
+										...narrow ? { flexBasis: "100%" } : {}
 									},
 									value: searchInput,
 									onChange: (e) => setSearchInput(e.target.value),
@@ -2010,7 +2189,11 @@
 								/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
 									style: {
 										...btnGhost$1,
-										height: 36
+										height: 36,
+										...narrow ? {
+											flex: "1 1 100%",
+											justifyContent: "center"
+										} : {}
 									},
 									onClick: resetFilters,
 									...ghostHover("var(--color-card)", "var(--color-foreground)"),
@@ -2018,11 +2201,18 @@
 								}),
 								/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 									ref: colsAnchorRef,
-									style: { position: "relative" },
+									style: {
+										position: "relative",
+										...narrow ? { flex: "1 1 calc(50% - 4px)" } : {}
+									},
 									children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
 										style: {
 											...btnGhost$1,
-											height: 36
+											height: 36,
+											...narrow ? {
+												width: "100%",
+												justifyContent: "center"
+											} : {}
 										},
 										onClick: () => setShowCols((v) => !v),
 										children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)(GripIcon$1, {}), t("columns")]
@@ -2039,7 +2229,11 @@
 								can$2("export") && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
 									style: {
 										...btnGhost$1,
-										height: 36
+										height: 36,
+										...narrow ? {
+											flex: "1 1 calc(50% - 4px)",
+											justifyContent: "center"
+										} : {}
 									},
 									onClick: () => setShowExport(true),
 									children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)(DownloadIcon, {}), t("export")]
@@ -2057,30 +2251,37 @@
 									style: {
 										width: "100%",
 										borderCollapse: "collapse",
-										minWidth: 560
+										...narrow ? {} : { minWidth: 560 }
 									},
 									children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("thead", {
 										style: { background: "var(--color-muted,rgba(0,0,0,.03))" },
-										children: /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("tr", { children: [visibleCols(cols).map(({ id }) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("th", {
-											style: {
+										children: /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("tr", { children: [
+											hasHidden && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("th", { style: {
 												...th,
-												cursor: "pointer",
-												...id === "id" ? { width: 70 } : {},
-												...sortCol === id ? { color: "var(--color-primary)" } : {}
-											},
-											onClick: () => toggleSort(id),
-											children: /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", {
+												width: 32
+											} }),
+											visibleCols(displayCols).map(({ id }) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("th", {
 												style: {
-													display: "inline-flex",
-													alignItems: "center",
-													gap: 4
+													...th,
+													cursor: "pointer",
+													...id === "id" ? { width: 70 } : {},
+													...sortCol === id ? { color: "var(--color-primary)" } : {}
 												},
-												children: [t(COL_LABEL$1[id]), /* @__PURE__ */ (0, react_jsx_runtime.jsx)(SortIcon, { dir: sortCol === id ? sortDir : null })]
-											})
-										}, id)), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("th", { style: {
-											...th,
-											width: 110
-										} })] })
+												onClick: () => toggleSort(id),
+												children: /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", {
+													style: {
+														display: "inline-flex",
+														alignItems: "center",
+														gap: 4
+													},
+													children: [t(COL_LABEL$1[id]), /* @__PURE__ */ (0, react_jsx_runtime.jsx)(SortIcon, { dir: sortCol === id ? sortDir : null })]
+												})
+											}, id)),
+											/* @__PURE__ */ (0, react_jsx_runtime.jsx)("th", { style: {
+												...th,
+												width: 110
+											} })
+										] })
 									}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("tbody", { children: items.length === 0 && !loading ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("tr", { children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("td", {
 										style: {
 											...td,
@@ -2088,75 +2289,91 @@
 											color: "var(--color-muted-foreground)",
 											padding: "40px 16px"
 										},
-										colSpan: visibleCols(cols).length + 1,
+										colSpan: visibleCols(displayCols).length + (hasHidden ? 1 : 0) + 1,
 										children: t("empty")
-									}) }) : items.map((s) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("tr", { children: [visibleCols(cols).map(({ id }) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("td", {
-										style: {
-											...td,
-											...id === "id" ? {
-												color: "var(--color-muted-foreground)",
-												fontVariantNumeric: "tabular-nums"
-											} : {}
-										},
-										children: [
-											id === "id" && s.id,
-											id === "name" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
-												onClick: () => onOpen(s.id, s.name),
-												style: {
-													background: "transparent",
-													border: 0,
-													padding: 0,
-													color: "var(--color-foreground)",
-													fontSize: 14,
-													fontWeight: 600,
-													cursor: "pointer",
-													textAlign: "left"
-												},
-												children: s.name || t("none")
-											}),
-											id === "page" && (s.pageId ?? t("none")),
-											id === "slides" && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", {
-												style: {
-													display: "inline-flex",
-													alignItems: "center",
-													gap: 6,
-													color: "var(--color-muted-foreground)"
-												},
-												children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)(LayersIcon$1, {}), s.slideCount]
+									}) }) : items.map((s) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react.Fragment, { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("tr", { children: [
+										hasHidden && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("td", {
+											style: td,
+											children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(ExpandToggle, {
+												expanded: expanded.has(s.id),
+												onClick: () => toggleExpand(s.id)
 											})
-										]
-									}, id)), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("td", {
-										style: td,
-										children: /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+										}),
+										visibleCols(displayCols).map(({ id }) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("td", {
 											style: {
-												display: "flex",
-												justifyContent: "flex-end",
-												gap: 4
+												...td,
+												...id === "id" ? {
+													color: "var(--color-muted-foreground)",
+													fontVariantNumeric: "tabular-nums"
+												} : {}
 											},
 											children: [
-												can$2("open") && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
-													style: iconBtn,
-													title: t("open"),
+												id === "id" && s.id,
+												id === "name" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
 													onClick: () => onOpen(s.id, s.name),
-													children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(PencilIcon, {})
-												}),
-												can$2("rename") && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
-													style: iconBtn,
-													title: t("rename"),
-													onClick: () => setEditSlider(s),
-													children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(RenameIcon, {})
-												}),
-												can$2("delete") && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
 													style: {
-														...iconBtn,
-														color: "var(--color-destructive,#ef4444)"
+														background: "transparent",
+														border: 0,
+														padding: 0,
+														color: "var(--color-foreground)",
+														fontSize: 14,
+														fontWeight: 600,
+														cursor: "pointer",
+														textAlign: "left"
 													},
-													title: t("del"),
-													onClick: () => setToDelete(s),
-													children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(TrashIcon, {})
+													children: s.name || t("none")
+												}),
+												id === "page" && (s.pageId ?? t("none")),
+												id === "slides" && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", {
+													style: {
+														display: "inline-flex",
+														alignItems: "center",
+														gap: 6,
+														color: "var(--color-muted-foreground)"
+													},
+													children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)(LayersIcon$1, {}), s.slideCount]
 												})
 											]
+										}, id)),
+										/* @__PURE__ */ (0, react_jsx_runtime.jsx)("td", {
+											style: td,
+											children: /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+												style: {
+													display: "flex",
+													justifyContent: "flex-end",
+													gap: 4
+												},
+												children: [
+													can$2("open") && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+														style: iconBtn,
+														title: t("open"),
+														onClick: () => onOpen(s.id, s.name),
+														children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(PencilIcon, {})
+													}),
+													can$2("rename") && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+														style: iconBtn,
+														title: t("rename"),
+														onClick: () => setEditSlider(s),
+														children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(RenameIcon, {})
+													}),
+													can$2("delete") && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+														style: {
+															...iconBtn,
+															color: "var(--color-destructive,#ef4444)"
+														},
+														title: t("del"),
+														onClick: () => setToDelete(s),
+														children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(TrashIcon, {})
+													})
+												]
+											})
 										})
+									] }), hasHidden && expanded.has(s.id) && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(HiddenColsRow, {
+										cols: displayCols,
+										labelFor: (id) => t(COL_LABEL$1[id]),
+										renderValue: (id) => id === "id" ? s.id : id === "name" ? s.name || t("none") : id === "page" ? s.pageId ?? t("none") : id === "slides" ? s.slideCount : "",
+										colSpan: visibleCols(displayCols).length + 2,
+										narrow
 									})] }, s.id)) })]
 								}),
 								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
@@ -2256,6 +2473,8 @@
 				display: "flex",
 				alignItems: "center",
 				justifyContent: "center",
+				padding: 12,
+				boxSizing: "border-box",
 				background: "rgba(0,0,0,.5)"
 			},
 			onClick: (e) => {
@@ -2356,6 +2575,7 @@
 	var can$1 = makeCan("meliscms_slider_tools_section");
 	function SlideEditor({ sliderId, slideId, onBack, onSaved }) {
 		const t = useT();
+		const narrow = useIsNarrow();
 		const isEdit = slideId !== "new";
 		const fileRef = (0, react.useRef)(null);
 		const [status, setStatus] = (0, react.useState)(1);
@@ -2426,7 +2646,7 @@
 				display: "flex",
 				flexDirection: "column",
 				gap: 20,
-				padding: 24,
+				padding: narrow ? 16 : 24,
 				height: "100%",
 				boxSizing: "border-box",
 				overflow: "auto"
@@ -2443,13 +2663,15 @@
 						style: {
 							display: "flex",
 							alignItems: "center",
-							gap: 12
+							gap: 12,
+							...narrow ? { minWidth: 0 } : {}
 						},
 						children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
 							style: {
 								...btnGhost$1,
 								height: 32,
-								padding: "0 10px"
+								padding: "0 10px",
+								...narrow ? { flexShrink: 0 } : {}
 							},
 							onClick: onBack,
 							children: ["← ", t("back")]
@@ -2457,7 +2679,12 @@
 							style: {
 								fontSize: 18,
 								fontWeight: 700,
-								margin: 0
+								margin: 0,
+								...narrow ? {
+									overflow: "hidden",
+									textOverflow: "ellipsis",
+									whiteSpace: "nowrap"
+								} : {}
 							},
 							children: isEdit ? t("edit_slide_title") : t("new_slide_title")
 						})]
@@ -2502,7 +2729,7 @@
 				}) : /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 					style: {
 						display: "grid",
-						gridTemplateColumns: "minmax(0,2fr) minmax(0,1fr)",
+						gridTemplateColumns: narrow ? "minmax(0,1fr)" : "minmax(0,2fr) minmax(0,1fr)",
 						gap: 16,
 						alignItems: "start"
 					},
@@ -2643,7 +2870,8 @@
 									}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 										style: {
 											display: "flex",
-											gap: 8
+											gap: 8,
+											flexWrap: "wrap"
 										},
 										children: [can$1("slides.image.create") && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
 											style: {
@@ -2709,7 +2937,8 @@
 		image: "s_image",
 		title: "s_title",
 		sub1: "s_sub1",
-		link: "s_link"
+		link: "s_link",
+		order: "s_order"
 	};
 	var colStore = makeColStore("melis-slider-slides-cols-v2", [
 		{
@@ -2737,8 +2966,11 @@
 			visible: true
 		}
 	]);
+	var ESSENTIAL_COLS = new Set(["title"]);
 	function SliderEditor({ sliderId, sliderName, onSaved }) {
 		const t = useT();
+		const narrow = useIsNarrow();
+		const [expanded, setExpanded] = (0, react.useState)(/* @__PURE__ */ new Set());
 		const [view, setView] = (0, react.useState)({ kind: "list" });
 		const [slides, setSlides] = (0, react.useState)([]);
 		const [loading, setLoading] = (0, react.useState)(false);
@@ -2798,6 +3030,19 @@
 				setTick((x) => x + 1);
 			}
 		}
+		const displayCols = narrow ? [...cols.map((c) => ({
+			...c,
+			visible: ESSENTIAL_COLS.has(c.id)
+		})), {
+			id: "order",
+			visible: false
+		}] : cols;
+		const hasHidden = narrow;
+		const toggleExpand = (id) => setExpanded((prev) => {
+			const next = new Set(prev);
+			if (!next.delete(id)) next.add(id);
+			return next;
+		});
 		if (view.kind !== "list") return /* @__PURE__ */ (0, react_jsx_runtime.jsx)(SlideEditor, {
 			sliderId,
 			slideId: view.kind === "edit" ? view.id : "new",
@@ -2809,7 +3054,10 @@
 			}
 		});
 		return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-			style: pageWrap,
+			style: {
+				...pageWrap,
+				...narrow ? { padding: 16 } : {}
+			},
 			children: [
 				/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 					style: {
@@ -2818,24 +3066,43 @@
 						justifyContent: "space-between",
 						gap: 16
 					},
-					children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("h2", {
+					children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+						style: narrow ? { minWidth: 0 } : void 0,
+						children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("h2", {
+							style: {
+								fontSize: 18,
+								fontWeight: 700,
+								margin: 0,
+								...narrow ? {
+									overflow: "hidden",
+									textOverflow: "ellipsis",
+									whiteSpace: "nowrap"
+								} : {}
+							},
+							children: t("slides_of", { n: sliderName || "#" + sliderId })
+						}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", {
+							style: {
+								fontSize: 13,
+								color: "var(--color-muted-foreground)",
+								margin: "2px 0 0",
+								...narrow ? {
+									overflow: "hidden",
+									textOverflow: "ellipsis",
+									whiteSpace: "nowrap"
+								} : {}
+							},
+							children: t("reorder_hint")
+						})]
+					}), can("slides.create") && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
 						style: {
-							fontSize: 18,
-							fontWeight: 700,
-							margin: 0
+							...btnPrimary$1,
+							...narrow ? {
+								flexShrink: 0,
+								padding: "0 10px"
+							} : {}
 						},
-						children: t("slides_of", { n: sliderName || "#" + sliderId })
-					}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", {
-						style: {
-							fontSize: 13,
-							color: "var(--color-muted-foreground)",
-							margin: "2px 0 0"
-						},
-						children: t("reorder_hint")
-					})] }), can("slides.create") && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
-						style: btnPrimary$1,
 						onClick: () => setView({ kind: "new" }),
-						children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)(PlusIcon, {}), t("add_slide")]
+						children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)(PlusIcon$1, {}), t("add_slide")]
 					})]
 				}),
 				!can("slides.list") ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
@@ -2854,11 +3121,18 @@
 					},
 					children: /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 						ref: colsAnchorRef,
-						style: { position: "relative" },
+						style: {
+							position: "relative",
+							...narrow ? { flex: 1 } : {}
+						},
 						children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
 							style: {
 								...btnGhost$1,
-								height: 36
+								height: 36,
+								...narrow ? {
+									width: "100%",
+									justifyContent: "center"
+								} : {}
 							},
 							onClick: () => setShowCols((v) => !v),
 							children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)(GripIcon$1, {}), t("columns")]
@@ -2882,7 +3156,7 @@
 						style: {
 							width: "100%",
 							borderCollapse: "collapse",
-							minWidth: 640
+							...narrow ? {} : { minWidth: 640 }
 						},
 						children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("thead", {
 							style: { background: "var(--color-muted,rgba(0,0,0,.03))" },
@@ -2891,14 +3165,18 @@
 									...th,
 									width: 40
 								} }),
-								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("th", {
+								hasHidden && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("th", { style: {
+									...th,
+									width: 32
+								} }),
+								!narrow && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("th", {
 									style: {
 										...th,
 										width: 50
 									},
 									children: t("s_order")
 								}),
-								visibleCols(cols).map(({ id }) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("th", {
+								visibleCols(displayCols).map(({ id }) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("th", {
 									style: {
 										...th,
 										...id === "id" ? { width: 70 } : id === "status" ? { width: 70 } : id === "image" ? { width: 80 } : {}
@@ -2917,9 +3195,9 @@
 								color: "var(--color-muted-foreground)",
 								padding: "40px 16px"
 							},
-							colSpan: visibleCols(cols).length + 3,
+							colSpan: visibleCols(displayCols).length + (hasHidden ? 1 : 0) + (narrow ? 2 : 3),
 							children: t("no_slides")
-						}) }) : slides.map((s) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("tr", {
+						}) }) : slides.map((s) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react.Fragment, { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("tr", {
 							draggable: can("slides.edit"),
 							onDragStart: (e) => {
 								if (!can("slides.edit")) return;
@@ -2956,7 +3234,14 @@
 									},
 									children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(GripIcon$1, {})
 								}),
-								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("td", {
+								hasHidden && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("td", {
+									style: td,
+									children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(ExpandToggle, {
+										expanded: expanded.has(s.id),
+										onClick: () => toggleExpand(s.id)
+									})
+								}),
+								!narrow && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("td", {
 									style: {
 										...td,
 										color: "var(--color-muted-foreground)",
@@ -2964,7 +3249,7 @@
 									},
 									children: s.order
 								}),
-								visibleCols(cols).map(({ id }) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("td", {
+								visibleCols(displayCols).map(({ id }) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("td", {
 									style: {
 										...td,
 										...id === "id" ? {
@@ -3053,7 +3338,23 @@
 									})
 								})
 							]
-						}, s.id)) })]
+						}), hasHidden && expanded.has(s.id) && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(HiddenColsRow, {
+							cols: displayCols,
+							labelFor: (id) => t(COL_LABEL[id]),
+							renderValue: (id) => id === "id" ? s.id : id === "order" ? s.order : id === "status" ? s.status ? t("active") : t("inactive") : id === "image" ? s.img ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("img", {
+								src: s.img,
+								alt: "",
+								style: {
+									width: 56,
+									height: 34,
+									objectFit: "cover",
+									borderRadius: 4,
+									border: "1px solid var(--color-border)"
+								}
+							}) : "—" : id === "title" ? s.title || "—" : id === "sub1" ? s.sub1 : id === "link" ? s.link : "",
+							colSpan: visibleCols(displayCols).length + 3,
+							narrow
+						})] }, s.id)) })]
 					}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
 						style: {
 							padding: "10px 16px",

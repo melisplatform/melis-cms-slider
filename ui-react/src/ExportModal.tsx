@@ -1,4 +1,5 @@
 import { useState, type CSSProperties } from 'react'
+import { useIsNarrow } from './shared/useIsNarrow'
 
 /* ──────────────────────────────────────────────────────────────────────────
  * Modale d'export partagée par les briques Melis (Redirections, Slider…).
@@ -63,6 +64,7 @@ export function ExportModal<T>({ cols, labelFor, fetchAll, getCell, filename, sh
   total: number
   onClose: () => void
 }) {
+  const narrow = useIsNarrow()
   const xlsx = getXLSX()
   const [included, setIncluded] = useState<ExportCol[]>(() => cols.filter(c => c.visible))
   const [excluded, setExcluded] = useState<ExportCol[]>(() => cols.filter(c => !c.visible))
@@ -130,7 +132,8 @@ export function ExportModal<T>({ cols, labelFor, fetchAll, getCell, filename, sh
   const tab = (active: boolean): CSSProperties => ({ flex: 1, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 8, height: 36, borderRadius: 6, border: 0, fontSize: 14, fontWeight: 500, cursor: 'pointer', background: active ? 'var(--color-card)' : 'transparent', color: active ? 'var(--color-foreground)' : 'var(--color-muted-foreground)', boxShadow: active ? '0 1px 2px rgba(0,0,0,.06)' : 'none' })
 
   return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 60, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,.5)' }}
+    // padding sur l'overlay : sur mobile la carte (width:100%) collerait sinon aux bords.
+    <div style={{ position: 'fixed', inset: 0, zIndex: 60, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 12, boxSizing: 'border-box', background: 'rgba(0,0,0,.5)' }}
       onClick={(e) => { if (e.target === e.currentTarget) onClose() }}>
       <div style={{ ...card, width: '100%', maxWidth: 480 }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', padding: '16px 20px', borderBottom: '1px solid var(--color-border)' }}>
@@ -145,7 +148,9 @@ export function ExportModal<T>({ cols, labelFor, fetchAll, getCell, filename, sh
             <button style={tab(format === 'xlsx')} disabled={!xlsx} onClick={() => xlsx && setFormat('xlsx')} title={xlsx ? '' : 'XLSX indisponible'}><ExcelIcon />Excel (.xlsx)</button>
             <button style={tab(format === 'csv')} onClick={() => setFormat('csv')}><CsvIcon />CSV (.csv)</button>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+          {/* Mobile : panneaux Exclues / Incluses empilés — deux colonnes de ~160 px n'affichent
+              plus les libellés de colonnes. */}
+          <div style={{ display: 'grid', gridTemplateColumns: narrow ? '1fr' : '1fr 1fr', gap: 8 }}>
             <div style={panelCss}
               onDragOver={(e) => { e.preventDefault(); if (over?.id !== '__panel__' || over?.panel !== 'excluded') setOver({ id: '__panel__', panel: 'excluded' }) }}
               onDrop={(e) => { e.preventDefault(); drop('excluded') }}>

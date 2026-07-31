@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { Fragment, useEffect, useRef, useState } from 'react'
 import {
   fetchSliders, fetchSliderStats, saveSlider, deleteSlider,
   consumeSliderListStale, type SliderItem, type SliderStats,
@@ -12,6 +12,8 @@ import { ExportModal, DownloadIcon } from './ExportModal'
 import { ViewToggle, type ViewMode } from './ViewToggle'
 import { PagePicker } from './PagePicker'
 import { useKeysetList } from './use-keyset-list'
+import { useIsNarrow } from './shared/useIsNarrow'
+import { ExpandToggle, HiddenColsRow } from './shared/ExpandableRow'
 
 /** Icône de tri neutre/asc/desc — mêmes tracés que lucide ArrowUpDown/ArrowUp/ArrowDown. */
 function SortIcon({ dir }: { dir: 'asc' | 'desc' | null }) {
@@ -34,6 +36,11 @@ const DEFAULT_COLS: ColDef[] = [
 ]
 const colStore = makeColStore('melis-slider-cols-v1', DEFAULT_COLS)
 
+// Mobile : on ne garde qu'UNE colonne, celle qui identifie la ligne (le nom) — la ligne devient
+// [+][nom][actions], qui tient sur un écran de téléphone sans scroll horizontal. Les autres
+// colonnes sont lisibles via le « + » de la ligne (HiddenColsRow).
+const ESSENTIAL_COLS = new Set(['name'])
+
 // Icône « renommer » (étiquette) — distincte du crayon, qui sert à éditer les slides.
 const RenameIcon = () => <svg style={{ width: 15, height: 15, flexShrink: 0 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.41 2.41 0 0 0 3.414 0l6.586-6.586a2.41 2.41 0 0 0 0-3.414z" /><circle cx="7.5" cy="7.5" r="1.2" fill="currentColor" /></svg>
 
@@ -45,7 +52,9 @@ export default function SliderList({ active, onOpen, mode, onModeChange }: {
   onModeChange: (m: ViewMode) => void
 }) {
   const t = useT()
+  const narrow = useIsNarrow()
   const [stats, setStats] = useState<SliderStats | null>(null)
+  const [expanded, setExpanded] = useState<Set<number>>(new Set())
   const [searchInput, setSearchInput] = useState('')
   const [search, setSearch] = useState('')
   const [toDelete, setToDelete] = useState<SliderItem | null>(null)
@@ -74,6 +83,18 @@ export default function SliderList({ active, onOpen, mode, onModeChange }: {
   // Rafraîchir quand on revient sur la liste après un changement (flag stale).
   useEffect(() => { if (active && consumeSliderListStale()) setTick((x) => x + 1) }, [active])
 
+  // Colonnes affichées : sur mobile on force l'ensemble essentiel, INDÉPENDAMMENT des préférences
+  // desktop de l'utilisateur (`cols`, qui reste la seule source du ColManager). `hasHidden` (donc
+  // l'existence même de la colonne « + ») est lié à `narrow` SEUL : un utilisateur desktop qui a
+  // masqué une colonne via le ColManager ne doit pas voir apparaître un « + » qui n'existait pas.
+  const displayCols = narrow ? cols.map((c) => ({ ...c, visible: ESSENTIAL_COLS.has(c.id) })) : cols
+  const hasHidden = narrow
+  const toggleExpand = (id: number) => setExpanded((prev) => {
+    const next = new Set(prev)
+    if (!next.delete(id)) next.add(id)
+    return next
+  })
+
   // Réinitialise recherche puis recharge depuis le début (`reload`).
   function resetFilters() {
     setSearchInput('')
@@ -88,16 +109,22 @@ export default function SliderList({ active, onOpen, mode, onModeChange }: {
   }
 
   return (
-    <div style={pageWrap}>
+    <div style={{ ...pageWrap, ...(narrow ? { padding: 16 } : {}) }}>
+      {/* En-tête : titre à gauche + contrôles à droite, TOUJOURS sur une seule ligne (un
+          flex-wrap donnerait 2-3 barres pleine largeur empilées, pire que le desktop). Sur
+          mobile le titre tronque (minWidth:0) et les contrôles passent en colonne : rangée
+          d'icônes puis bouton « Nouveau » étiré à la largeur de cette rangée (width:100%). */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
-        <div>
-          <h1 style={{ fontSize: 20, fontWeight: 700, margin: 0 }}>{t('title')}</h1>
-          <p style={{ fontSize: 14, color: 'var(--color-muted-foreground)', margin: '2px 0 0' }}>{t('subtitle')}</p>
+        <div style={narrow ? { minWidth: 0 } : undefined}>
+          <h1 style={{ fontSize: 20, fontWeight: 700, margin: 0, ...(narrow ? { overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } : {}) }}>{t('title')}</h1>
+          <p style={{ fontSize: 14, color: 'var(--color-muted-foreground)', margin: '2px 0 0', ...(narrow ? { overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } : {}) }}>{t('subtitle')}</p>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <ViewToggle mode={mode} onChange={onModeChange} />
-          <button style={btnGhost} onClick={() => setTick((x) => x + 1)} title={t('refresh')}>↻</button>
-          {can('create') && <button style={btnPrimary} onClick={() => setEditSlider('new')}><PlusIcon />{t('new')}</button>}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, ...(narrow ? { flexShrink: 0, flexDirection: 'column' } : {}) }}>
+          <div style={narrow ? { display: 'flex', alignItems: 'center', gap: 8 } : { display: 'contents' }}>
+            <ViewToggle mode={mode} compact={narrow} onChange={onModeChange} />
+            <button style={btnGhost} onClick={() => setTick((x) => x + 1)} title={t('refresh')}>↻</button>
+          </div>
+          {can('create') && <button style={{ ...btnPrimary, ...(narrow ? { width: '100%', justifyContent: 'center' } : {}) }} onClick={() => setEditSlider('new')}><PlusIcon />{t('new')}</button>}
         </div>
       </div>
 
@@ -121,25 +148,30 @@ export default function SliderList({ active, onOpen, mode, onModeChange }: {
             <Kpi label={t('kpi_active')} value={stats?.active ?? null} />
           </div>
 
+          {/* Barre de filtres — mobile : recherche pleine largeur, « Réinitialiser les filtres »
+              seul sur sa ligne (libellé long en FR), puis Colonnes / Exporter à 50 % chacun. */}
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-            <input style={{ ...inputCss, height: 36, flex: 1, minWidth: 220 }} value={searchInput}
+            <input style={{ ...inputCss, height: 36, flex: 1, minWidth: narrow ? 0 : 220, ...(narrow ? { flexBasis: '100%' } : {}) }} value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && setSearch(searchInput.trim())}
               placeholder={t('search')} />
-            <button style={{ ...btnGhost, height: 36 }} onClick={resetFilters} {...ghostHover('var(--color-card)', 'var(--color-foreground)')}><ResetIcon />{t('reset_filters')}</button>
-            <div ref={colsAnchorRef} style={{ position: 'relative' }}>
-              <button style={{ ...btnGhost, height: 36 }} onClick={() => setShowCols((v) => !v)}><GripIcon />{t('columns')}</button>
+            <button style={{ ...btnGhost, height: 36, ...(narrow ? { flex: '1 1 100%', justifyContent: 'center' } : {}) }} onClick={resetFilters} {...ghostHover('var(--color-card)', 'var(--color-foreground)')}><ResetIcon />{t('reset_filters')}</button>
+            <div ref={colsAnchorRef} style={{ position: 'relative', ...(narrow ? { flex: '1 1 calc(50% - 4px)' } : {}) }}>
+              <button style={{ ...btnGhost, height: 36, ...(narrow ? { width: '100%', justifyContent: 'center' } : {}) }} onClick={() => setShowCols((v) => !v)}><GripIcon />{t('columns')}</button>
               {showCols && <ColManager anchorRef={colsAnchorRef} cols={cols} labelFor={(id) => t(COL_LABEL[id])} onChange={setCols} onSave={colStore.save} defaults={colStore.defaults} onClose={() => setShowCols(false)} />}
             </div>
-            {can('export') && <button style={{ ...btnGhost, height: 36 }} onClick={() => setShowExport(true)}><DownloadIcon />{t('export')}</button>}
+            {can('export') && <button style={{ ...btnGhost, height: 36, ...(narrow ? { flex: '1 1 calc(50% - 4px)', justifyContent: 'center' } : {}) }} onClick={() => setShowExport(true)}><DownloadIcon />{t('export')}</button>}
           </div>
 
           {/* flexShrink:0 : cf. SliderEditor — sinon la carte est comprimée et rogne ses lignes. */}
           <div style={{ ...card, overflow: 'hidden', flexShrink: 0 }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 560 }}>
+            {/* minWidth retiré sur mobile : sinon le repli sur la colonne essentielle forcerait
+                quand même un scroll horizontal. */}
+            <table style={{ width: '100%', borderCollapse: 'collapse', ...(narrow ? {} : { minWidth: 560 }) }}>
               <thead style={{ background: 'var(--color-muted,rgba(0,0,0,.03))' }}>
                 <tr>
-                  {visibleCols(cols).map(({ id }) => (
+                  {hasHidden && <th style={{ ...th, width: 32 }} />}
+                  {visibleCols(displayCols).map(({ id }) => (
                     <th key={id} style={{ ...th, cursor: 'pointer', ...(id === 'id' ? { width: 70 } : {}), ...(sortCol === id ? { color: 'var(--color-primary)' } : {}) }}
                       onClick={() => toggleSort(id)}>
                       <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>{t(COL_LABEL[id])}<SortIcon dir={sortCol === id ? sortDir : null} /></span>
@@ -150,10 +182,12 @@ export default function SliderList({ active, onOpen, mode, onModeChange }: {
               </thead>
               <tbody>
                 {items.length === 0 && !loading ? (
-                  <tr><td style={{ ...td, textAlign: 'center', color: 'var(--color-muted-foreground)', padding: '40px 16px' }} colSpan={visibleCols(cols).length + 1}>{t('empty')}</td></tr>
+                  <tr><td style={{ ...td, textAlign: 'center', color: 'var(--color-muted-foreground)', padding: '40px 16px' }} colSpan={visibleCols(displayCols).length + (hasHidden ? 1 : 0) + 1}>{t('empty')}</td></tr>
                 ) : items.map((s) => (
-                  <tr key={s.id}>
-                    {visibleCols(cols).map(({ id }) => (
+                  <Fragment key={s.id}>
+                  <tr>
+                    {hasHidden && <td style={td}><ExpandToggle expanded={expanded.has(s.id)} onClick={() => toggleExpand(s.id)} /></td>}
+                    {visibleCols(displayCols).map(({ id }) => (
                       <td key={id} style={{ ...td, ...(id === 'id' ? { color: 'var(--color-muted-foreground)', fontVariantNumeric: 'tabular-nums' } : {}) }}>
                         {id === 'id' && s.id}
                         {id === 'name' && (
@@ -178,6 +212,12 @@ export default function SliderList({ active, onOpen, mode, onModeChange }: {
                       </div>
                     </td>
                   </tr>
+                  {hasHidden && expanded.has(s.id) && (
+                    <HiddenColsRow cols={displayCols} labelFor={(id) => t(COL_LABEL[id])}
+                      renderValue={(id) => (id === 'id' ? s.id : id === 'name' ? (s.name || t('none')) : id === 'page' ? (s.pageId ?? t('none')) : id === 'slides' ? s.slideCount : '')}
+                      colSpan={visibleCols(displayCols).length + 2} narrow={narrow} />
+                  )}
+                  </Fragment>
                 ))}
               </tbody>
             </table>
@@ -247,7 +287,8 @@ function SliderModal({ slider, onClose, onSaved }: { slider: SliderItem | null; 
   }
 
   return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 60, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,.5)' }}
+    // padding sur l'overlay : sur mobile la carte collerait sinon aux bords (cf. ConfirmModal).
+    <div style={{ position: 'fixed', inset: 0, zIndex: 60, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 12, boxSizing: 'border-box', background: 'rgba(0,0,0,.5)' }}
       onClick={(e) => { if (e.target === e.currentTarget) onClose() }}>
       <div style={{ ...card, width: '100%', maxWidth: 420 }}>
         <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--color-border)' }}>

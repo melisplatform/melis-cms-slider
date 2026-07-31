@@ -4,6 +4,7 @@ import {
   useT, makeCan, card, inputCss, textareaCss, btnPrimary, btnGhost, label, hint,
   ImageIcon, TrashIcon,
 } from './ui'
+import { useIsNarrow } from './shared/useIsNarrow'
 
 /* Niveau 3 — formulaire d'une slide (slider > slides > SLIDE). Upload d'image immédiat
  * (renvoie un chemin web stocké tel quel dans mcsdetail_img). sub2/sub3 = HTML (textarea).
@@ -19,6 +20,7 @@ export default function SlideEditor({ sliderId, slideId, onBack, onSaved }: {
   onSaved: () => void
 }) {
   const t = useT()
+  const narrow = useIsNarrow()
   const isEdit = slideId !== 'new'
   const fileRef = useRef<HTMLInputElement>(null)
 
@@ -69,11 +71,11 @@ export default function SlideEditor({ sliderId, slideId, onBack, onSaved }: {
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 20, padding: 24, height: '100%', boxSizing: 'border-box', overflow: 'auto' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 20, padding: narrow ? 16 : 24, height: '100%', boxSizing: 'border-box', overflow: 'auto' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <button style={{ ...btnGhost, height: 32, padding: '0 10px' }} onClick={onBack}>← {t('back')}</button>
-          <h2 style={{ fontSize: 18, fontWeight: 700, margin: 0 }}>{isEdit ? t('edit_slide_title') : t('new_slide_title')}</h2>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, ...(narrow ? { minWidth: 0 } : {}) }}>
+          <button style={{ ...btnGhost, height: 32, padding: '0 10px', ...(narrow ? { flexShrink: 0 } : {}) }} onClick={onBack}>← {t('back')}</button>
+          <h2 style={{ fontSize: 18, fontWeight: 700, margin: 0, ...(narrow ? { overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } : {}) }}>{isEdit ? t('edit_slide_title') : t('new_slide_title')}</h2>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           {saved && <span style={{ fontSize: 14, color: '#059669' }}>{t('saved')}</span>}
@@ -86,7 +88,9 @@ export default function SlideEditor({ sliderId, slideId, onBack, onSaved }: {
       {loading ? (
         <div style={{ padding: 48, textAlign: 'center', color: 'var(--color-muted-foreground)' }}>{t('loading')}</div>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,2fr) minmax(0,1fr)', gap: 16, alignItems: 'start' }}>
+        // Mobile : contenu et options l'un sous l'autre (une grille 2fr/1fr y donnerait deux
+        // colonnes illisibles), le reste du formulaire est déjà fluide (inputs width:100%).
+        <div style={{ display: 'grid', gridTemplateColumns: narrow ? 'minmax(0,1fr)' : 'minmax(0,2fr) minmax(0,1fr)', gap: 16, alignItems: 'start' }}>
           {/* Colonne contenu (droit slides.properties) */}
           {can('slides.properties') && (
           <div style={{ ...card, padding: 20, display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -132,7 +136,7 @@ export default function SlideEditor({ sliderId, slideId, onBack, onSaved }: {
               {img ? (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   <img src={img} alt="" style={{ width: '100%', height: 'auto', maxHeight: 180, objectFit: 'contain', borderRadius: 8, border: '1px solid var(--color-border)', background: 'var(--color-muted,#f3f4f6)' }} />
-                  <div style={{ display: 'flex', gap: 8 }}>
+                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                     {can('slides.image.create') && <button style={{ ...btnGhost, height: 32 }} onClick={() => fileRef.current?.click()} disabled={uploading}>{uploading ? t('uploading') : t('choose_img')}</button>}
                     {can('slides.image.delete') && <button style={{ ...btnGhost, height: 32, color: 'var(--color-destructive,#ef4444)' }} onClick={() => setImg('')}><TrashIcon />{t('remove_img')}</button>}
                   </div>
