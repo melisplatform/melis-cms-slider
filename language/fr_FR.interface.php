@@ -1,5 +1,6 @@
 <?php 
 	return array(
+    'tr_meliscmsslider_ws_desc_slider' => 'Sliders (carrousels) du CMS : liste, détail et sliders d\'une page.',
         'tr_meliscms_meliscms' => 'MelisCms',
 	    'tr_melistechnology_tools_section' => 'Outils personnalisés',
 	    'tr_MelisCmsSlider_manager' => 'Slider',

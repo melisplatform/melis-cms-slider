@@ -14,6 +14,7 @@ return [
 			'MelisCmsSlider' => [
 				//MelisCmsSliderService.php
 				'MelisCmsSliderService' => [
+				    '_description' => 'tr_meliscmsslider_ws_desc_slider',
 					/**
 					 * getSliderList method
 					 * @param int Start
