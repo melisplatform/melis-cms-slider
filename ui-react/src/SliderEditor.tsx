@@ -5,15 +5,17 @@ import {
   PencilIcon, TrashIcon, PlusIcon, GripIcon, ImageIcon, ConfirmModal,
   ColManager, makeColStore, visibleCols, type ColDef,
 } from './ui'
-import SlideEditor from './SlideEditor'
 import { useIsNarrow } from './shared/useIsNarrow'
 import { ExpandToggle, HiddenColsRow } from './shared/ExpandableRow'
 
 /* Niveau 2 — liste des slides d'un slider (slider > SLIDES > slide). Réordonnancement
- * par glisser-déposer (HTML5 DnD) → reorderSlides. Ouvre/édite une slide via SlideEditor. */
+ * par glisser-déposer (HTML5 DnD) → reorderSlides.
+ *
+ * L'édition d'une slide n'est PLUS rendue ici : c'est un sous-onglet à part entière (niveau 3),
+ * monté par SliderPage à côté de cet écran — d'où `onOpenSlide` au lieu d'un état de vue local, et
+ * `tick` pour rafraîchir la liste quand une slide sœur a été enregistrée ou supprimée. */
 
 const can = makeCan('meliscms_slider_tools_section') // nœud porteur de droits (cf. react.capabilities.php)
-type SlideView = { kind: 'list' } | { kind: 'new' } | { kind: 'edit'; id: number }
 
 const COL_LABEL: Record<string, string> = { id: 'col_id', status: 's_status', image: 's_image', title: 's_title', sub1: 's_sub1', link: 's_link', order: 's_order' }
 const DEFAULT_COLS: ColDef[] = [
@@ -29,15 +31,18 @@ const colStore = makeColStore('melis-slider-slides-cols-v2', DEFAULT_COLS)
 // sur mobile pour qu'elle reste consultable dans le détail dépliable.
 const ESSENTIAL_COLS = new Set(['title'])
 
-export default function SliderEditor({ sliderId, sliderName, onSaved }: {
+export default function SliderEditor({ sliderId, sliderName, tick: externalTick, onOpenSlide, onSlideDeleted, onSaved }: {
   sliderId: number
   sliderName: string
+  /** Bumpé par SliderPage quand une slide de ce slider a été enregistrée ailleurs (son onglet). */
+  tick: number
+  onOpenSlide: (slide: number | 'new', title: string) => void
+  onSlideDeleted: (slideId: number) => void
   onSaved: () => void
 }) {
   const t = useT()
   const narrow = useIsNarrow()
   const [expanded, setExpanded] = useState<Set<number>>(new Set())
-  const [view, setView] = useState<SlideView>({ kind: 'list' })
   const [slides, setSlides] = useState<SlideItem[]>([])
   const [loading, setLoading] = useState(false)
   const [toDelete, setToDelete] = useState<SlideItem | null>(null)
@@ -49,14 +54,13 @@ export default function SliderEditor({ sliderId, sliderName, onSaved }: {
   const [showCols, setShowCols] = useState(false)
 
   useEffect(() => {
-    if (view.kind !== 'list') return
     setLoading(true)
     fetchSlides(sliderId).then((r) => setSlides(r.items)).catch(() => null).finally(() => setLoading(false))
-  }, [sliderId, view.kind, tick])
+  }, [sliderId, tick, externalTick])
 
   async function confirmDelete() {
     if (!toDelete) return
-    try { await deleteSlide(toDelete.id); setToDelete(null); setTick((x) => x + 1); onSaved() }
+    try { await deleteSlide(toDelete.id); onSlideDeleted(toDelete.id); setToDelete(null); setTick((x) => x + 1); onSaved() }
     catch { setToDelete(null) }
   }
 
@@ -88,14 +92,6 @@ export default function SliderEditor({ sliderId, sliderName, onSaved }: {
     return next
   })
 
-  if (view.kind !== 'list') {
-    return (
-      <SlideEditor sliderId={sliderId} slideId={view.kind === 'edit' ? view.id : 'new'}
-        onBack={() => setView({ kind: 'list' })}
-        onSaved={() => { setView({ kind: 'list' }); setTick((x) => x + 1); onSaved() }} />
-    )
-  }
-
   return (
     <div style={{ ...pageWrap, ...(narrow ? { padding: 16 } : {}) }}>
       {/* Titre à gauche + « Ajouter une slide » à droite, une seule ligne. Sur mobile le titre
@@ -105,7 +101,7 @@ export default function SliderEditor({ sliderId, sliderName, onSaved }: {
           <h2 style={{ fontSize: 18, fontWeight: 700, margin: 0, ...(narrow ? { overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } : {}) }}>{t('slides_of', { n: sliderName || ('#' + sliderId) })}</h2>
           <p style={{ fontSize: 13, color: 'var(--color-muted-foreground)', margin: '2px 0 0', ...(narrow ? { overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } : {}) }}>{t('reorder_hint')}</p>
         </div>
-        {can('slides.create') && <button style={{ ...btnPrimary, ...(narrow ? { flexShrink: 0, padding: '0 10px' } : {}) }} onClick={() => setView({ kind: 'new' })}><PlusIcon />{t('add_slide')}</button>}
+        {can('slides.create') && <button style={{ ...btnPrimary, ...(narrow ? { flexShrink: 0, padding: '0 10px' } : {}) }} onClick={() => onOpenSlide('new', '')}><PlusIcon />{t('add_slide')}</button>}
       </div>
 
       {!can('slides.list') ? (
@@ -184,7 +180,7 @@ export default function SliderEditor({ sliderId, sliderName, onSaved }: {
                 ))}
                 <td style={td}>
                   <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 4 }}>
-                    {can('slides.edit') && <button style={iconBtn} title={t('edit')} onClick={() => setView({ kind: 'edit', id: s.id })}><PencilIcon /></button>}
+                    {can('slides.edit') && <button style={iconBtn} title={t('edit')} onClick={() => onOpenSlide(s.id, s.title)}><PencilIcon /></button>}
                     {can('slides.delete') && <button style={{ ...iconBtn, color: 'var(--color-destructive,#ef4444)' }} title={t('del')} onClick={() => setToDelete(s)}><TrashIcon /></button>}
                   </div>
                 </td>

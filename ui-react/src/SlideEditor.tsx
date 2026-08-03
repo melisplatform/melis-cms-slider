@@ -17,7 +17,9 @@ export default function SlideEditor({ sliderId, slideId, onBack, onSaved }: {
   sliderId: number
   slideId: number | 'new'
   onBack: () => void
-  onSaved: () => void
+  /** (id enregistré, titre) — la slide a son propre sous-onglet : SliderPage l'étiquette avec le
+   *  titre, et remplace l'onglet transitoire « Nouvelle slide » par celui de la slide créée. */
+  onSaved: (id: number, title: string) => void
 }) {
   const t = useT()
   const narrow = useIsNarrow()
@@ -60,12 +62,15 @@ export default function SlideEditor({ sliderId, slideId, onBack, onSaved }: {
   async function submit() {
     setError(null); setSaving(true)
     try {
-      await saveSlide({
+      const { id } = await saveSlide({
         id: isEdit ? (slideId as number) : null,
         sliderId, status, title, sub1, sub2, sub3, link, img,
       })
       setSaved(true)
-      setTimeout(() => onSaved(), 400)
+      setTimeout(() => onSaved(id, title), 400)
+      // L'écran RESTE monté après un enregistrement (c'est son propre sous-onglet, on ne quitte
+      // plus la slide) → le « Enregistré » doit s'effacer, sinon il reste affiché indéfiniment.
+      setTimeout(() => setSaved(false), 2500)
     } catch (e) { setError(e instanceof Error ? e.message : t('err_save')) }
     finally { setSaving(false) }
   }

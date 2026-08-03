@@ -1,4 +1,4 @@
-(function(react, react_jsx_runtime) {
+(function(react, react_router_dom, react_jsx_runtime) {
 	//#region src/slider-api.ts
 	/**
 	* Client de l'API Slider pour la brique MelisCmsSlider.
@@ -439,7 +439,7 @@
 			/* @__PURE__ */ (0, react_jsx_runtime.jsx)("path", { d: "m21 15-3.1-3.1a2 2 0 0 0-2.8 0L6 21" })
 		]
 	});
-	var LayersIcon$1 = () => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("svg", {
+	var LayersIcon = () => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("svg", {
 		style: sIcon$2,
 		viewBox: "0 0 24 24",
 		fill: "none",
@@ -1972,7 +1972,7 @@
 			fill: "currentColor"
 		})]
 	});
-	function SliderList({ active, onOpen, mode, onModeChange }) {
+	function SliderList({ active, onOpen, onDeleted, onRenamed, mode, onModeChange }) {
 		const t = useT();
 		const narrow = useIsNarrow();
 		const [stats, setStats] = (0, react.useState)(null);
@@ -2025,6 +2025,7 @@
 			try {
 				await deleteSlider(toDelete.id);
 				removeLocal((s) => s.id === toDelete.id);
+				onDeleted(toDelete.id);
 				setToDelete(null);
 				setTick((x) => x + 1);
 			} catch {
@@ -2331,7 +2332,7 @@
 														gap: 6,
 														color: "var(--color-muted-foreground)"
 													},
-													children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)(LayersIcon$1, {}), s.slideCount]
+													children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)(LayersIcon, {}), s.slideCount]
 												})
 											]
 										}, id)),
@@ -2403,7 +2404,8 @@
 				editSlider && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(SliderModal, {
 					slider: editSlider === "new" ? null : editSlider,
 					onClose: () => setEditSlider(null),
-					onSaved: () => {
+					onSaved: (name) => {
+						if (editSlider !== "new") onRenamed(editSlider.id, name);
 						setEditSlider(null);
 						setTick((x) => x + 1);
 					}
@@ -2458,7 +2460,7 @@
 					name: name.trim(),
 					pageId: pageId ? pageId : null
 				});
-				onSaved();
+				onSaved(name.trim());
 			} catch (e) {
 				setError(e instanceof Error ? e.message : t("err_save"));
 			} finally {
@@ -2571,8 +2573,441 @@
 		});
 	}
 	//#endregion
-	//#region src/SlideEditor.tsx
+	//#region src/SliderEditor.tsx
 	var can$1 = makeCan("meliscms_slider_tools_section");
+	var COL_LABEL = {
+		id: "col_id",
+		status: "s_status",
+		image: "s_image",
+		title: "s_title",
+		sub1: "s_sub1",
+		link: "s_link",
+		order: "s_order"
+	};
+	var colStore = makeColStore("melis-slider-slides-cols-v2", [
+		{
+			id: "id",
+			visible: true
+		},
+		{
+			id: "status",
+			visible: true
+		},
+		{
+			id: "image",
+			visible: true
+		},
+		{
+			id: "title",
+			visible: true
+		},
+		{
+			id: "sub1",
+			visible: true
+		},
+		{
+			id: "link",
+			visible: true
+		}
+	]);
+	var ESSENTIAL_COLS = new Set(["title"]);
+	function SliderEditor({ sliderId, sliderName, tick: externalTick, onOpenSlide, onSlideDeleted, onSaved }) {
+		const t = useT();
+		const narrow = useIsNarrow();
+		const [expanded, setExpanded] = (0, react.useState)(/* @__PURE__ */ new Set());
+		const [slides, setSlides] = (0, react.useState)([]);
+		const [loading, setLoading] = (0, react.useState)(false);
+		const [toDelete, setToDelete] = (0, react.useState)(null);
+		const [dragId, setDragId] = (0, react.useState)(null);
+		const [overId, setOverId] = (0, react.useState)(null);
+		const [tick, setTick] = (0, react.useState)(0);
+		const [cols, setCols] = (0, react.useState)(colStore.load);
+		const colsAnchorRef = (0, react.useRef)(null);
+		const [showCols, setShowCols] = (0, react.useState)(false);
+		(0, react.useEffect)(() => {
+			setLoading(true);
+			fetchSlides(sliderId).then((r) => setSlides(r.items)).catch(() => null).finally(() => setLoading(false));
+		}, [
+			sliderId,
+			tick,
+			externalTick
+		]);
+		async function confirmDelete() {
+			if (!toDelete) return;
+			try {
+				await deleteSlide(toDelete.id);
+				onSlideDeleted(toDelete.id);
+				setToDelete(null);
+				setTick((x) => x + 1);
+				onSaved();
+			} catch {
+				setToDelete(null);
+			}
+		}
+		async function handleDrop(targetId, e) {
+			const srcId = dragId ?? (Number(e.dataTransfer.getData("text/plain")) || null);
+			if (srcId == null || srcId === targetId) {
+				setDragId(null);
+				setOverId(null);
+				return;
+			}
+			const from = slides.findIndex((s) => s.id === srcId);
+			const to = slides.findIndex((s) => s.id === targetId);
+			if (from === -1 || to === -1) {
+				setDragId(null);
+				setOverId(null);
+				return;
+			}
+			const next = [...slides];
+			const [moved] = next.splice(from, 1);
+			next.splice(to, 0, moved);
+			setSlides(next.map((s, i) => ({
+				...s,
+				order: i + 1
+			})));
+			setDragId(null);
+			setOverId(null);
+			try {
+				await reorderSlides(sliderId, next.map((s) => s.id));
+			} catch {
+				setTick((x) => x + 1);
+			}
+		}
+		const displayCols = narrow ? [...cols.map((c) => ({
+			...c,
+			visible: ESSENTIAL_COLS.has(c.id)
+		})), {
+			id: "order",
+			visible: false
+		}] : cols;
+		const hasHidden = narrow;
+		const toggleExpand = (id) => setExpanded((prev) => {
+			const next = new Set(prev);
+			if (!next.delete(id)) next.add(id);
+			return next;
+		});
+		return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+			style: {
+				...pageWrap,
+				...narrow ? { padding: 16 } : {}
+			},
+			children: [
+				/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+					style: {
+						display: "flex",
+						alignItems: "center",
+						justifyContent: "space-between",
+						gap: 16
+					},
+					children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+						style: narrow ? { minWidth: 0 } : void 0,
+						children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("h2", {
+							style: {
+								fontSize: 18,
+								fontWeight: 700,
+								margin: 0,
+								...narrow ? {
+									overflow: "hidden",
+									textOverflow: "ellipsis",
+									whiteSpace: "nowrap"
+								} : {}
+							},
+							children: t("slides_of", { n: sliderName || "#" + sliderId })
+						}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", {
+							style: {
+								fontSize: 13,
+								color: "var(--color-muted-foreground)",
+								margin: "2px 0 0",
+								...narrow ? {
+									overflow: "hidden",
+									textOverflow: "ellipsis",
+									whiteSpace: "nowrap"
+								} : {}
+							},
+							children: t("reorder_hint")
+						})]
+					}), can$1("slides.create") && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
+						style: {
+							...btnPrimary$1,
+							...narrow ? {
+								flexShrink: 0,
+								padding: "0 10px"
+							} : {}
+						},
+						onClick: () => onOpenSlide("new", ""),
+						children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)(PlusIcon$1, {}), t("add_slide")]
+					})]
+				}),
+				!can$1("slides.list") ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+					style: {
+						...card$1,
+						padding: "40px 16px",
+						textAlign: "center",
+						fontSize: 14,
+						color: "var(--color-muted-foreground)"
+					},
+					children: t("no_access")
+				}) : /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+					style: {
+						display: "flex",
+						justifyContent: "flex-end"
+					},
+					children: /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+						ref: colsAnchorRef,
+						style: {
+							position: "relative",
+							...narrow ? { flex: 1 } : {}
+						},
+						children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
+							style: {
+								...btnGhost$1,
+								height: 36,
+								...narrow ? {
+									width: "100%",
+									justifyContent: "center"
+								} : {}
+							},
+							onClick: () => setShowCols((v) => !v),
+							children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)(GripIcon$1, {}), t("columns")]
+						}), showCols && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(ColManager, {
+							anchorRef: colsAnchorRef,
+							cols,
+							labelFor: (id) => t(COL_LABEL[id]),
+							onChange: setCols,
+							onSave: colStore.save,
+							defaults: colStore.defaults,
+							onClose: () => setShowCols(false)
+						})]
+					})
+				}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+					style: {
+						...card$1,
+						overflow: "hidden",
+						flexShrink: 0
+					},
+					children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("table", {
+						style: {
+							width: "100%",
+							borderCollapse: "collapse",
+							...narrow ? {} : { minWidth: 640 }
+						},
+						children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("thead", {
+							style: { background: "var(--color-muted,rgba(0,0,0,.03))" },
+							children: /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("tr", { children: [
+								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("th", { style: {
+									...th,
+									width: 40
+								} }),
+								hasHidden && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("th", { style: {
+									...th,
+									width: 32
+								} }),
+								!narrow && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("th", {
+									style: {
+										...th,
+										width: 50
+									},
+									children: t("s_order")
+								}),
+								visibleCols(displayCols).map(({ id }) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("th", {
+									style: {
+										...th,
+										...id === "id" ? { width: 70 } : id === "status" ? { width: 70 } : id === "image" ? { width: 80 } : {}
+									},
+									children: t(COL_LABEL[id])
+								}, id)),
+								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("th", { style: {
+									...th,
+									width: 80
+								} })
+							] })
+						}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("tbody", { children: slides.length === 0 && !loading ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("tr", { children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("td", {
+							style: {
+								...td,
+								textAlign: "center",
+								color: "var(--color-muted-foreground)",
+								padding: "40px 16px"
+							},
+							colSpan: visibleCols(displayCols).length + (hasHidden ? 1 : 0) + (narrow ? 2 : 3),
+							children: t("no_slides")
+						}) }) : slides.map((s) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react.Fragment, { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("tr", {
+							draggable: can$1("slides.edit"),
+							onDragStart: (e) => {
+								if (!can$1("slides.edit")) return;
+								e.dataTransfer.effectAllowed = "move";
+								e.dataTransfer.setData("text/plain", String(s.id));
+								setDragId(s.id);
+							},
+							onDragEnd: () => {
+								setDragId(null);
+								setOverId(null);
+							},
+							onDragOver: (e) => {
+								if (!can$1("slides.edit")) return;
+								e.preventDefault();
+								e.dataTransfer.dropEffect = "move";
+								if (overId !== s.id) setOverId(s.id);
+							},
+							onDrop: (e) => {
+								if (!can$1("slides.edit")) return;
+								e.preventDefault();
+								handleDrop(s.id, e);
+							},
+							style: {
+								cursor: can$1("slides.edit") ? "grab" : "default",
+								opacity: dragId === s.id ? .4 : 1,
+								background: overId === s.id && dragId !== s.id ? "color-mix(in srgb, var(--color-primary) 8%, transparent)" : "transparent"
+							},
+							children: [
+								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("td", {
+									style: {
+										...td,
+										color: "var(--color-muted-foreground)",
+										textAlign: "center"
+									},
+									children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(GripIcon$1, {})
+								}),
+								hasHidden && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("td", {
+									style: td,
+									children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(ExpandToggle, {
+										expanded: expanded.has(s.id),
+										onClick: () => toggleExpand(s.id)
+									})
+								}),
+								!narrow && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("td", {
+									style: {
+										...td,
+										color: "var(--color-muted-foreground)",
+										fontVariantNumeric: "tabular-nums"
+									},
+									children: s.order
+								}),
+								visibleCols(displayCols).map(({ id }) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("td", {
+									style: {
+										...td,
+										...id === "id" ? {
+											color: "var(--color-muted-foreground)",
+											fontVariantNumeric: "tabular-nums"
+										} : {},
+										...id === "sub1" ? {
+											color: "var(--color-muted-foreground)",
+											maxWidth: 220,
+											overflow: "hidden",
+											textOverflow: "ellipsis",
+											whiteSpace: "nowrap"
+										} : {},
+										...id === "link" ? {
+											fontFamily: "monospace",
+											fontSize: 12,
+											color: "var(--color-muted-foreground)",
+											maxWidth: 180,
+											overflow: "hidden",
+											textOverflow: "ellipsis",
+											whiteSpace: "nowrap"
+										} : {}
+									},
+									children: [
+										id === "id" && s.id,
+										id === "status" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+											title: s.status ? t("active") : t("inactive"),
+											style: {
+												display: "inline-block",
+												width: 10,
+												height: 10,
+												borderRadius: 999,
+												background: s.status ? "#22c55e" : "#ef4444"
+											}
+										}),
+										id === "image" && (s.img ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("img", {
+											src: s.img,
+											alt: "",
+											style: {
+												width: 56,
+												height: 34,
+												objectFit: "cover",
+												borderRadius: 4,
+												border: "1px solid var(--color-border)"
+											}
+										}) : /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+											style: {
+												color: "var(--color-muted-foreground)",
+												display: "inline-flex"
+											},
+											children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(ImageIcon, {})
+										})),
+										id === "title" && (s.title || /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+											style: { color: "var(--color-muted-foreground)" },
+											children: "—"
+										})),
+										id === "sub1" && s.sub1,
+										id === "link" && s.link
+									]
+								}, id)),
+								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("td", {
+									style: td,
+									children: /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+										style: {
+											display: "flex",
+											justifyContent: "flex-end",
+											gap: 4
+										},
+										children: [can$1("slides.edit") && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+											style: iconBtn,
+											title: t("edit"),
+											onClick: () => onOpenSlide(s.id, s.title),
+											children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(PencilIcon, {})
+										}), can$1("slides.delete") && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+											style: {
+												...iconBtn,
+												color: "var(--color-destructive,#ef4444)"
+											},
+											title: t("del"),
+											onClick: () => setToDelete(s),
+											children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(TrashIcon, {})
+										})]
+									})
+								})
+							]
+						}), hasHidden && expanded.has(s.id) && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(HiddenColsRow, {
+							cols: displayCols,
+							labelFor: (id) => t(COL_LABEL[id]),
+							renderValue: (id) => id === "id" ? s.id : id === "order" ? s.order : id === "status" ? s.status ? t("active") : t("inactive") : id === "image" ? s.img ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("img", {
+								src: s.img,
+								alt: "",
+								style: {
+									width: 56,
+									height: 34,
+									objectFit: "cover",
+									borderRadius: 4,
+									border: "1px solid var(--color-border)"
+								}
+							}) : "—" : id === "title" ? s.title || "—" : id === "sub1" ? s.sub1 : id === "link" ? s.link : "",
+							colSpan: visibleCols(displayCols).length + 3,
+							narrow
+						})] }, s.id)) })]
+					}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+						style: {
+							padding: "10px 16px",
+							textAlign: "center",
+							fontSize: 12,
+							color: "var(--color-muted-foreground)"
+						},
+						children: loading ? t("loading") : t("count_slides", { n: slides.length })
+					})]
+				})] }),
+				toDelete && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(ConfirmModal, {
+					title: t("del_slide_title"),
+					message: t("del_slide_confirm"),
+					confirmLabel: t("del"),
+					onConfirm: confirmDelete,
+					onCancel: () => setToDelete(null)
+				})
+			]
+		});
+	}
+	//#endregion
+	//#region src/SlideEditor.tsx
+	var can = makeCan("meliscms_slider_tools_section");
 	function SlideEditor({ sliderId, slideId, onBack, onSaved }) {
 		const t = useT();
 		const narrow = useIsNarrow();
@@ -2622,7 +3057,7 @@
 			setError(null);
 			setSaving(true);
 			try {
-				await saveSlide({
+				const { id } = await saveSlide({
 					id: isEdit ? slideId : null,
 					sliderId,
 					status,
@@ -2634,7 +3069,8 @@
 					img
 				});
 				setSaved(true);
-				setTimeout(() => onSaved(), 400);
+				setTimeout(() => onSaved(id, title), 400);
+				setTimeout(() => setSaved(false), 2500);
 			} catch (e) {
 				setError(e instanceof Error ? e.message : t("err_save"));
 			} finally {
@@ -2733,7 +3169,7 @@
 						gap: 16,
 						alignItems: "start"
 					},
-					children: [can$1("slides.properties") && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+					children: [can("slides.properties") && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 						style: {
 							...card$1,
 							padding: 20,
@@ -2839,7 +3275,7 @@
 									} })
 								}), status ? t("active") : t("inactive")]
 							})]
-						}), can$1("slides.image") && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+						}), can("slides.image") && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 							style: {
 								...card$1,
 								padding: 20
@@ -2873,7 +3309,7 @@
 											gap: 8,
 											flexWrap: "wrap"
 										},
-										children: [can$1("slides.image.create") && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+										children: [can("slides.image.create") && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
 											style: {
 												...btnGhost$1,
 												height: 32
@@ -2881,7 +3317,7 @@
 											onClick: () => fileRef.current?.click(),
 											disabled: uploading,
 											children: uploading ? t("uploading") : t("choose_img")
-										}), can$1("slides.image.delete") && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
+										}), can("slides.image.delete") && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
 											style: {
 												...btnGhost$1,
 												height: 32,
@@ -2891,7 +3327,7 @@
 											children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)(TrashIcon, {}), t("remove_img")]
 										})]
 									})]
-								}) : can$1("slides.image.create") && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
+								}) : can("slides.image.create") && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
 									onClick: () => fileRef.current?.click(),
 									disabled: uploading,
 									style: {
@@ -2929,728 +3365,267 @@
 		});
 	}
 	//#endregion
-	//#region src/SliderEditor.tsx
-	var can = makeCan("meliscms_slider_tools_section");
-	var COL_LABEL = {
-		id: "col_id",
-		status: "s_status",
-		image: "s_image",
-		title: "s_title",
-		sub1: "s_sub1",
-		link: "s_link",
-		order: "s_order"
-	};
-	var colStore = makeColStore("melis-slider-slides-cols-v2", [
-		{
-			id: "id",
-			visible: true
-		},
-		{
-			id: "status",
-			visible: true
-		},
-		{
-			id: "image",
-			visible: true
-		},
-		{
-			id: "title",
-			visible: true
-		},
-		{
-			id: "sub1",
-			visible: true
-		},
-		{
-			id: "link",
-			visible: true
-		}
-	]);
-	var ESSENTIAL_COLS = new Set(["title"]);
-	function SliderEditor({ sliderId, sliderName, onSaved }) {
-		const t = useT();
-		const narrow = useIsNarrow();
-		const [expanded, setExpanded] = (0, react.useState)(/* @__PURE__ */ new Set());
-		const [view, setView] = (0, react.useState)({ kind: "list" });
-		const [slides, setSlides] = (0, react.useState)([]);
-		const [loading, setLoading] = (0, react.useState)(false);
-		const [toDelete, setToDelete] = (0, react.useState)(null);
-		const [dragId, setDragId] = (0, react.useState)(null);
-		const [overId, setOverId] = (0, react.useState)(null);
-		const [tick, setTick] = (0, react.useState)(0);
-		const [cols, setCols] = (0, react.useState)(colStore.load);
-		const colsAnchorRef = (0, react.useRef)(null);
-		const [showCols, setShowCols] = (0, react.useState)(false);
+	//#region src/shared/subtabs.ts
+	/**
+	* Lecture des sous-onglets ouverts publiés par l'hôte.
+	*
+	* Les globals `__melisOpenSubTab` / `__melisCloseSubTab` (SubTabWindowBridge, melis-core) sont
+	* write-only : une brique ne pouvait pas observer une fermeture déclenchée par la croix de la
+	* SubTabBar. L'hôte publie donc aussi l'état courant (`window.__melisSubTabs` + événement
+	* `melis:subtabs-changed`).
+	*
+	* C'est ce qui permet à une brique montée en permanence (manifest `persistent: true`) de garder un
+	* écran monté par enregistrement ouvert, au lieu de le remonter (et refetcher) à chaque changement
+	* de sous-onglet. Copie conforme du fichier homonyme de melis-cms-user-account (les briques sont
+	* des bundles séparés : pas d'import croisé possible).
+	*/
+	var SUBTABS_CHANGED = "melis:subtabs-changed";
+	var host = window;
+	/** Chemins des sous-onglets actuellement ouverts pour `section` (= la route racine de l'outil). */
+	function readOpenSubTabPaths(section) {
+		return host.__melisSubTabs?.[section]?.tabs.map((t) => t.path) ?? [];
+	}
+	/** Variante réactive : re-rend l'appelant à chaque ouverture/fermeture de sous-onglet. */
+	function useOpenSubTabPaths(section) {
+		const [paths, setPaths] = (0, react.useState)(() => readOpenSubTabPaths(section));
 		(0, react.useEffect)(() => {
-			if (view.kind !== "list") return;
-			setLoading(true);
-			fetchSlides(sliderId).then((r) => setSlides(r.items)).catch(() => null).finally(() => setLoading(false));
-		}, [
-			sliderId,
-			view.kind,
-			tick
-		]);
-		async function confirmDelete() {
-			if (!toDelete) return;
-			try {
-				await deleteSlide(toDelete.id);
-				setToDelete(null);
-				setTick((x) => x + 1);
-				onSaved();
-			} catch {
-				setToDelete(null);
-			}
-		}
-		async function handleDrop(targetId, e) {
-			const srcId = dragId ?? (Number(e.dataTransfer.getData("text/plain")) || null);
-			if (srcId == null || srcId === targetId) {
-				setDragId(null);
-				setOverId(null);
-				return;
-			}
-			const from = slides.findIndex((s) => s.id === srcId);
-			const to = slides.findIndex((s) => s.id === targetId);
-			if (from === -1 || to === -1) {
-				setDragId(null);
-				setOverId(null);
-				return;
-			}
-			const next = [...slides];
-			const [moved] = next.splice(from, 1);
-			next.splice(to, 0, moved);
-			setSlides(next.map((s, i) => ({
-				...s,
-				order: i + 1
-			})));
-			setDragId(null);
-			setOverId(null);
-			try {
-				await reorderSlides(sliderId, next.map((s) => s.id));
-			} catch {
-				setTick((x) => x + 1);
-			}
-		}
-		const displayCols = narrow ? [...cols.map((c) => ({
-			...c,
-			visible: ESSENTIAL_COLS.has(c.id)
-		})), {
-			id: "order",
-			visible: false
-		}] : cols;
-		const hasHidden = narrow;
-		const toggleExpand = (id) => setExpanded((prev) => {
-			const next = new Set(prev);
-			if (!next.delete(id)) next.add(id);
-			return next;
-		});
-		if (view.kind !== "list") return /* @__PURE__ */ (0, react_jsx_runtime.jsx)(SlideEditor, {
-			sliderId,
-			slideId: view.kind === "edit" ? view.id : "new",
-			onBack: () => setView({ kind: "list" }),
-			onSaved: () => {
-				setView({ kind: "list" });
-				setTick((x) => x + 1);
-				onSaved();
-			}
-		});
-		return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-			style: {
-				...pageWrap,
-				...narrow ? { padding: 16 } : {}
-			},
-			children: [
-				/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-					style: {
-						display: "flex",
-						alignItems: "center",
-						justifyContent: "space-between",
-						gap: 16
-					},
-					children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-						style: narrow ? { minWidth: 0 } : void 0,
-						children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("h2", {
-							style: {
-								fontSize: 18,
-								fontWeight: 700,
-								margin: 0,
-								...narrow ? {
-									overflow: "hidden",
-									textOverflow: "ellipsis",
-									whiteSpace: "nowrap"
-								} : {}
-							},
-							children: t("slides_of", { n: sliderName || "#" + sliderId })
-						}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", {
-							style: {
-								fontSize: 13,
-								color: "var(--color-muted-foreground)",
-								margin: "2px 0 0",
-								...narrow ? {
-									overflow: "hidden",
-									textOverflow: "ellipsis",
-									whiteSpace: "nowrap"
-								} : {}
-							},
-							children: t("reorder_hint")
-						})]
-					}), can("slides.create") && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
-						style: {
-							...btnPrimary$1,
-							...narrow ? {
-								flexShrink: 0,
-								padding: "0 10px"
-							} : {}
-						},
-						onClick: () => setView({ kind: "new" }),
-						children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)(PlusIcon$1, {}), t("add_slide")]
-					})]
-				}),
-				!can("slides.list") ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
-					style: {
-						...card$1,
-						padding: "40px 16px",
-						textAlign: "center",
-						fontSize: 14,
-						color: "var(--color-muted-foreground)"
-					},
-					children: t("no_access")
-				}) : /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
-					style: {
-						display: "flex",
-						justifyContent: "flex-end"
-					},
-					children: /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-						ref: colsAnchorRef,
-						style: {
-							position: "relative",
-							...narrow ? { flex: 1 } : {}
-						},
-						children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
-							style: {
-								...btnGhost$1,
-								height: 36,
-								...narrow ? {
-									width: "100%",
-									justifyContent: "center"
-								} : {}
-							},
-							onClick: () => setShowCols((v) => !v),
-							children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)(GripIcon$1, {}), t("columns")]
-						}), showCols && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(ColManager, {
-							anchorRef: colsAnchorRef,
-							cols,
-							labelFor: (id) => t(COL_LABEL[id]),
-							onChange: setCols,
-							onSave: colStore.save,
-							defaults: colStore.defaults,
-							onClose: () => setShowCols(false)
-						})]
-					})
-				}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-					style: {
-						...card$1,
-						overflow: "hidden",
-						flexShrink: 0
-					},
-					children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("table", {
-						style: {
-							width: "100%",
-							borderCollapse: "collapse",
-							...narrow ? {} : { minWidth: 640 }
-						},
-						children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("thead", {
-							style: { background: "var(--color-muted,rgba(0,0,0,.03))" },
-							children: /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("tr", { children: [
-								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("th", { style: {
-									...th,
-									width: 40
-								} }),
-								hasHidden && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("th", { style: {
-									...th,
-									width: 32
-								} }),
-								!narrow && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("th", {
-									style: {
-										...th,
-										width: 50
-									},
-									children: t("s_order")
-								}),
-								visibleCols(displayCols).map(({ id }) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("th", {
-									style: {
-										...th,
-										...id === "id" ? { width: 70 } : id === "status" ? { width: 70 } : id === "image" ? { width: 80 } : {}
-									},
-									children: t(COL_LABEL[id])
-								}, id)),
-								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("th", { style: {
-									...th,
-									width: 80
-								} })
-							] })
-						}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("tbody", { children: slides.length === 0 && !loading ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("tr", { children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("td", {
-							style: {
-								...td,
-								textAlign: "center",
-								color: "var(--color-muted-foreground)",
-								padding: "40px 16px"
-							},
-							colSpan: visibleCols(displayCols).length + (hasHidden ? 1 : 0) + (narrow ? 2 : 3),
-							children: t("no_slides")
-						}) }) : slides.map((s) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react.Fragment, { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("tr", {
-							draggable: can("slides.edit"),
-							onDragStart: (e) => {
-								if (!can("slides.edit")) return;
-								e.dataTransfer.effectAllowed = "move";
-								e.dataTransfer.setData("text/plain", String(s.id));
-								setDragId(s.id);
-							},
-							onDragEnd: () => {
-								setDragId(null);
-								setOverId(null);
-							},
-							onDragOver: (e) => {
-								if (!can("slides.edit")) return;
-								e.preventDefault();
-								e.dataTransfer.dropEffect = "move";
-								if (overId !== s.id) setOverId(s.id);
-							},
-							onDrop: (e) => {
-								if (!can("slides.edit")) return;
-								e.preventDefault();
-								handleDrop(s.id, e);
-							},
-							style: {
-								cursor: can("slides.edit") ? "grab" : "default",
-								opacity: dragId === s.id ? .4 : 1,
-								background: overId === s.id && dragId !== s.id ? "color-mix(in srgb, var(--color-primary) 8%, transparent)" : "transparent"
-							},
-							children: [
-								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("td", {
-									style: {
-										...td,
-										color: "var(--color-muted-foreground)",
-										textAlign: "center"
-									},
-									children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(GripIcon$1, {})
-								}),
-								hasHidden && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("td", {
-									style: td,
-									children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(ExpandToggle, {
-										expanded: expanded.has(s.id),
-										onClick: () => toggleExpand(s.id)
-									})
-								}),
-								!narrow && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("td", {
-									style: {
-										...td,
-										color: "var(--color-muted-foreground)",
-										fontVariantNumeric: "tabular-nums"
-									},
-									children: s.order
-								}),
-								visibleCols(displayCols).map(({ id }) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("td", {
-									style: {
-										...td,
-										...id === "id" ? {
-											color: "var(--color-muted-foreground)",
-											fontVariantNumeric: "tabular-nums"
-										} : {},
-										...id === "sub1" ? {
-											color: "var(--color-muted-foreground)",
-											maxWidth: 220,
-											overflow: "hidden",
-											textOverflow: "ellipsis",
-											whiteSpace: "nowrap"
-										} : {},
-										...id === "link" ? {
-											fontFamily: "monospace",
-											fontSize: 12,
-											color: "var(--color-muted-foreground)",
-											maxWidth: 180,
-											overflow: "hidden",
-											textOverflow: "ellipsis",
-											whiteSpace: "nowrap"
-										} : {}
-									},
-									children: [
-										id === "id" && s.id,
-										id === "status" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-											title: s.status ? t("active") : t("inactive"),
-											style: {
-												display: "inline-block",
-												width: 10,
-												height: 10,
-												borderRadius: 999,
-												background: s.status ? "#22c55e" : "#ef4444"
-											}
-										}),
-										id === "image" && (s.img ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("img", {
-											src: s.img,
-											alt: "",
-											style: {
-												width: 56,
-												height: 34,
-												objectFit: "cover",
-												borderRadius: 4,
-												border: "1px solid var(--color-border)"
-											}
-										}) : /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-											style: {
-												color: "var(--color-muted-foreground)",
-												display: "inline-flex"
-											},
-											children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(ImageIcon, {})
-										})),
-										id === "title" && (s.title || /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-											style: { color: "var(--color-muted-foreground)" },
-											children: "—"
-										})),
-										id === "sub1" && s.sub1,
-										id === "link" && s.link
-									]
-								}, id)),
-								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("td", {
-									style: td,
-									children: /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-										style: {
-											display: "flex",
-											justifyContent: "flex-end",
-											gap: 4
-										},
-										children: [can("slides.edit") && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
-											style: iconBtn,
-											title: t("edit"),
-											onClick: () => setView({
-												kind: "edit",
-												id: s.id
-											}),
-											children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(PencilIcon, {})
-										}), can("slides.delete") && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
-											style: {
-												...iconBtn,
-												color: "var(--color-destructive,#ef4444)"
-											},
-											title: t("del"),
-											onClick: () => setToDelete(s),
-											children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(TrashIcon, {})
-										})]
-									})
-								})
-							]
-						}), hasHidden && expanded.has(s.id) && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(HiddenColsRow, {
-							cols: displayCols,
-							labelFor: (id) => t(COL_LABEL[id]),
-							renderValue: (id) => id === "id" ? s.id : id === "order" ? s.order : id === "status" ? s.status ? t("active") : t("inactive") : id === "image" ? s.img ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("img", {
-								src: s.img,
-								alt: "",
-								style: {
-									width: 56,
-									height: 34,
-									objectFit: "cover",
-									borderRadius: 4,
-									border: "1px solid var(--color-border)"
-								}
-							}) : "—" : id === "title" ? s.title || "—" : id === "sub1" ? s.sub1 : id === "link" ? s.link : "",
-							colSpan: visibleCols(displayCols).length + 3,
-							narrow
-						})] }, s.id)) })]
-					}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
-						style: {
-							padding: "10px 16px",
-							textAlign: "center",
-							fontSize: 12,
-							color: "var(--color-muted-foreground)"
-						},
-						children: loading ? t("loading") : t("count_slides", { n: slides.length })
-					})]
-				})] }),
-				toDelete && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(ConfirmModal, {
-					title: t("del_slide_title"),
-					message: t("del_slide_confirm"),
-					confirmLabel: t("del"),
-					onConfirm: confirmDelete,
-					onCancel: () => setToDelete(null)
-				})
-			]
-		});
+			const sync = () => setPaths((prev) => {
+				const next = readOpenSubTabPaths(section);
+				return prev.length === next.length && prev.every((p, i) => p === next[i]) ? prev : next;
+			});
+			sync();
+			window.addEventListener(SUBTABS_CHANGED, sync);
+			return () => window.removeEventListener(SUBTABS_CHANGED, sync);
+		}, [section]);
+		return paths;
 	}
 	//#endregion
 	//#region src/SliderPage.tsx
 	/**
-	* Reflète le sous-onglet actif dans l'URL : /[section]/[tool]/:id (comme l'outil Utilisateurs).
-	* COSMÉTIQUE (history.replaceState) — PAS de navigation React Router (pattern sous-onglets in-tool,
-	* état local). Le host (ToolTabBar) ne réécrit pas l'URL de cet outil (SELF_MANAGED_URL).
-	*/
-	function reflectSubTabUrl(seg) {
-		const base = window.location.pathname.replace(/\/(?:new|\d+)$/, "");
-		const next = seg != null && seg !== "" ? `${base}/${seg}` : base;
-		if (window.location.pathname !== next) window.history.replaceState(window.history.state, "", next);
-	}
-	/**
-	* Sous-onglets ouverts, RESTAURÉS APRÈS UN F5.
+	* Conteneur de l'outil Slider (brique MelisCmsSlider), monté une fois par le shell sur l'onglet
+	* « Sliders ». Les enregistrements ouverts sont des SOUS-ONGLETS de la barre native de l'hôte — la
+	* même que les Utilisateurs FO (melis-cms-user-account) et les outils natifs de MelisCore.
 	*
-	* L'URL ne suffit pas : le bundle de la brique est chargé en différé (React.lazy) et l'hôte peut
-	* avoir remis l'URL sur la base avant que SliderPage ne fasse son 1er rendu — l'id lu à ce
-	* moment-là est alors déjà perdu. On persiste donc la liste des sliders ouverts (et l'onglet actif)
-	* en sessionStorage, comme le fait le store d'onglets de l'hôte (`melis-open-tabs`), et
-	* `reflectSubTabUrl` remet ensuite l'id dans l'URL. L'URL reste un point d'entrée valable
-	* (deep-link depuis l'extérieur) : elle alimente l'état de boot quand le storage est vide.
+	* L'outil a TROIS niveaux, et la barre les reflète tous (comme les onglets de l'outil legacy) :
+	*   /[section]/slider            → la liste des sliders
+	*   /[section]/slider/:sliderId  → les slides d'un slider   (sous-onglet, icône fichier)
+	*   /[section]/slider/:sliderId/:slideId|new → une slide    (sous-onglet imbriqué, chevron « ↳ »)
+	* Le niveau 3 était auparavant un simple écran « ← Retour » DANS le niveau 2, sans onglet : ouvrir
+	* une slide faisait disparaître les slides du slider et rien ne le signalait dans la barre.
+	*
+	* Chaque écran ouvert reste MONTÉ (masqué en CSS quand il n'est pas actif) : passer d'un onglet à
+	* l'autre ne remonte rien et ne refetche pas (formulaire de slide en cours de saisie préservé).
+	* Fermer un slider ferme ses slides (l'hôte referme les sous-onglets descendants, cf. sub-tab-store)
+	* et la persistance après F5 est celle de l'hôte (sessionStorage `melis-open-subtabs`).
 	*/
-	var SUBTABS_KEY = "melis-slider-subtabs";
-	function sliderIdFromUrl() {
-		const m = window.location.pathname.match(/\/(\d+)$/);
-		return m ? Number(m[1]) : null;
-	}
-	/** Id présent dans l'URL au chargement du bundle — snapshot le plus précoce possible. */
-	var URL_BOOT_ID = sliderIdFromUrl();
-	function loadBootState() {
-		let open = [];
-		let activeId = null;
-		try {
-			const raw = sessionStorage.getItem(SUBTABS_KEY);
-			if (raw) {
-				const p = JSON.parse(raw);
-				if (Array.isArray(p.open)) open = p.open.filter((o) => o && typeof o.id === "number");
-				if (typeof p.activeId === "number") activeId = p.activeId;
-			}
-		} catch {}
-		if (URL_BOOT_ID != null) {
-			if (!open.some((o) => o.id === URL_BOOT_ID)) open = [...open, {
-				id: URL_BOOT_ID,
-				name: ""
-			}];
-			activeId = URL_BOOT_ID;
-		}
-		if (activeId != null && !open.some((o) => o.id === activeId)) activeId = null;
+	/** Découpe l'URL en (racine de l'outil, id du slider, segment de slide). */
+	function parsePath(pathname) {
+		const parts = pathname.split("/");
+		const tail = [];
+		while (parts.length > 1 && tail.length < 2 && /^(\d+|new)$/.test(parts[parts.length - 1])) tail.unshift(parts.pop());
 		return {
-			open,
-			activeId
+			base: parts.join("/"),
+			sliderId: tail[0] && /^\d+$/.test(tail[0]) ? Number(tail[0]) : null,
+			slideSeg: tail.length > 1 ? tail[1] : null
 		};
 	}
-	function saveBootState(open, activeId) {
-		try {
-			sessionStorage.setItem(SUBTABS_KEY, JSON.stringify({
-				open,
-				activeId
-			}));
-		} catch {}
-	}
-	var LayersIcon = () => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("svg", {
-		width: "13",
-		height: "13",
-		viewBox: "0 0 24 24",
-		fill: "none",
-		stroke: "currentColor",
-		strokeWidth: "2",
-		strokeLinecap: "round",
-		strokeLinejoin: "round",
-		style: { flexShrink: 0 },
-		children: [
-			/* @__PURE__ */ (0, react_jsx_runtime.jsx)("path", { d: "m12 2 9 5-9 5-9-5 9-5Z" }),
-			/* @__PURE__ */ (0, react_jsx_runtime.jsx)("path", { d: "m3 12 9 5 9-5" }),
-			/* @__PURE__ */ (0, react_jsx_runtime.jsx)("path", { d: "m3 17 9 5 9-5" })
-		]
-	});
-	function SubTabBar({ tabs, activeId, onBack, onSelect, onClose }) {
-		const t = useT();
-		return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-			style: {
-				display: "flex",
-				alignItems: "stretch",
-				borderBottom: "1px solid var(--color-border,#e5e7eb)",
-				background: "var(--color-background,#fff)",
-				padding: "0 8px",
-				overflowX: "auto",
-				flexShrink: 0
-			},
-			children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
-				onClick: onBack,
-				style: {
-					marginRight: 4,
-					flexShrink: 0,
-					display: "inline-flex",
-					alignItems: "center",
-					padding: "6px 8px",
-					fontSize: 12,
-					color: "var(--color-muted-foreground,#6b7280)",
-					background: "transparent",
-					border: 0,
-					cursor: "pointer",
-					whiteSpace: "nowrap"
-				},
-				children: ["← ", t("back")]
-			}), tabs.map((tab) => {
-				const isActive = activeId === tab.id;
-				return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-					onClick: () => onSelect(tab.id),
-					style: {
-						display: "inline-flex",
-						alignItems: "center",
-						gap: 6,
-						padding: "0 10px",
-						fontSize: 12,
-						fontWeight: 500,
-						cursor: "pointer",
-						whiteSpace: "nowrap",
-						userSelect: "none",
-						borderBottom: isActive ? "2px solid var(--color-primary,#cb4040)" : "2px solid transparent",
-						color: isActive ? "var(--color-foreground)" : "var(--color-muted-foreground,#6b7280)",
-						background: isActive ? "var(--color-background,#fff)" : "transparent"
-					},
-					children: [
-						/* @__PURE__ */ (0, react_jsx_runtime.jsx)(LayersIcon, {}),
-						/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-							style: {
-								maxWidth: 160,
-								overflow: "hidden",
-								textOverflow: "ellipsis"
-							},
-							children: tab.name || "#" + tab.id
-						}),
-						/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
-							onClick: (e) => {
-								e.stopPropagation();
-								onClose(tab.id);
-							},
-							style: {
-								marginLeft: 2,
-								borderRadius: 4,
-								padding: 2,
-								border: 0,
-								background: "transparent",
-								cursor: "pointer",
-								color: "inherit",
-								lineHeight: 0
-							},
-							title: t("back"),
-							children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("svg", {
-								width: "12",
-								height: "12",
-								viewBox: "0 0 24 24",
-								fill: "none",
-								stroke: "currentColor",
-								strokeWidth: "2.5",
-								strokeLinecap: "round",
-								children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("path", { d: "M18 6 6 18M6 6l12 12" })
-							})
-						})
-					]
-				}, tab.id);
-			})]
-		});
-	}
 	function SliderPage() {
-		const [boot] = (0, react.useState)(loadBootState);
-		const [view, setView] = (0, react.useState)(boot.activeId != null ? {
-			kind: "edit",
-			id: boot.activeId
-		} : { kind: "list" });
-		const [open, setOpen] = (0, react.useState)(boot.open);
+		const t = useT();
+		const location = (0, react_router_dom.useLocation)();
+		const navigate = (0, react_router_dom.useNavigate)();
+		const { base, sliderId, slideSeg } = parsePath(location.pathname);
+		const currentPath = sliderId != null ? slideSeg != null ? `${base}/${sliderId}/${slideSeg}` : `${base}/${sliderId}` : null;
+		const openPaths = useOpenSubTabPaths(base);
+		const editorPaths = (0, react.useMemo)(() => {
+			const paths = openPaths.slice();
+			if (currentPath && !paths.includes(currentPath)) paths.push(currentPath);
+			return paths;
+		}, [openPaths, currentPath]);
+		const [names, setNames] = (0, react.useState)({});
+		const requested = (0, react.useRef)(/* @__PURE__ */ new Set());
+		const [slidesTick, setSlidesTick] = (0, react.useState)({});
+		const bumpSlides = (sid) => setSlidesTick((prev) => ({
+			...prev,
+			[sid]: (prev[sid] ?? 0) + 1
+		}));
 		const [mode, setMode] = (0, react.useState)("react");
 		(0, react.useEffect)(() => {
 			window.__melisSetToolView?.(MELIS_KEY, mode);
 		}, [mode]);
+		/**
+		* Deep-link (URL saisie/partagée, storage vide) : l'écran est affiché mais aucun sous-onglet
+		* n'existe côté hôte → la barre resterait invisible. On enregistre alors le chemin courant — ET
+		* celui de son parent quand on arrive directement sur une slide, sinon la slide serait orpheline.
+		*
+		* ⚠️ Uniquement à l'ARRIVÉE sur un chemin (`arrivedAt`), jamais « dès qu'il manque dans
+		* `openPaths` » : fermer un onglet met `openPaths` à jour AVANT que la navigation de repli de
+		* l'hôte ne soit visible ici, et un effet réactif RESSUSCITAIT alors l'onglet qu'on vient de
+		* fermer (avec une étiquette générique en prime). Les ouvertures depuis l'UI passent par
+		* `openSlider`/`openSlide`, qui marquent aussi `arrivedAt`.
+		*/
+		const arrivedAt = (0, react.useRef)(null);
 		(0, react.useEffect)(() => {
-			for (const o of boot.open) {
-				if (o.name) continue;
-				fetchSlider(o.id).then((s) => setOpen((prev) => prev.map((p) => p.id === o.id ? {
-					...p,
-					name: s.name
-				} : p))).catch(() => {
-					setOpen((prev) => prev.filter((p) => p.id !== o.id));
-					setView((v) => v.kind === "edit" && v.id === o.id ? { kind: "list" } : v);
+			if (!currentPath || sliderId == null) {
+				arrivedAt.current = null;
+				return;
+			}
+			if (arrivedAt.current === currentPath) return;
+			arrivedAt.current = currentPath;
+			const parentPath = `${base}/${sliderId}`;
+			if (!openPaths.includes(parentPath)) window.__melisOpenSubTab?.(base, {
+				id: parentPath,
+				label: names[sliderId] || `#${sliderId}`,
+				path: parentPath
+			});
+			if (currentPath !== parentPath && !openPaths.includes(currentPath)) window.__melisOpenSubTab?.(base, {
+				id: currentPath,
+				label: slideSeg === "new" ? t("new_slide_title") : t("edit_slide_title"),
+				path: currentPath
+			});
+		}, [
+			currentPath,
+			openPaths,
+			base,
+			sliderId,
+			slideSeg,
+			names,
+			t
+		]);
+		(0, react.useEffect)(() => {
+			for (const path of editorPaths) {
+				const sid = parsePath(path).sliderId;
+				if (sid == null || requested.current.has(sid)) continue;
+				requested.current.add(sid);
+				fetchSlider(sid).then((s) => {
+					setNames((prev) => ({
+						...prev,
+						[sid]: s.name
+					}));
+					window.__melisUpdateSubTabLabel?.(base, `${base}/${sid}`, s.name || `#${sid}`);
+				}).catch(() => {
+					requested.current.delete(sid);
+					window.__melisCloseSubTab?.(base, `${base}/${sid}`);
+					if (window.location.pathname.includes(`${base}/${sid}`)) navigate(base, { replace: true });
 				});
 			}
-		}, [boot]);
+		}, [
+			editorPaths,
+			base,
+			navigate
+		]);
 		function changeMode(m) {
 			setMode(m);
-			if (m === "iframe") setView({ kind: "list" });
+			if (m === "iframe" && currentPath) navigate(base);
 		}
-		function openEditor(id, name) {
-			setOpen((prev) => prev.some((o) => o.id === id) ? prev.map((o) => o.id === id ? {
-				...o,
-				name
-			} : o) : [...prev, {
-				id,
-				name
-			}]);
-			setView({
-				kind: "edit",
-				id
+		function openSlider(id, name) {
+			const path = `${base}/${id}`;
+			setNames((prev) => ({
+				...prev,
+				[id]: name
+			}));
+			requested.current.add(id);
+			arrivedAt.current = path;
+			window.__melisOpenSubTab?.(base, {
+				id: path,
+				label: name || `#${id}`,
+				path
 			});
+			navigate(path);
 		}
-		function closeEditor(id) {
-			setOpen((prev) => {
-				const rest = prev.filter((o) => o.id !== id);
-				setView((v) => v.kind === "edit" && v.id === id ? rest.length ? {
-					kind: "edit",
-					id: rest[rest.length - 1].id
-				} : { kind: "list" } : v);
-				return rest;
+		/** Slider supprimé depuis la liste → son sous-onglet (et ceux de ses slides) n'ont plus d'objet. */
+		function handleSliderDeleted(id) {
+			requested.current.delete(id);
+			window.__melisCloseSubTab?.(base, `${base}/${id}`);
+		}
+		/** Slider renommé depuis la liste → l'étiquette du sous-onglet et le titre de l'écran suivent. */
+		function handleSliderRenamed(id, name) {
+			setNames((prev) => prev[id] === void 0 ? prev : {
+				...prev,
+				[id]: name
 			});
+			window.__melisUpdateSubTabLabel?.(base, `${base}/${id}`, name || `#${id}`);
 		}
-		const activeId = view.kind === "edit" ? view.id : null;
-		(0, react.useEffect)(() => {
-			reflectSubTabUrl(activeId);
-		}, [activeId]);
-		(0, react.useEffect)(() => {
-			saveBootState(open, activeId);
-		}, [open, activeId]);
-		(0, react.useEffect)(() => {
-			const onClosed = (e) => {
-				const path = e.detail?.path ?? "";
-				if (!/\/slider$/.test(path)) return;
-				setOpen([]);
-				setView({ kind: "list" });
-			};
-			window.addEventListener("melis:tab-closed", onClosed);
-			return () => window.removeEventListener("melis:tab-closed", onClosed);
-		}, []);
-		return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+		function openSlide(sid, slide, title) {
+			const path = `${base}/${sid}/${slide}`;
+			const label = slide === "new" ? t("new_slide_title") : title || `#${slide}`;
+			arrivedAt.current = path;
+			window.__melisOpenSubTab?.(base, {
+				id: path,
+				label,
+				path
+			});
+			navigate(path);
+		}
+		function closeSlideTab(sid, slide) {
+			window.__melisCloseSubTab?.(base, `${base}/${sid}/${slide}`);
+		}
+		/** Retour aux slides du slider depuis une slide : on referme son onglet, comme la croix. */
+		function backToSlides(sid, slide) {
+			closeSlideTab(sid, slide);
+			navigate(`${base}/${sid}`);
+		}
+		/**
+		* Slide enregistrée. Une slide CRÉÉE change d'identité : l'onglet transitoire « Nouvelle slide »
+		* est refermé au profit de celui de la slide réelle (même règle que le formulaire des
+		* Utilisateurs FO), sinon un second enregistrement rejouerait une création.
+		*/
+		function handleSlideSaved(sid, slide, newId, title) {
+			bumpSlides(sid);
+			markSliderListStale();
+			if (slide === "new") {
+				closeSlideTab(sid, "new");
+				openSlide(sid, newId, title);
+			} else window.__melisUpdateSubTabLabel?.(base, `${base}/${sid}/${slide}`, title || `#${slide}`);
+		}
+		/** Slide supprimée depuis la liste des slides → son sous-onglet n'a plus d'objet. */
+		function handleSlideDeleted(sid, slideId) {
+			const path = `${base}/${sid}/${slideId}`;
+			window.__melisCloseSubTab?.(base, path);
+			if (location.pathname === path) navigate(`${base}/${sid}`);
+			bumpSlides(sid);
+		}
+		return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
 			style: {
-				display: "flex",
-				flexDirection: "column",
-				height: "100%"
+				height: "100%",
+				display: currentPath ? "none" : "block"
 			},
-			children: [mode === "react" && open.length > 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(SubTabBar, {
-				tabs: open,
-				activeId,
-				onBack: () => setView({ kind: "list" }),
-				onSelect: (id) => setView({
-					kind: "edit",
-					id
-				}),
-				onClose: closeEditor
-			}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-				style: {
-					flex: 1,
-					minHeight: 0
-				},
-				children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
-					style: {
-						height: "100%",
-						display: view.kind === "list" ? "block" : "none"
-					},
-					children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(SliderList, {
-						active: view.kind === "list",
-						onOpen: openEditor,
-						mode,
-						onModeChange: changeMode
-					})
-				}), open.map((o) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
-					style: {
-						height: "100%",
-						display: activeId === o.id ? "block" : "none"
-					},
-					children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(SliderEditor, {
-						sliderId: o.id,
-						sliderName: o.name,
-						onSaved: () => markSliderListStale()
-					})
-				}, o.id))]
-			})]
-		});
+			children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(SliderList, {
+				active: !currentPath,
+				onOpen: openSlider,
+				onDeleted: handleSliderDeleted,
+				onRenamed: handleSliderRenamed,
+				mode,
+				onModeChange: changeMode
+			})
+		}), editorPaths.map((path) => {
+			const { sliderId: sid, slideSeg: seg } = parsePath(path);
+			if (sid == null) return null;
+			const visible = {
+				height: "100%",
+				display: path === currentPath ? "block" : "none"
+			};
+			if (seg == null) return /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+				style: visible,
+				children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(SliderEditor, {
+					sliderId: sid,
+					sliderName: names[sid] ?? "",
+					tick: slidesTick[sid] ?? 0,
+					onOpenSlide: (slide, title) => openSlide(sid, slide, title),
+					onSlideDeleted: (slideId) => handleSlideDeleted(sid, slideId),
+					onSaved: () => markSliderListStale()
+				})
+			}, path);
+			const slide = seg === "new" ? "new" : Number(seg);
+			return /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+				style: visible,
+				children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(SlideEditor, {
+					sliderId: sid,
+					slideId: slide,
+					onBack: () => backToSlides(sid, slide),
+					onSaved: (newId, title) => handleSlideSaved(sid, slide, newId, title)
+				})
+			}, path);
+		})] });
 	}
 	//#endregion
 	//#region src/brick.tsx
@@ -3659,4 +3634,4 @@
 		Component: SliderPage
 	});
 	//#endregion
-})(MelisReact, MelisReactJsxRuntime);
+})(MelisReact, MelisReactRouterDOM, MelisReactJsxRuntime);

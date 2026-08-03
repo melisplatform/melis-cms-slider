@@ -45,9 +45,13 @@ const ESSENTIAL_COLS = new Set(['name'])
 const RenameIcon = () => <svg style={{ width: 15, height: 15, flexShrink: 0 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.41 2.41 0 0 0 3.414 0l6.586-6.586a2.41 2.41 0 0 0 0-3.414z" /><circle cx="7.5" cy="7.5" r="1.2" fill="currentColor" /></svg>
 
 // `mode` est piloté par SliderPage (il conditionne aussi la barre de sous-onglets React) — cf. SliderPage.
-export default function SliderList({ active, onOpen, mode, onModeChange }: {
+export default function SliderList({ active, onOpen, onDeleted, onRenamed, mode, onModeChange }: {
   active: boolean
   onOpen: (id: number, name: string) => void
+  /** Slider supprimé → SliderPage referme son sous-onglet s'il était ouvert. */
+  onDeleted: (id: number) => void
+  /** Slider renommé → SliderPage met à jour l'étiquette de son sous-onglet. */
+  onRenamed: (id: number, name: string) => void
   mode: ViewMode
   onModeChange: (m: ViewMode) => void
 }) {
@@ -104,7 +108,7 @@ export default function SliderList({ active, onOpen, mode, onModeChange }: {
 
   async function confirmDelete() {
     if (!toDelete) return
-    try { await deleteSlider(toDelete.id); removeLocal((s) => s.id === toDelete.id); setToDelete(null); setTick((x) => x + 1) }
+    try { await deleteSlider(toDelete.id); removeLocal((s) => s.id === toDelete.id); onDeleted(toDelete.id); setToDelete(null); setTick((x) => x + 1) }
     catch { setToDelete(null) }
   }
 
@@ -238,7 +242,11 @@ export default function SliderList({ active, onOpen, mode, onModeChange }: {
       {editSlider && (
         <SliderModal slider={editSlider === 'new' ? null : editSlider}
           onClose={() => setEditSlider(null)}
-          onSaved={() => { setEditSlider(null); setTick((x) => x + 1) }} />
+          onSaved={(name) => {
+            // Renommage d'un slider déjà ouvert : son sous-onglet porte l'ancien nom → on le remonte.
+            if (editSlider !== 'new') onRenamed(editSlider.id, name)
+            setEditSlider(null); setTick((x) => x + 1)
+          }} />
       )}
 
       {showExport && (
@@ -266,7 +274,7 @@ export default function SliderList({ active, onOpen, mode, onModeChange }: {
 }
 
 // ── Modale créer / renommer un slider ──
-function SliderModal({ slider, onClose, onSaved }: { slider: SliderItem | null; onClose: () => void; onSaved: () => void }) {
+function SliderModal({ slider, onClose, onSaved }: { slider: SliderItem | null; onClose: () => void; onSaved: (name: string) => void }) {
   const t = useT()
   const isEdit = !!slider
   const [name, setName] = useState(slider?.name ?? '')
@@ -281,7 +289,7 @@ function SliderModal({ slider, onClose, onSaved }: { slider: SliderItem | null; 
     setSaving(true)
     try {
       await saveSlider({ id: slider?.id ?? null, name: name.trim(), pageId: pageId ? pageId : null })
-      onSaved()
+      onSaved(name.trim())
     } catch (e) { setError(e instanceof Error ? e.message : t('err_save')) }
     finally { setSaving(false) }
   }
