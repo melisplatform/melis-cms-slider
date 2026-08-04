@@ -150,6 +150,30 @@ return [
                                 ['name' => 'StringTrim'],
                             ],
                         ],
+                        // Sécurité : l'id du slider parent construit le chemin du dossier d'upload
+                        // (createFolder/setDestination). Sans ce filtre il arrivait BRUT du POST →
+                        // traversée de répertoire (mkdir hors media root). IsInt + required le rejette
+                        // avant le contrôleur ; le contrôleur re-caste en (int) par défense en profondeur.
+                        'mcsdetail_mcslider_id' => [
+                            'name'     => 'mcsdetail_mcslider_id',
+                            'required' => true,
+                            'validators' => [
+                                [
+                                    'name'    => 'IsInt',
+                                    'break_chain_on_failure' => true,
+                                    'options' => [
+                                        'messages' => [
+                                            \Laminas\I18n\Validator\IsInt::NOT_INT => 'tr_meliscms_tool_platform_not_digit',
+                                            \Laminas\I18n\Validator\IsInt::INVALID => 'tr_meliscms_tool_platform_not_digit',
+                                        ]
+                                    ]
+                                ],
+                            ],
+                            'filters' => [
+                                ['name' => 'StripTags'],
+                                ['name' => 'StringTrim'],
+                            ],
+                        ],
                         'mcsdetail_title' => [
                             'name'     => 'mcsdetail_title',
                             'required' => false,

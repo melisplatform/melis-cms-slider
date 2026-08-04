@@ -439,6 +439,9 @@ class MelisCmsSliderDetailsController extends MelisAbstractActionController
 
                 if ($form->isValid()) {
                     $data = $form->getData();
+                    // Défense en profondeur : l'id du slider parent sert à construire des chemins
+                    // (createFolder/setDestination) → on le force en entier même si le filtre du form l'a validé.
+                    $data['mcsdetail_mcslider_id'] = (int) ($data['mcsdetail_mcslider_id'] ?? 0);
                     $detailsId = $data['mcsdetail_id'];
 
                     if (empty($data['mcsdetail_order'])) {
@@ -496,6 +499,9 @@ class MelisCmsSliderDetailsController extends MelisAbstractActionController
 
                 if ($form->isValid()) {
                     $data = $form->getData();
+                    // Défense en profondeur : cet id construit le chemin du dossier d'upload
+                    // (createFolder/setDestination/renameIfDuplicateFile) → jamais brut, toujours (int).
+                    $data['mcsdetail_mcslider_id'] = (int) ($data['mcsdetail_mcslider_id'] ?? 0);
                     if ($this->createFolder($data['mcsdetail_mcslider_id'])) {
                         $adapter = new Http();
 
@@ -509,7 +515,15 @@ class MelisCmsSliderDetailsController extends MelisAbstractActionController
                             if (!in_array($safeExt, $allowedExt, true)) {
                                 $safeExt = 'jpg';
                             }
-                            $fileName = pathinfo($fileName, PATHINFO_FILENAME) . '.' . $safeExt;
+                            // Sécurité : le nom stocké (mcsdetail_img) est rendu dans un attribut src du
+                            // template public (showslider.phtml) → on assainit la base côté stockage
+                            // ([A-Za-z0-9_-], comme l'uploader React) pour qu'aucun guillemet/chevron ne
+                            // puisse porter du markup, en plus de l'échappement escapeHtmlAttr côté vue.
+                            $safeBase = preg_replace('/[^A-Za-z0-9_\-]/', '', pathinfo($fileName, PATHINFO_FILENAME));
+                            if ($safeBase === '' || $safeBase === null) {
+                                $safeBase = 'image';
+                            }
+                            $fileName = $safeBase . '.' . $safeExt;
 
                             $adapter->setDestination('public' . $confSlidersPath . $data['mcsdetail_mcslider_id'] . '/');
                             $newFileName = $this->renameIfDuplicateFile($confSlidersPath . $data['mcsdetail_mcslider_id'] . '/' . $fileName);
@@ -798,6 +812,9 @@ class MelisCmsSliderDetailsController extends MelisAbstractActionController
      */
     private function createFolder($id)
     {
+        // Garde ultime : cet id est interpolé dans un chemin mkdir() → toujours (int),
+        // jamais une chaîne de traversée de répertoire, quel que soit l'appelant.
+        $id = (int) $id;
         $status = false;
         $path = 'public/media/sliders/'.$id.'/';
         if(file_exists($path)) {

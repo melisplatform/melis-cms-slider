@@ -510,8 +510,10 @@ class MelisReactApiCmsSliderController extends MelisAbstractActionController
                 return $this->jsonResponse(['success' => false, 'error' => 'Le fichier n’est pas une image valide.'], 400);
             }
 
+            // $sliderId est déjà casté (int) plus haut → pas de traversée possible ; 0755 (pas 0777)
+            // pour ne pas créer de dossiers accessibles en écriture par tous.
             $dir = $this->publicRoot() . '/media/sliders/' . $sliderId;
-            if (!is_dir($dir) && !@mkdir($dir, 0777, true) && !is_dir($dir)) {
+            if (!is_dir($dir) && !@mkdir($dir, 0755, true) && !is_dir($dir)) {
                 return $this->jsonResponse(['success' => false, 'error' => 'Impossible de créer le dossier d’upload (droits).'], 500);
             }
 
