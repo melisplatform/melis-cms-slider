@@ -26,11 +26,6 @@ const DEFAULT_COLS: ColDef[] = [
 // appenderait la nouvelle colonne EN FIN de la liste déjà persistée en localStorage).
 const colStore = makeColStore('melis-slider-slides-cols-v2', DEFAULT_COLS)
 
-// Mobile : une seule colonne essentielle (le titre identifie la slide) → [poignée][+][titre][actions].
-// La colonne « Ordre » n'est pas gérée par le ColManager : on l'ajoute en colonne MASQUÉE virtuelle
-// sur mobile pour qu'elle reste consultable dans le détail dépliable.
-const ESSENTIAL_COLS = new Set(['title'])
-
 export default function SliderEditor({ sliderId, sliderName, tick: externalTick, onOpenSlide, onSlideDeleted, onSaved }: {
   sliderId: number
   sliderName: string
@@ -80,11 +75,16 @@ export default function SliderEditor({ sliderId, sliderName, tick: externalTick,
     try { await reorderSlides(sliderId, next.map((s) => s.id)) } catch { setTick((x) => x + 1) }
   }
 
-  // cf. SliderList : `hasHidden` dépend de `narrow` SEUL — un utilisateur desktop qui masque une
-  // colonne via le ColManager ne doit pas voir surgir une colonne « + » inexistante jusque-là.
+  // A Hidden column disappears entirely on both desktop and mobile — same rule everywhere, no "+"
+  // peek at Hidden ones. Desktop shows every Visible column inline. Mobile can't fit many columns,
+  // so only the FIRST Visible column (by the user's dragged order in ColManager) anchors inline;
+  // every OTHER Visible column surfaces behind the per-row "+" instead, in that same order. The
+  // « Ordre » column isn't managed by the ColManager (not draggable there) — on mobile it's always
+  // appended as a hidden virtual column so it stays reachable in the expandable detail.
+  const shownColsList = cols.filter((c) => c.visible)
   const displayCols = narrow
-    ? [...cols.map((c) => ({ ...c, visible: ESSENTIAL_COLS.has(c.id) })), { id: 'order', visible: false }]
-    : cols
+    ? [...shownColsList.map((c, i) => ({ ...c, visible: i === 0 })), { id: 'order', visible: false }]
+    : shownColsList
   const hasHidden = narrow
   const toggleExpand = (id: number) => setExpanded((prev) => {
     const next = new Set(prev)
