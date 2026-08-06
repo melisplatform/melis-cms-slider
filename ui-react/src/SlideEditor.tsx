@@ -5,6 +5,7 @@ import {
   ImageIcon, TrashIcon,
 } from './ui'
 import { useIsNarrow } from './shared/useIsNarrow'
+import { FormErrorBanner, okNotify, koNotify } from './shared/melis-form-errors'
 
 /* Niveau 3 — formulaire d'une slide (slider > slides > SLIDE). Upload d'image immédiat
  * (renvoie un chemin web stocké tel quel dans mcsdetail_img). sub2/sub3 = HTML (textarea).
@@ -36,7 +37,9 @@ export default function SlideEditor({ sliderId, slideId, onBack, onSaved }: {
   const [loading, setLoading] = useState(isEdit)
   const [uploading, setUploading] = useState(false)
   const [saving, setSaving] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  // Bannière d'erreur unifiée : `title` = en-tête traduit (échec d'enregistrement ou d'envoi
+  // d'image), `issues` = l'erreur serveur (string), normalisée par collectIssues.
+  const [err, setErr] = useState<{ title: string; issues?: unknown } | null>(null)
   const [saved, setSaved] = useState(false)
 
   useEffect(() => {
@@ -44,34 +47,43 @@ export default function SlideEditor({ sliderId, slideId, onBack, onSaved }: {
     setLoading(true)
     fetchSlide(slideId as number)
       .then((s) => { setStatus(s.status); setTitle(s.title); setSub1(s.sub1); setSub2(s.sub2); setSub3(s.sub3); setLink(s.link); setImg(s.img) })
-      .catch((e) => setError(e instanceof Error ? e.message : t('err_save')))
+      .catch((e) => setErr({ title: t('err_save'), issues: e instanceof Error ? e.message : undefined }))
       .finally(() => setLoading(false))
   }, [slideId])
 
   async function onPickFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
-    setError(null); setUploading(true)
+    setErr(null); setUploading(true)
     try {
       const { path } = await uploadSlideImage(sliderId, file)
       setImg(path)
-    } catch (err) { setError(err instanceof Error ? err.message : t('err_save')) }
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : t('upload_failed')
+      setErr({ title: t('upload_failed'), issues: msg })
+      koNotify(t('upload_failed'), msg)
+    }
     finally { setUploading(false); if (fileRef.current) fileRef.current.value = '' }
   }
 
   async function submit() {
-    setError(null); setSaving(true)
+    setErr(null); setSaving(true)
     try {
       const { id } = await saveSlide({
         id: isEdit ? (slideId as number) : null,
         sliderId, status, title, sub1, sub2, sub3, link, img,
       })
       setSaved(true)
+      okNotify(t('save_ok'))
       setTimeout(() => onSaved(id, title), 400)
       // L'écran RESTE monté après un enregistrement (c'est son propre sous-onglet, on ne quitte
       // plus la slide) → le « Enregistré » doit s'effacer, sinon il reste affiché indéfiniment.
       setTimeout(() => setSaved(false), 2500)
-    } catch (e) { setError(e instanceof Error ? e.message : t('err_save')) }
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : t('err_save')
+      setErr({ title: t('err_save'), issues: msg })
+      koNotify(t('err_save'), msg)
+    }
     finally { setSaving(false) }
   }
 
@@ -88,7 +100,7 @@ export default function SlideEditor({ sliderId, slideId, onBack, onSaved }: {
         </div>
       </div>
 
-      {error && <div style={{ ...card, borderColor: '#fca5a5', background: '#fef2f2', color: '#b91c1c', padding: '8px 14px', fontSize: 14 }}>{error}</div>}
+      {err && <FormErrorBanner title={err.title} issues={err.issues} />}
 
       {loading ? (
         <div style={{ padding: 48, textAlign: 'center', color: 'var(--color-muted-foreground)' }}>{t('loading')}</div>

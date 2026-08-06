@@ -103,6 +103,159 @@
 		return s;
 	}
 	//#endregion
+	//#region src/shared/use-drag-reorder.ts
+	function useDragReorder({ cols, onChange }) {
+		const [draggingId, setDraggingId] = (0, react.useState)(null);
+		const [overTarget, setOverTarget] = (0, react.useState)(null);
+		const [dragPos, setDragPos] = (0, react.useState)(null);
+		const colsRef = (0, react.useRef)(cols);
+		colsRef.current = cols;
+		const onChangeRef = (0, react.useRef)(onChange);
+		onChangeRef.current = onChange;
+		const draggingRef = (0, react.useRef)(null);
+		const overRef = (0, react.useRef)(null);
+		const active = (0, react.useRef)(null);
+		function commitDrop(target, dragId) {
+			const cur = colsRef.current;
+			const shown = cur.filter((c) => c.visible);
+			const hidden = cur.filter((c) => !c.visible);
+			const srcItem = cur.find((c) => c.id === dragId);
+			if (!srcItem) return;
+			const updatedItem = {
+				...srcItem,
+				visible: target.panel === "visible"
+			};
+			let vList = shown.filter((c) => c.id !== dragId);
+			const hList = hidden.filter((c) => c.id !== dragId);
+			if (target.panel === "visible") {
+				const dstId = target.id;
+				if (dstId === "__panel__") vList = [...vList, updatedItem];
+				else {
+					const idx = vList.findIndex((c) => c.id === dstId);
+					vList = idx === -1 ? [...vList, updatedItem] : [
+						...vList.slice(0, idx),
+						updatedItem,
+						...vList.slice(idx)
+					];
+				}
+				onChangeRef.current([...vList, ...hList]);
+			} else onChangeRef.current([
+				...vList,
+				...hList,
+				updatedItem
+			]);
+		}
+		function endDrag(commit) {
+			const dragId = draggingRef.current;
+			const target = overRef.current;
+			if (active.current) {
+				document.removeEventListener("mousemove", active.current.move);
+				document.removeEventListener("mouseup", active.current.up);
+				document.removeEventListener("touchmove", active.current.move);
+				document.removeEventListener("touchend", active.current.up);
+				document.removeEventListener("touchcancel", active.current.cancel);
+				active.current = null;
+			}
+			draggingRef.current = null;
+			overRef.current = null;
+			setDraggingId(null);
+			setOverTarget(null);
+			setDragPos(null);
+			if (commit && dragId && target) commitDrop(target, dragId);
+		}
+		function hitTest(x, y) {
+			const el = document.elementFromPoint(x, y);
+			const itemEl = el?.closest("[data-col-item]") ?? null;
+			const panelEl = el?.closest("[data-col-panel]") ?? null;
+			let next = null;
+			if (itemEl && itemEl.dataset.colItem !== draggingRef.current) {
+				const panel = itemEl.closest("[data-col-panel]")?.dataset.colPanel;
+				if (panel) next = {
+					id: itemEl.dataset.colItem,
+					panel
+				};
+			} else if (panelEl) next = {
+				id: "__panel__",
+				panel: panelEl.dataset.colPanel
+			};
+			if (next?.id !== overRef.current?.id || next?.panel !== overRef.current?.panel) {
+				overRef.current = next;
+				setOverTarget(next);
+			}
+		}
+		function beginDrag(colId, x, y) {
+			draggingRef.current = colId;
+			overRef.current = null;
+			setDraggingId(colId);
+			setDragPos({
+				x,
+				y
+			});
+		}
+		/** Mouse path — desktop. */
+		function startDragMouse(colId) {
+			return (e) => {
+				if (e.button !== 0) return;
+				e.preventDefault();
+				beginDrag(colId, e.clientX, e.clientY);
+				const onMove = (ev) => {
+					const me = ev;
+					setDragPos({
+						x: me.clientX,
+						y: me.clientY
+					});
+					hitTest(me.clientX, me.clientY);
+				};
+				const onUp = () => endDrag(true);
+				active.current = {
+					move: onMove,
+					up: onUp,
+					cancel: onUp
+				};
+				document.addEventListener("mousemove", onMove);
+				document.addEventListener("mouseup", onUp);
+			};
+		}
+		/** Touch path — mobile. Plain Touch Events (not Pointer Events), for maximum compatibility
+		*  with older mobile Safari/WebView versions that may not fully support Pointer Events. */
+		function startDragTouch(colId) {
+			return (e) => {
+				const t = e.touches[0];
+				if (!t) return;
+				e.preventDefault();
+				beginDrag(colId, t.clientX, t.clientY);
+				const onMove = (ev) => {
+					const te = ev;
+					const touch = te.touches[0];
+					if (!touch) return;
+					if (te.cancelable) te.preventDefault();
+					setDragPos({
+						x: touch.clientX,
+						y: touch.clientY
+					});
+					hitTest(touch.clientX, touch.clientY);
+				};
+				const onEnd = () => endDrag(true);
+				const onCancel = () => endDrag(false);
+				active.current = {
+					move: onMove,
+					up: onEnd,
+					cancel: onCancel
+				};
+				document.addEventListener("touchmove", onMove, { passive: false });
+				document.addEventListener("touchend", onEnd);
+				document.addEventListener("touchcancel", onCancel);
+			};
+		}
+		return {
+			draggingId,
+			overTarget,
+			dragPos,
+			startDragMouse,
+			startDragTouch
+		};
+	}
+	//#endregion
 	//#region src/ui.tsx
 	function currentLang$1() {
 		return (document.documentElement.lang || "en").toLowerCase().startsWith("fr") ? "fr" : "en";
@@ -151,6 +304,10 @@
 			f_page_none: "— Aucune —",
 			err_save: "Erreur lors de la sauvegarde",
 			no_access: "Vous n’avez pas les droits pour consulter cette liste.",
+			check_fields: "Veuillez vérifier les champs obligatoires.",
+			field_required: "Ce champ est obligatoire.",
+			upload_failed: "Échec de l’envoi de l’image.",
+			save_ok: "Enregistré.",
 			slides_of: "Slides de « {n} »",
 			add_slide: "Ajouter une slide",
 			no_slides: "Aucune slide. Cliquez sur « Ajouter une slide ».",
@@ -178,7 +335,9 @@
 			f_image_hint: "JPG, PNG, GIF ou WebP.",
 			uploading: "Envoi…",
 			remove_img: "Retirer l’image",
-			choose_img: "Choisir une image"
+			choose_img: "Choisir une image",
+			view_new: "Nouveau",
+			view_old: "Ancien"
 		},
 		en: {
 			title: "Sliders",
@@ -223,6 +382,10 @@
 			f_page_none: "— None —",
 			err_save: "Error while saving",
 			no_access: "You do not have permission to view this list.",
+			check_fields: "Please check the required fields.",
+			field_required: "This field is required.",
+			upload_failed: "Image upload failed.",
+			save_ok: "Saved.",
 			slides_of: "Slides of “{n}”",
 			add_slide: "Add a slide",
 			no_slides: "No slide yet. Click “Add a slide”.",
@@ -250,7 +413,9 @@
 			f_image_hint: "JPG, PNG, GIF or WebP.",
 			uploading: "Uploading…",
 			remove_img: "Remove image",
-			choose_img: "Choose an image"
+			choose_img: "Choose an image",
+			view_new: "New",
+			view_old: "Old"
 		}
 	};
 	function useT() {
@@ -505,29 +670,109 @@
 		strokeLinejoin: "round",
 		children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("path", { d: "M3 2v6h6" }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("path", { d: "M3 13a9 9 0 1 0 3-7.7L3 8" })]
 	});
-	function Kpi({ label: lbl, value }) {
+	var GalleryIcon = () => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("svg", {
+		style: sIcon$2,
+		viewBox: "0 0 24 24",
+		fill: "none",
+		stroke: "currentColor",
+		strokeWidth: "2",
+		strokeLinecap: "round",
+		strokeLinejoin: "round",
+		children: [
+			/* @__PURE__ */ (0, react_jsx_runtime.jsx)("path", { d: "M2 3v18" }),
+			/* @__PURE__ */ (0, react_jsx_runtime.jsx)("rect", {
+				width: "12",
+				height: "18",
+				x: "6",
+				y: "3",
+				rx: "2"
+			}),
+			/* @__PURE__ */ (0, react_jsx_runtime.jsx)("path", { d: "M22 3v18" })
+		]
+	});
+	var ImagesIcon = () => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("svg", {
+		style: sIcon$2,
+		viewBox: "0 0 24 24",
+		fill: "none",
+		stroke: "currentColor",
+		strokeWidth: "2",
+		strokeLinecap: "round",
+		strokeLinejoin: "round",
+		children: [
+			/* @__PURE__ */ (0, react_jsx_runtime.jsx)("path", { d: "M18 22H4a2 2 0 0 1-2-2V6" }),
+			/* @__PURE__ */ (0, react_jsx_runtime.jsx)("path", { d: "m22 13-1.3-1.3a2.4 2.4 0 0 0-3.4 0L11 18" }),
+			/* @__PURE__ */ (0, react_jsx_runtime.jsx)("circle", {
+				cx: "12",
+				cy: "8",
+				r: "2"
+			}),
+			/* @__PURE__ */ (0, react_jsx_runtime.jsx)("rect", {
+				width: "16",
+				height: "16",
+				x: "6",
+				y: "2",
+				rx: "2"
+			})
+		]
+	});
+	var CheckCircleIcon = () => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("svg", {
+		style: sIcon$2,
+		viewBox: "0 0 24 24",
+		fill: "none",
+		stroke: "currentColor",
+		strokeWidth: "2",
+		strokeLinecap: "round",
+		strokeLinejoin: "round",
+		children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("circle", {
+			cx: "12",
+			cy: "12",
+			r: "10"
+		}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("path", { d: "m9 12 2 2 4-4" })]
+	});
+	function Kpi({ label: lbl, value, icon, tint }) {
+		const color = tint ?? "var(--color-primary)";
 		return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 			style: {
 				...card$1,
 				display: "flex",
-				flexDirection: "column",
-				gap: 2,
+				alignItems: "center",
+				gap: 12,
 				padding: 16,
 				flex: 1,
-				minWidth: 140
+				minWidth: 120
 			},
-			children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+			children: [icon && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
 				style: {
-					fontSize: 12,
-					color: "var(--color-muted-foreground)"
+					width: 38,
+					height: 38,
+					borderRadius: 10,
+					display: "grid",
+					placeItems: "center",
+					flexShrink: 0,
+					color,
+					background: `color-mix(in srgb, ${color} 14%, transparent)`
 				},
-				children: lbl
-			}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+				children: icon
+			}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 				style: {
-					fontSize: 22,
-					fontWeight: 700
+					display: "flex",
+					flexDirection: "column",
+					gap: 2,
+					minWidth: 0
 				},
-				children: value == null ? "…" : value
+				children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+					style: {
+						fontSize: 12,
+						color: "var(--color-muted-foreground)"
+					},
+					children: lbl
+				}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+					style: {
+						fontSize: 22,
+						fontWeight: 700
+					},
+					children: value == null ? "…" : value
+				})]
 			})]
 		});
 	}
@@ -584,8 +829,13 @@
 	};
 	function ColManager({ anchorRef, cols, labelFor, onChange, onSave, defaults, onClose }) {
 		const t = useT();
-		const [dragId, setDragId] = (0, react.useState)(null);
-		const [over, setOver] = (0, react.useState)(null);
+		const { draggingId: dragId, overTarget: over, dragPos, startDragMouse, startDragTouch } = useDragReorder({
+			cols,
+			onChange: (next) => {
+				onChange(next);
+				onSave(next);
+			}
+		});
 		const [pos, setPos] = (0, react.useState)(null);
 		const shown = cols.filter((c) => c.visible);
 		const hidden = cols.filter((c) => !c.visible);
@@ -611,66 +861,12 @@
 				maxHeight: Math.max(160, spaceAbove - 6)
 			});
 		}, [anchorRef]);
-		function drop(panel) {
-			if (!dragId) return;
-			const upd = {
-				...cols.find((c) => c.id === dragId),
-				visible: panel === "visible"
-			};
-			let vList = shown.filter((c) => c.id !== dragId);
-			const hList = hidden.filter((c) => c.id !== dragId);
-			if (panel === "visible") {
-				const dst = over?.id;
-				if (!dst || dst === "__panel__") vList = [...vList, upd];
-				else {
-					const i = vList.findIndex((c) => c.id === dst);
-					vList = i === -1 ? [...vList, upd] : [
-						...vList.slice(0, i),
-						upd,
-						...vList.slice(i)
-					];
-				}
-				const next = [...vList, ...hList];
-				onChange(next);
-				onSave(next);
-			} else {
-				const next = [
-					...vList,
-					...hList,
-					upd
-				];
-				onChange(next);
-				onSave(next);
-			}
-			setDragId(null);
-			setOver(null);
-		}
 		function item(col, panel) {
 			const isOver = over?.id === col.id && over?.panel === panel;
 			return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-				draggable: true,
-				onDragStart: (e) => {
-					e.dataTransfer.effectAllowed = "move";
-					e.dataTransfer.setData("text/plain", col.id);
-					setDragId(col.id);
-				},
-				onDragEnd: () => {
-					setDragId(null);
-					setOver(null);
-				},
-				onDragOver: (e) => {
-					e.preventDefault();
-					e.stopPropagation();
-					e.dataTransfer.dropEffect = "move";
-					if (over?.id !== col.id || over?.panel !== panel) setOver({
-						id: col.id,
-						panel
-					});
-				},
-				onDrop: (e) => {
-					e.preventDefault();
-					drop(panel);
-				},
+				"data-col-item": col.id,
+				onMouseDown: startDragMouse(col.id),
+				onTouchStart: startDragTouch(col.id),
 				style: {
 					display: "flex",
 					alignItems: "center",
@@ -680,6 +876,7 @@
 					fontSize: 14,
 					cursor: "grab",
 					userSelect: "none",
+					touchAction: "none",
 					opacity: dragId === col.id ? .4 : 1,
 					background: isOver ? "color-mix(in srgb, var(--color-primary) 12%, transparent)" : "transparent",
 					boxShadow: isOver ? "0 0 0 1px color-mix(in srgb, var(--color-primary) 35%, transparent)" : "none"
@@ -696,7 +893,7 @@
 			}, col.id);
 		}
 		if (!pos) return null;
-		return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+		return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react.Fragment, { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 			style: {
 				...card$1,
 				position: "fixed",
@@ -742,17 +939,13 @@
 						padding: 12
 					},
 					children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-						style: panelCss$1,
-						onDragOver: (e) => {
-							e.preventDefault();
-							if (over?.id !== "__panel__" || over?.panel !== "hidden") setOver({
-								id: "__panel__",
-								panel: "hidden"
-							});
-						},
-						onDrop: (e) => {
-							e.preventDefault();
-							drop("hidden");
+						"data-col-panel": "hidden",
+						style: {
+							...panelCss$1,
+							...over?.id === "__panel__" && over.panel === "hidden" ? {
+								borderColor: "color-mix(in srgb, var(--color-primary) 40%, transparent)",
+								background: "color-mix(in srgb, var(--color-primary) 5%, transparent)"
+							} : {}
 						},
 						children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", {
 							style: panelTitle$1,
@@ -771,17 +964,13 @@
 							children: t("drag_here")
 						}) : hidden.map((c) => item(c, "hidden"))]
 					}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-						style: panelCss$1,
-						onDragOver: (e) => {
-							e.preventDefault();
-							if (over?.id !== "__panel__" || over?.panel !== "visible") setOver({
-								id: "__panel__",
-								panel: "visible"
-							});
-						},
-						onDrop: (e) => {
-							e.preventDefault();
-							drop("visible");
+						"data-col-panel": "visible",
+						style: {
+							...panelCss$1,
+							...over?.id === "__panel__" && over.panel === "visible" ? {
+								borderColor: "color-mix(in srgb, var(--color-primary) 40%, transparent)",
+								background: "color-mix(in srgb, var(--color-primary) 5%, transparent)"
+							} : {}
 						},
 						children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", {
 							style: panelTitle$1,
@@ -825,7 +1014,27 @@
 					})
 				})
 			]
-		});
+		}), dragId && dragPos && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+			style: {
+				position: "fixed",
+				zIndex: 60,
+				left: dragPos.x,
+				top: dragPos.y,
+				transform: "translate(-50%, -50%)",
+				pointerEvents: "none",
+				display: "flex",
+				alignItems: "center",
+				gap: 8,
+				borderRadius: 8,
+				padding: "6px 10px",
+				fontSize: 14,
+				fontWeight: 500,
+				background: "var(--color-card)",
+				border: "1px solid color-mix(in srgb, var(--color-primary) 40%, transparent)",
+				boxShadow: "0 4px 16px rgba(0,0,0,.25)"
+			},
+			children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)(GripIcon$1, {}), labelFor(dragId)]
+		})] });
 	}
 	function ConfirmModal({ title, message, confirmLabel, onConfirm, onCancel }) {
 		return /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
@@ -1107,63 +1316,24 @@
 		strokeLinejoin: "round",
 		children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("path", { d: "M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("path", { d: "M14 2v6h6M16 13H8M16 17H8M10 9H8" })]
 	});
-	function ExportModal({ cols, labelFor, fetchAll, getCell, filename, sheetName, total, onClose }) {
+	function ExportModal({ cols: colsProp, labelFor, fetchAll, getCell, filename, sheetName, total, onClose }) {
 		const narrow = useIsNarrow();
 		const xlsx = getXLSX();
-		const [included, setIncluded] = (0, react.useState)(() => cols.filter((c) => c.visible));
-		const [excluded, setExcluded] = (0, react.useState)(() => cols.filter((c) => !c.visible));
+		const [cols, setCols] = (0, react.useState)(colsProp);
+		const { draggingId: dragId, overTarget: over, dragPos, startDragMouse, startDragTouch } = useDragReorder({
+			cols,
+			onChange: setCols
+		});
+		const included = cols.filter((c) => c.visible);
+		const excluded = cols.filter((c) => !c.visible);
 		const [format, setFormat] = (0, react.useState)(xlsx ? "xlsx" : "csv");
 		const [exporting, setExporting] = (0, react.useState)(false);
-		const [dragId, setDragId] = (0, react.useState)(null);
-		const [over, setOver] = (0, react.useState)(null);
-		function drop(panel) {
-			if (!dragId) return;
-			const src = [...included, ...excluded].find((c) => c.id === dragId);
-			let inc = included.filter((c) => c.id !== dragId);
-			let exc = excluded.filter((c) => c.id !== dragId);
-			if (panel === "included") {
-				const dst = over?.id;
-				if (!dst || dst === "__panel__") inc = [...inc, src];
-				else {
-					const i = inc.findIndex((c) => c.id === dst);
-					inc = i === -1 ? [...inc, src] : [
-						...inc.slice(0, i),
-						src,
-						...inc.slice(i)
-					];
-				}
-			} else exc = [...exc, src];
-			setIncluded(inc);
-			setExcluded(exc);
-			setDragId(null);
-			setOver(null);
-		}
 		function item(col, panel) {
 			const isOver = over?.id === col.id && over?.panel === panel;
 			return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-				draggable: true,
-				onDragStart: (e) => {
-					e.dataTransfer.effectAllowed = "move";
-					e.dataTransfer.setData("text/plain", col.id);
-					setDragId(col.id);
-				},
-				onDragEnd: () => {
-					setDragId(null);
-					setOver(null);
-				},
-				onDragOver: (e) => {
-					e.preventDefault();
-					e.stopPropagation();
-					e.dataTransfer.dropEffect = "move";
-					if (over?.id !== col.id || over?.panel !== panel) setOver({
-						id: col.id,
-						panel
-					});
-				},
-				onDrop: (e) => {
-					e.preventDefault();
-					drop(panel);
-				},
+				"data-col-item": col.id,
+				onMouseDown: startDragMouse(col.id),
+				onTouchStart: startDragTouch(col.id),
 				style: {
 					display: "flex",
 					alignItems: "center",
@@ -1173,6 +1343,7 @@
 					fontSize: 14,
 					cursor: "grab",
 					userSelect: "none",
+					touchAction: "none",
 					opacity: dragId === col.id ? .4 : 1,
 					background: isOver ? "color-mix(in srgb, var(--color-primary) 12%, transparent)" : "transparent",
 					boxShadow: isOver ? "0 0 0 1px color-mix(in srgb, var(--color-primary) 35%, transparent)" : "none"
@@ -1250,7 +1421,7 @@
 			color: active ? "var(--color-foreground)" : "var(--color-muted-foreground)",
 			boxShadow: active ? "0 1px 2px rgba(0,0,0,.06)" : "none"
 		});
-		return /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+		return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 			style: {
 				position: "fixed",
 				inset: 0,
@@ -1265,7 +1436,7 @@
 			onClick: (e) => {
 				if (e.target === e.currentTarget) onClose();
 			},
-			children: /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+			children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 				style: {
 					...card,
 					width: "100%",
@@ -1340,39 +1511,31 @@
 								gap: 8
 							},
 							children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-								style: panelCss,
-								onDragOver: (e) => {
-									e.preventDefault();
-									if (over?.id !== "__panel__" || over?.panel !== "excluded") setOver({
-										id: "__panel__",
-										panel: "excluded"
-									});
-								},
-								onDrop: (e) => {
-									e.preventDefault();
-									drop("excluded");
+								"data-col-panel": "hidden",
+								style: {
+									...panelCss,
+									...over?.id === "__panel__" && over.panel === "hidden" ? {
+										borderColor: "color-mix(in srgb, var(--color-primary) 40%, transparent)",
+										background: "color-mix(in srgb, var(--color-primary) 5%, transparent)"
+									} : {}
 								},
 								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", {
 									style: panelTitle,
 									children: tr("excluded")
-								}), excluded.length === 0 ? ph() : excluded.map((c) => item(c, "excluded"))]
+								}), excluded.length === 0 ? ph() : excluded.map((c) => item(c, "hidden"))]
 							}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-								style: panelCss,
-								onDragOver: (e) => {
-									e.preventDefault();
-									if (over?.id !== "__panel__" || over?.panel !== "included") setOver({
-										id: "__panel__",
-										panel: "included"
-									});
-								},
-								onDrop: (e) => {
-									e.preventDefault();
-									drop("included");
+								"data-col-panel": "visible",
+								style: {
+									...panelCss,
+									...over?.id === "__panel__" && over.panel === "visible" ? {
+										borderColor: "color-mix(in srgb, var(--color-primary) 40%, transparent)",
+										background: "color-mix(in srgb, var(--color-primary) 5%, transparent)"
+									} : {}
 								},
 								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", {
 									style: panelTitle,
 									children: tr("included")
-								}), included.length === 0 ? ph() : included.map((c) => item(c, "included"))]
+								}), included.length === 0 ? ph() : included.map((c) => item(c, "visible"))]
 							})]
 						})]
 					}),
@@ -1400,7 +1563,27 @@
 						})]
 					})
 				]
-			})
+			}), dragId && dragPos && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+				style: {
+					position: "fixed",
+					zIndex: 60,
+					left: dragPos.x,
+					top: dragPos.y,
+					transform: "translate(-50%, -50%)",
+					pointerEvents: "none",
+					display: "flex",
+					alignItems: "center",
+					gap: 8,
+					borderRadius: 8,
+					padding: "6px 10px",
+					fontSize: 14,
+					fontWeight: 500,
+					background: "var(--color-card)",
+					border: "1px solid color-mix(in srgb, var(--color-primary) 40%, transparent)",
+					boxShadow: "0 4px 16px rgba(0,0,0,.25)"
+				},
+				children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)(GripIcon, {}), labelFor(dragId)]
+			})]
 		});
 	}
 	//#endregion
@@ -1410,15 +1593,20 @@
 		height: 15,
 		flexShrink: 0
 	};
-	var SparkIcon = () => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("svg", {
+	var MelisM = () => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("svg", {
 		style: sIcon$1,
-		viewBox: "0 0 24 24",
-		fill: "none",
-		stroke: "currentColor",
-		strokeWidth: "2",
-		strokeLinecap: "round",
-		strokeLinejoin: "round",
-		children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("path", { d: "m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z" })
+		viewBox: "0 0 70 70",
+		fill: "currentColor",
+		"aria-hidden": "true",
+		children: [
+			/* @__PURE__ */ (0, react_jsx_runtime.jsx)("path", { d: "M57.4,0c-4.8,0-8.6,3.9-8.6,8.6v49.2c0,4.8,3.9,8.6,8.6,8.6s8.6-3.9,8.6-8.6V8.7C66,3.9,62.2,0,57.4,0Z" }),
+			/* @__PURE__ */ (0, react_jsx_runtime.jsx)("path", { d: "M16.3,4.6C14,.4,8.8-1.2,4.6,1,.4,3.2-1.2,8.5,1,12.7l26.1,49.3c2.2,4.2,7.4,5.8,11.7,3.6,4.2-2.2,5.8-7.4,3.6-11.7L16.3,4.6Z" }),
+			/* @__PURE__ */ (0, react_jsx_runtime.jsx)("circle", {
+				cx: "8.8",
+				cy: "57.7",
+				r: "8.8"
+			})
+		]
 	});
 	var LayoutIcon = () => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("svg", {
 		style: sIcon$1,
@@ -1436,7 +1624,10 @@
 			rx: "2"
 		}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("path", { d: "M3 9h18M9 21V9" })]
 	});
-	function ViewToggle({ mode, onChange, compact = false }) {
+	function ViewToggle({ mode, onChange, compact = false, labels = {
+		react: "New",
+		iframe: "Old"
+	} }) {
 		const tab = (active) => ({
 			display: "inline-flex",
 			alignItems: "center",
@@ -1464,13 +1655,13 @@
 			children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
 				style: tab(mode === "react"),
 				onClick: () => onChange("react"),
-				title: compact ? "New" : void 0,
-				children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)(SparkIcon, {}), !compact && "New"]
+				title: compact ? labels.react : void 0,
+				children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)(MelisM, {}), !compact && labels.react]
 			}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
 				style: tab(mode === "iframe"),
 				onClick: () => onChange("iframe"),
-				title: compact ? "Old" : void 0,
-				children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)(LayoutIcon, {}), !compact && "Old"]
+				title: compact ? labels.iframe : void 0,
+				children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)(LayoutIcon, {}), !compact && labels.iframe]
 			})]
 		});
 	}
@@ -1496,7 +1687,7 @@
 			return [];
 		}
 	}
-	var box = {
+	var box$1 = {
 		borderRadius: 8,
 		border: "1px solid var(--color-border,#e5e7eb)",
 		background: "var(--color-background,#fff)"
@@ -1513,7 +1704,7 @@
 		cursor: "pointer",
 		fontSize: 14,
 		color: "var(--color-foreground)",
-		...box
+		...box$1
 	};
 	function Node({ node, depth, onPick }) {
 		const [open, setOpen] = (0, react.useState)(false);
@@ -1614,7 +1805,7 @@
 				})]
 			}), open && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 				style: {
-					...box,
+					...box$1,
 					position: "absolute",
 					zIndex: 70,
 					top: 44,
@@ -1891,6 +2082,151 @@
 		}) });
 	}
 	//#endregion
+	//#region src/shared/melis-form-errors.tsx
+	function postNotif(kind, title, message, issues) {
+		try {
+			const fields = (issues ?? []).filter((i) => i && i.label).map((i) => ({
+				label: i.label,
+				messages: [i.message]
+			}));
+			window.postMessage({
+				__melisNotif: true,
+				kind,
+				title,
+				message,
+				fields
+			}, "*");
+		} catch {}
+	}
+	function okNotify(title, message = "") {
+		postNotif("ok", title, message);
+	}
+	/** Error toast. Pass `issues` to list offending fields inside the toast (host renders them). */
+	function koNotify(title, message = "", issues) {
+		postNotif("ko", title, message, issues);
+	}
+	function firstMessage(entry) {
+		if (entry == null) return "";
+		if (typeof entry === "string") return entry;
+		if (Array.isArray(entry)) return firstMessage(entry[0]);
+		if (typeof entry === "object") {
+			const hit = Object.entries(entry).find(([k]) => k !== "label" && k !== "form");
+			return hit ? firstMessage(hit[1]) : "";
+		}
+		return String(entry);
+	}
+	/**
+	* Normalise an error payload into FormIssue[]. Accepts:
+	*  - a plain string            → [{ message }]
+	*  - a string[]                → one issue each
+	*  - a FormIssue[]             → passthrough (already normalised)
+	*  - `{ field: "message" }`    → [{ label: field, message }]   (e.g. newsletter `errors`)
+	*  - MelisCore formatErrors    → `{ massd_text: { isEmpty: "…", label: "Input Label" } }`
+	*                                → [{ label: "Input Label", message: "…" }]
+	* The optional `labels` map renames a raw field key to a display label (server key → UI label).
+	*/
+	function collectIssues(input, labels = {}) {
+		if (input == null || input === "") return [];
+		if (typeof input === "string") return [{ message: input }];
+		if (Array.isArray(input)) return input.map((v) => typeof v === "string" ? { message: v } : v).filter((i) => i && (i.message || i.label));
+		if (typeof input === "object") {
+			const out = [];
+			for (const [field, entry] of Object.entries(input)) {
+				if (field === "label" || field === "form" || entry == null) continue;
+				const message = firstMessage(entry);
+				if (!message) continue;
+				const entryLabel = entry && typeof entry === "object" ? entry.label : void 0;
+				out.push({
+					label: labels[field] ?? entryLabel ?? field,
+					message
+				});
+			}
+			return out;
+		}
+		return [];
+	}
+	var box = {
+		border: "1px solid color-mix(in srgb, #ef4444 45%, var(--color-border,#e5e7eb))",
+		background: "color-mix(in srgb, #ef4444 10%, var(--color-card,#fff))",
+		color: "#dc2626",
+		borderRadius: 8,
+		padding: "10px 14px",
+		fontSize: 14,
+		lineHeight: 1.45
+	};
+	var listCss = {
+		margin: "6px 0 0",
+		padding: "0 0 0 18px",
+		display: "flex",
+		flexDirection: "column",
+		gap: 2
+	};
+	/**
+	* Standard form-error banner. Show it above a form/modal on a failed save/submit.
+	*  - `title`   headline (caller-provided → i18n stays with the caller). Defaults to a generic English
+	*              line; every real caller should pass its own translated string.
+	*  - `issues`  the missing/invalid fields to list. Pass anything `collectIssues` accepts OR a
+	*              ready FormIssue[]; a bare string is treated as a single message.
+	*  - `icon`    optional leading node (e.g. an alert glyph).
+	*  - `html`    when set, the caller vouches that `title` and each issue `message` carry TRUSTED
+	*              HTML (e.g. Melis service messages that embed `<b>path</b>`) → the markup is rendered
+	*              instead of escaped. Default false (safe text). Labels are our own i18n and are always
+	*              rendered as text. Only pass `html` for server/legacy messages you know are trusted —
+	*              it is a dangerouslySetInnerHTML sink; never enable it for free user input.
+	* When there are no issues and no title, renders nothing.
+	*/
+	function FormErrorBanner({ title, issues, icon, html, style }) {
+		const list = collectIssues(issues);
+		if (!title && list.length === 0) return null;
+		const headline = title ?? "Please check the required fields.";
+		const renderText = (value, s) => html ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+			style: s,
+			dangerouslySetInnerHTML: { __html: value }
+		}) : /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+			style: s,
+			children: value
+		});
+		return /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+			role: "alert",
+			style: {
+				...box,
+				...style
+			},
+			children: /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+				style: {
+					display: "flex",
+					alignItems: "flex-start",
+					gap: 8
+				},
+				children: [icon != null && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+					style: {
+						flexShrink: 0,
+						lineHeight: 1.4
+					},
+					children: icon
+				}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+					style: {
+						flex: 1,
+						minWidth: 0
+					},
+					children: [headline && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+						style: { fontWeight: 600 },
+						children: renderText(headline)
+					}), list.length > 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("ul", {
+						style: listCss,
+						children: list.map((it, i) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("li", {
+							style: { fontSize: 13 },
+							children: [it.label && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", {
+								style: { fontWeight: 600 },
+								children: [it.label, it.message ? " — " : ""]
+							}), it.message && renderText(it.message)]
+						}, i))
+					})]
+				})]
+			})
+		});
+	}
+	//#endregion
 	//#region src/SliderList.tsx
 	/** Icône de tri neutre/asc/desc — mêmes tracés que lucide ArrowUpDown/ArrowUp/ArrowDown. */
 	function SortIcon({ dir }) {
@@ -1952,7 +2288,6 @@
 			visible: true
 		}
 	]);
-	var ESSENTIAL_COLS$1 = new Set(["name"]);
 	var RenameIcon = () => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("svg", {
 		style: {
 			width: 15,
@@ -2005,11 +2340,12 @@
 		(0, react.useEffect)(() => {
 			if (active && consumeSliderListStale()) setTick((x) => x + 1);
 		}, [active]);
-		const displayCols = narrow ? cols.map((c) => ({
+		const shownColsList = cols.filter((c) => c.visible);
+		const displayCols = narrow ? shownColsList.map((c, i) => ({
 			...c,
-			visible: ESSENTIAL_COLS$1.has(c.id)
-		})) : cols;
-		const hasHidden = narrow;
+			visible: i === 0
+		})) : shownColsList;
+		const hasHidden = narrow && shownColsList.length > 1;
 		const toggleExpand = (id) => setExpanded((prev) => {
 			const next = new Set(prev);
 			if (!next.delete(id)) next.add(id);
@@ -2091,7 +2427,11 @@
 							children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)(ViewToggle, {
 								mode,
 								compact: narrow,
-								onChange: onModeChange
+								onChange: onModeChange,
+								labels: {
+									react: t("view_new"),
+									iframe: t("view_old")
+								}
 							}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
 								style: btnGhost$1,
 								onClick: () => setTick((x) => x + 1),
@@ -2155,15 +2495,21 @@
 							children: [
 								/* @__PURE__ */ (0, react_jsx_runtime.jsx)(Kpi, {
 									label: t("kpi_sliders"),
-									value: stats?.sliders ?? null
+									value: stats?.sliders ?? null,
+									icon: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(GalleryIcon, {}),
+									tint: "var(--color-primary)"
 								}),
 								/* @__PURE__ */ (0, react_jsx_runtime.jsx)(Kpi, {
 									label: t("kpi_slides"),
-									value: stats?.slides ?? null
+									value: stats?.slides ?? null,
+									icon: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(ImagesIcon, {}),
+									tint: "#2563eb"
 								}),
 								/* @__PURE__ */ (0, react_jsx_runtime.jsx)(Kpi, {
 									label: t("kpi_active"),
-									value: stats?.active ?? null
+									value: stats?.active ?? null,
+									icon: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(CheckCircleIcon, {}),
+									tint: "#059669"
 								})
 							]
 						}),
@@ -2446,13 +2792,22 @@
 		const [pageId, setPageId] = (0, react.useState)(slider?.pageId ?? 0);
 		const [pageTitle, setPageTitle] = (0, react.useState)("");
 		const [saving, setSaving] = (0, react.useState)(false);
-		const [error, setError] = (0, react.useState)(null);
+		const [err, setErr] = (0, react.useState)(null);
+		const nameInvalid = !!err && !name.trim();
 		async function submit() {
-			setError(null);
-			if (!name.trim()) {
-				setError(t("f_name") + " *");
+			const issues = [];
+			if (!name.trim()) issues.push({
+				label: t("f_name"),
+				message: t("field_required")
+			});
+			if (issues.length) {
+				setErr({
+					title: t("check_fields"),
+					issues
+				});
 				return;
 			}
+			setErr(null);
 			setSaving(true);
 			try {
 				await saveSlider({
@@ -2460,9 +2815,15 @@
 					name: name.trim(),
 					pageId: pageId ? pageId : null
 				});
+				okNotify(t("save_ok"));
 				onSaved(name.trim());
 			} catch (e) {
-				setError(e instanceof Error ? e.message : t("err_save"));
+				const msg = e instanceof Error ? e.message : t("err_save");
+				setErr({
+					title: t("err_save"),
+					issues: msg
+				});
+				koNotify(t("err_save"), msg);
 			} finally {
 				setSaving(false);
 			}
@@ -2511,22 +2872,18 @@
 							gap: 16
 						},
 						children: [
-							error && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
-								style: {
-									...card$1,
-									borderColor: "#fca5a5",
-									background: "#fef2f2",
-									color: "#b91c1c",
-									padding: "8px 12px",
-									fontSize: 13
-								},
-								children: error
+							err && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(FormErrorBanner, {
+								title: err.title,
+								issues: err.issues
 							}),
 							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("label", {
 								style: label,
 								children: t("f_name")
 							}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
-								style: inputCss,
+								style: {
+									...inputCss,
+									...nameInvalid ? { borderColor: "#ef4444" } : {}
+								},
 								value: name,
 								onChange: (e) => setName(e.target.value),
 								placeholder: t("f_name_ph"),
@@ -2610,7 +2967,6 @@
 			visible: true
 		}
 	]);
-	var ESSENTIAL_COLS = new Set(["title"]);
 	function SliderEditor({ sliderId, sliderName, tick: externalTick, onOpenSlide, onSlideDeleted, onSaved }) {
 		const t = useT();
 		const narrow = useIsNarrow();
@@ -2673,13 +3029,14 @@
 				setTick((x) => x + 1);
 			}
 		}
-		const displayCols = narrow ? [...cols.map((c) => ({
+		const shownColsList = cols.filter((c) => c.visible);
+		const displayCols = narrow ? [...shownColsList.map((c, i) => ({
 			...c,
-			visible: ESSENTIAL_COLS.has(c.id)
+			visible: i === 0
 		})), {
 			id: "order",
 			visible: false
-		}] : cols;
+		}] : shownColsList;
 		const hasHidden = narrow;
 		const toggleExpand = (id) => setExpanded((prev) => {
 			const next = new Set(prev);
@@ -3023,7 +3380,7 @@
 		const [loading, setLoading] = (0, react.useState)(isEdit);
 		const [uploading, setUploading] = (0, react.useState)(false);
 		const [saving, setSaving] = (0, react.useState)(false);
-		const [error, setError] = (0, react.useState)(null);
+		const [err, setErr] = (0, react.useState)(null);
 		const [saved, setSaved] = (0, react.useState)(false);
 		(0, react.useEffect)(() => {
 			if (!isEdit) return;
@@ -3036,25 +3393,33 @@
 				setSub3(s.sub3);
 				setLink(s.link);
 				setImg(s.img);
-			}).catch((e) => setError(e instanceof Error ? e.message : t("err_save"))).finally(() => setLoading(false));
+			}).catch((e) => setErr({
+				title: t("err_save"),
+				issues: e instanceof Error ? e.message : void 0
+			})).finally(() => setLoading(false));
 		}, [slideId]);
 		async function onPickFile(e) {
 			const file = e.target.files?.[0];
 			if (!file) return;
-			setError(null);
+			setErr(null);
 			setUploading(true);
 			try {
 				const { path } = await uploadSlideImage(sliderId, file);
 				setImg(path);
-			} catch (err) {
-				setError(err instanceof Error ? err.message : t("err_save"));
+			} catch (e) {
+				const msg = e instanceof Error ? e.message : t("upload_failed");
+				setErr({
+					title: t("upload_failed"),
+					issues: msg
+				});
+				koNotify(t("upload_failed"), msg);
 			} finally {
 				setUploading(false);
 				if (fileRef.current) fileRef.current.value = "";
 			}
 		}
 		async function submit() {
-			setError(null);
+			setErr(null);
 			setSaving(true);
 			try {
 				const { id } = await saveSlide({
@@ -3069,10 +3434,16 @@
 					img
 				});
 				setSaved(true);
+				okNotify(t("save_ok"));
 				setTimeout(() => onSaved(id, title), 400);
 				setTimeout(() => setSaved(false), 2500);
 			} catch (e) {
-				setError(e instanceof Error ? e.message : t("err_save"));
+				const msg = e instanceof Error ? e.message : t("err_save");
+				setErr({
+					title: t("err_save"),
+					issues: msg
+				});
+				koNotify(t("err_save"), msg);
 			} finally {
 				setSaving(false);
 			}
@@ -3144,16 +3515,9 @@
 						})]
 					})]
 				}),
-				error && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
-					style: {
-						...card$1,
-						borderColor: "#fca5a5",
-						background: "#fef2f2",
-						color: "#b91c1c",
-						padding: "8px 14px",
-						fontSize: 14
-					},
-					children: error
+				err && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(FormErrorBanner, {
+					title: err.title,
+					issues: err.issues
 				}),
 				loading ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
 					style: {

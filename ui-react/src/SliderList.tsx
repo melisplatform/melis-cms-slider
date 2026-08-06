@@ -6,6 +6,7 @@ import {
 import {
   useT, makeCan, card, inputCss, btnPrimary, btnGhost, iconBtn, th, td, label, hint, pageWrap,
   PencilIcon, TrashIcon, PlusIcon, LayersIcon, GripIcon, ResetIcon, Kpi, ConfirmModal,
+  GalleryIcon, ImagesIcon, CheckCircleIcon,
   ColManager, makeColStore, visibleCols, ghostHover, type ColDef,
 } from './ui'
 import { ExportModal, DownloadIcon } from './ExportModal'
@@ -14,6 +15,7 @@ import { PagePicker } from './PagePicker'
 import { useKeysetList } from './use-keyset-list'
 import { useIsNarrow } from './shared/useIsNarrow'
 import { ExpandToggle, HiddenColsRow } from './shared/ExpandableRow'
+import { FormErrorBanner, okNotify, koNotify, type FormIssue } from './shared/melis-form-errors'
 
 /** Icône de tri neutre/asc/desc — mêmes tracés que lucide ArrowUpDown/ArrowUp/ArrowDown. */
 function SortIcon({ dir }: { dir: 'asc' | 'desc' | null }) {
@@ -35,11 +37,6 @@ const DEFAULT_COLS: ColDef[] = [
   { id: 'id', visible: false }, { id: 'name', visible: true }, { id: 'page', visible: true }, { id: 'slides', visible: true },
 ]
 const colStore = makeColStore('melis-slider-cols-v1', DEFAULT_COLS)
-
-// Mobile : on ne garde qu'UNE colonne, celle qui identifie la ligne (le nom) — la ligne devient
-// [+][nom][actions], qui tient sur un écran de téléphone sans scroll horizontal. Les autres
-// colonnes sont lisibles via le « + » de la ligne (HiddenColsRow).
-const ESSENTIAL_COLS = new Set(['name'])
 
 // Icône « renommer » (étiquette) — distincte du crayon, qui sert à éditer les slides.
 const RenameIcon = () => <svg style={{ width: 15, height: 15, flexShrink: 0 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.41 2.41 0 0 0 3.414 0l6.586-6.586a2.41 2.41 0 0 0 0-3.414z" /><circle cx="7.5" cy="7.5" r="1.2" fill="currentColor" /></svg>
@@ -87,12 +84,13 @@ export default function SliderList({ active, onOpen, onDeleted, onRenamed, mode,
   // Rafraîchir quand on revient sur la liste après un changement (flag stale).
   useEffect(() => { if (active && consumeSliderListStale()) setTick((x) => x + 1) }, [active])
 
-  // Colonnes affichées : sur mobile on force l'ensemble essentiel, INDÉPENDAMMENT des préférences
-  // desktop de l'utilisateur (`cols`, qui reste la seule source du ColManager). `hasHidden` (donc
-  // l'existence même de la colonne « + ») est lié à `narrow` SEUL : un utilisateur desktop qui a
-  // masqué une colonne via le ColManager ne doit pas voir apparaître un « + » qui n'existait pas.
-  const displayCols = narrow ? cols.map((c) => ({ ...c, visible: ESSENTIAL_COLS.has(c.id) })) : cols
-  const hasHidden = narrow
+  // A Hidden column disappears entirely on both desktop and mobile — same rule everywhere, no "+"
+  // peek at Hidden ones. Desktop shows every Visible column inline. Mobile can't fit many columns,
+  // so only the FIRST Visible column (by the user's dragged order in ColManager) anchors inline;
+  // every OTHER Visible column surfaces behind the per-row "+" instead, in that same order.
+  const shownColsList = cols.filter((c) => c.visible)
+  const displayCols = narrow ? shownColsList.map((c, i) => ({ ...c, visible: i === 0 })) : shownColsList
+  const hasHidden = narrow && shownColsList.length > 1
   const toggleExpand = (id: number) => setExpanded((prev) => {
     const next = new Set(prev)
     if (!next.delete(id)) next.add(id)
@@ -125,7 +123,7 @@ export default function SliderList({ active, onOpen, onDeleted, onRenamed, mode,
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, ...(narrow ? { flexShrink: 0, flexDirection: 'column' } : {}) }}>
           <div style={narrow ? { display: 'flex', alignItems: 'center', gap: 8 } : { display: 'contents' }}>
-            <ViewToggle mode={mode} compact={narrow} onChange={onModeChange} />
+            <ViewToggle mode={mode} compact={narrow} onChange={onModeChange} labels={{ react: t('view_new'), iframe: t('view_old') }} />
             <button style={btnGhost} onClick={() => setTick((x) => x + 1)} title={t('refresh')}>↻</button>
           </div>
           {can('create') && <button style={{ ...btnPrimary, ...(narrow ? { width: '100%', justifyContent: 'center' } : {}) }} onClick={() => setEditSlider('new')}><PlusIcon />{t('new')}</button>}
@@ -147,9 +145,9 @@ export default function SliderList({ active, onOpen, onDeleted, onRenamed, mode,
           <div style={{ ...card, padding: '40px 16px', textAlign: 'center', fontSize: 14, color: 'var(--color-muted-foreground)' }}>{t('no_access')}</div>
         ) : (<>
           <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-            <Kpi label={t('kpi_sliders')} value={stats?.sliders ?? null} />
-            <Kpi label={t('kpi_slides')} value={stats?.slides ?? null} />
-            <Kpi label={t('kpi_active')} value={stats?.active ?? null} />
+            <Kpi label={t('kpi_sliders')} value={stats?.sliders ?? null} icon={<GalleryIcon />} tint="var(--color-primary)" />
+            <Kpi label={t('kpi_slides')} value={stats?.slides ?? null} icon={<ImagesIcon />} tint="#2563eb" />
+            <Kpi label={t('kpi_active')} value={stats?.active ?? null} icon={<CheckCircleIcon />} tint="#059669" />
           </div>
 
           {/* Barre de filtres — mobile : recherche pleine largeur, « Réinitialiser les filtres »
@@ -281,16 +279,27 @@ function SliderModal({ slider, onClose, onSaved }: { slider: SliderItem | null; 
   const [pageId, setPageId] = useState<number>(slider?.pageId ?? 0)
   const [pageTitle, setPageTitle] = useState('')
   const [saving, setSaving] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  // Bannière d'erreur unifiée : `title` = en-tête traduit, `issues` = liste des champs fautifs
+  // (validation client) OU l'erreur serveur (string), normalisée par collectIssues.
+  const [err, setErr] = useState<{ title: string; issues?: unknown } | null>(null)
+  const nameInvalid = !!err && !name.trim()
 
   async function submit() {
-    setError(null)
-    if (!name.trim()) { setError(t('f_name') + ' *'); return }
-    setSaving(true)
+    // On collecte TOUS les champs manquants (ici : le nom) avant de sortir, pour que la
+    // bannière les liste tous d'un coup plutôt qu'au premier échec rencontré.
+    const issues: FormIssue[] = []
+    if (!name.trim()) issues.push({ label: t('f_name'), message: t('field_required') })
+    if (issues.length) { setErr({ title: t('check_fields'), issues }); return }
+    setErr(null); setSaving(true)
     try {
       await saveSlider({ id: slider?.id ?? null, name: name.trim(), pageId: pageId ? pageId : null })
+      okNotify(t('save_ok'))
       onSaved(name.trim())
-    } catch (e) { setError(e instanceof Error ? e.message : t('err_save')) }
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : t('err_save')
+      setErr({ title: t('err_save'), issues: msg })
+      koNotify(t('err_save'), msg)
+    }
     finally { setSaving(false) }
   }
 
@@ -303,10 +312,10 @@ function SliderModal({ slider, onClose, onSaved }: { slider: SliderItem | null; 
           <h2 style={{ fontSize: 15, fontWeight: 600, margin: 0 }}>{isEdit ? t('rename_slider_title') : t('new_slider_title')}</h2>
         </div>
         <div style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 16 }}>
-          {error && <div style={{ ...card, borderColor: '#fca5a5', background: '#fef2f2', color: '#b91c1c', padding: '8px 12px', fontSize: 13 }}>{error}</div>}
+          {err && <FormErrorBanner title={err.title} issues={err.issues} />}
           <div>
             <label style={label}>{t('f_name')}</label>
-            <input style={inputCss} value={name} onChange={(e) => setName(e.target.value)} placeholder={t('f_name_ph')} maxLength={255} autoFocus />
+            <input style={{ ...inputCss, ...(nameInvalid ? { borderColor: '#ef4444' } : {}) }} value={name} onChange={(e) => setName(e.target.value)} placeholder={t('f_name_ph')} maxLength={255} autoFocus />
           </div>
           <div>
             <label style={label}>{t('f_page')}</label>
