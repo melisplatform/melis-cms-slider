@@ -17,6 +17,12 @@ class MelisCmsSliderListController extends MelisAbstractActionController
 {
     const LOG_DELETE = 'CMS_SLIDER_DELETE';
 
+    /** @INFO: Tool access check (CWE-862). */
+    private function hasAccess($key)
+    {
+        return $this->getServiceManager()->get('MelisCoreRights')->canAccess($key);
+    }
+
     /**
      * renders the page container
      * @return \Laminas\View\Model\ViewModel
@@ -215,6 +221,9 @@ class MelisCmsSliderListController extends MelisAbstractActionController
     
     public function renderTableListDataAction()
     {
+        if (! $this->hasAccess('meliscms_slider_tools_section')) {
+            return new JsonModel(['draw' => (int) $this->getRequest()->getPost('draw', 0), 'recordsTotal' => 0, 'recordsFiltered' => 0, 'data' => []]);
+        }
         $success = 0;
         $colId = array();
         $dataCount = 0;
@@ -273,6 +282,10 @@ class MelisCmsSliderListController extends MelisAbstractActionController
     
     public function saveSliderAction()
     {
+        /** @INFO: Access check (tool right) — CWE-862 */
+        if (! $this->hasAccess('meliscms_slider_tools_section')) {
+            return new JsonModel(['success' => 0, 'textTitle' => '', 'textMessage' => 'tr_meliscore_microservice_api_key_no_access', 'errors' => [], 'datas' => []]);
+        }
         $this->getEventManager()->trigger('meliscmsslider_add_slider_start', $this, array());
         $melisTool = $this->getServiceManager()->get('MelisCoreTool');
         $sliderId = null;
@@ -346,6 +359,10 @@ class MelisCmsSliderListController extends MelisAbstractActionController
      */
     public function deleteSliderAction()
     {
+        /** @INFO: Access check (tool right) — CWE-862 */
+        if (! $this->hasAccess('meliscms_slider_tools_section')) {
+            return new JsonModel(['success' => 0, 'textTitle' => '', 'textMessage' => 'tr_meliscore_microservice_api_key_no_access', 'errors' => [], 'datas' => []]);
+        }
         $this->getEventManager()->trigger('meliscmsslider_delete_slider_start', $this, []);
         $sliderId = null;
         $success = 0;

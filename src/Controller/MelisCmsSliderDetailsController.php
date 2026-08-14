@@ -21,6 +21,12 @@ use Laminas\View\Model\ViewModel;
 
 class MelisCmsSliderDetailsController extends MelisAbstractActionController
 {
+    /** @INFO: Tool access check (CWE-862). */
+    private function hasAccess($key)
+    {
+        return $this->getServiceManager()->get('MelisCoreRights')->canAccess($key);
+    }
+
     /**
      * renders the page container
      * @return \Laminas\View\Model\ViewModel
@@ -391,6 +397,10 @@ class MelisCmsSliderDetailsController extends MelisAbstractActionController
      */
     public function saveDetailsFormAction()
     {
+        /** @INFO: Access check (tool right) — CWE-862 */
+        if (! $this->hasAccess('meliscms_slider_tools_section')) {
+            return new JsonModel(['success' => 0, 'textTitle' => '', 'textMessage' => 'tr_meliscore_microservice_api_key_no_access', 'errors' => [], 'datas' => []]);
+        }
         $this->getEventManager()->trigger('meliscmsslider_save_details_start', $this, []);
         $melisTool = $this->getServiceManager()->get('MelisCoreTool');
         /** @var \MelisCmsSlider\Service\MelisCmsSliderService $melisSliderSvc */
@@ -599,7 +609,10 @@ class MelisCmsSliderDetailsController extends MelisAbstractActionController
 
     public function deleteDetailsAction()
     {
-
+        /** @INFO: Access check (tool right) — CWE-862 */
+        if (! $this->hasAccess('meliscms_slider_tools_section')) {
+            return new JsonModel(['success' => 0, 'textTitle' => '', 'textMessage' => 'tr_meliscore_microservice_api_key_no_access', 'errors' => [], 'datas' => []]);
+        }
         $this->getEventManager()->trigger('meliscmsslider_delete_details_start', $this, array());
         $sliderDetailsId = null;
         $response = array();
@@ -644,6 +657,9 @@ class MelisCmsSliderDetailsController extends MelisAbstractActionController
 
     public function renderTableListDataAction()
     {
+        if (! $this->hasAccess('meliscms_slider_tools_section')) {
+            return new JsonModel(['draw' => (int) $this->getRequest()->getPost('draw', 0), 'recordsTotal' => 0, 'recordsFiltered' => 0, 'data' => []]);
+        }
         $success = 0;
         $colId = array();
         $dataCount = 0;
@@ -721,6 +737,10 @@ class MelisCmsSliderDetailsController extends MelisAbstractActionController
 
     public function reOrderSliderDetailsAction()
     {
+        /** @INFO: Access check (tool right) — CWE-862 */
+        if (! $this->hasAccess('meliscms_slider_tools_section')) {
+            return new JsonModel(['success' => 0, 'textTitle' => '', 'textMessage' => 'tr_meliscore_microservice_api_key_no_access', 'errors' => [], 'datas' => []]);
+        }
         $request = $this->getRequest();
         // Default Values
         $errors = array();
