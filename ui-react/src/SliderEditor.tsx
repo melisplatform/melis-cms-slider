@@ -210,7 +210,7 @@ export default function SliderEditor({ sliderId, sliderName, tick: externalTick,
       </>)}
 
       {toDelete && (
-        <ConfirmModal title={t('del_slide_title')} message={t('del_slide_confirm')}
+        <ConfirmModal title={t('del_slide_title')} message={t('del_slide_confirm', { n: toDelete.title || ('#' + toDelete.id) })}
           confirmLabel={t('del')} onConfirm={confirmDelete} onCancel={() => setToDelete(null)} />
       )}
     </div>

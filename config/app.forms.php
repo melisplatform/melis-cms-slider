@@ -230,6 +230,8 @@ return [
                             'name'     => 'mcsdetail_link',
                             'required' => false,
                             'validators' => [
+                                // Same rule as the React API: no "javascript:" or other scheme (Mantis #0011249)
+                                ['name' => \MelisCmsSlider\Validator\SafeUrl::class],
                             ],
                             'filters'  => [
                                 ['name' => 'StripTags'],
