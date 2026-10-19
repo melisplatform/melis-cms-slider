@@ -322,7 +322,7 @@
 			inactive: "Inactive",
 			reorder_hint: "Glissez une ligne pour réordonner.",
 			del_slide_title: "Supprimer la slide",
-			del_slide_confirm: "Supprimer cette slide ? Action irréversible.",
+			del_slide_confirm: "Supprimer la slide « {n} » ? Action irréversible.",
 			new_slide_title: "Nouvelle slide",
 			edit_slide_title: "Modifier la slide",
 			f_status: "Active",
@@ -400,7 +400,7 @@
 			inactive: "Inactive",
 			reorder_hint: "Drag a row to reorder.",
 			del_slide_title: "Delete slide",
-			del_slide_confirm: "Delete this slide? This is irreversible.",
+			del_slide_confirm: "Delete the slide “{n}”? This is irreversible.",
 			new_slide_title: "New slide",
 			edit_slide_title: "Edit slide",
 			f_status: "Active",
@@ -2790,7 +2790,7 @@
 		const isEdit = !!slider;
 		const [name, setName] = (0, react.useState)(slider?.name ?? "");
 		const [pageId, setPageId] = (0, react.useState)(slider?.pageId ?? 0);
-		const [pageTitle, setPageTitle] = (0, react.useState)("");
+		const [pageTitle, setPageTitle] = (0, react.useState)(slider?.pageId && slider.pageTitle ? `${slider.pageId} - ${slider.pageTitle}` : "");
 		const [saving, setSaving] = (0, react.useState)(false);
 		const [err, setErr] = (0, react.useState)(null);
 		const nameInvalid = !!err && !name.trim();
@@ -2885,7 +2885,10 @@
 									...nameInvalid ? { borderColor: "#ef4444" } : {}
 								},
 								value: name,
-								onChange: (e) => setName(e.target.value),
+								onChange: (e) => {
+									setName(e.target.value);
+									if (e.target.value.trim() && err?.title === t("check_fields")) setErr(null);
+								},
 								placeholder: t("f_name_ph"),
 								maxLength: 255,
 								autoFocus: true
@@ -3354,7 +3357,7 @@
 				})] }),
 				toDelete && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(ConfirmModal, {
 					title: t("del_slide_title"),
-					message: t("del_slide_confirm"),
+					message: t("del_slide_confirm", { n: toDelete.title || "#" + toDelete.id }),
 					confirmLabel: t("del"),
 					onConfirm: confirmDelete,
 					onCancel: () => setToDelete(null)
@@ -3370,7 +3373,7 @@
 		const narrow = useIsNarrow();
 		const isEdit = slideId !== "new";
 		const fileRef = (0, react.useRef)(null);
-		const [status, setStatus] = (0, react.useState)(1);
+		const [status, setStatus] = (0, react.useState)(0);
 		const [title, setTitle] = (0, react.useState)("");
 		const [sub1, setSub1] = (0, react.useState)("");
 		const [sub2, setSub2] = (0, react.useState)("");

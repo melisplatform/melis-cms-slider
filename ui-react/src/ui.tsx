@@ -35,7 +35,7 @@ const DICT: Record<Lang, Record<string, string>> = {
     count_slides: '{n} slides — fin de la liste',
     s_order: 'Ordre', s_status: 'Statut', s_image: 'Image', s_title: 'Titre', s_sub1: 'Sous-titre', s_link: 'Lien',
     active: 'Active', inactive: 'Inactive', reorder_hint: 'Glissez une ligne pour réordonner.',
-    del_slide_title: 'Supprimer la slide', del_slide_confirm: 'Supprimer cette slide ? Action irréversible.',
+    del_slide_title: 'Supprimer la slide', del_slide_confirm: 'Supprimer la slide « {n} » ? Action irréversible.',
     // niveau slide (form)
     new_slide_title: 'Nouvelle slide', edit_slide_title: 'Modifier la slide',
     f_status: 'Active', f_title: 'Titre', f_sub1: 'Sous-titre 1', f_sub2: 'Description 1 (HTML)', f_sub3: 'Description 2 (HTML)',
@@ -62,7 +62,7 @@ const DICT: Record<Lang, Record<string, string>> = {
     count_slides: '{n} slides — end of list',
     s_order: 'Order', s_status: 'Status', s_image: 'Image', s_title: 'Title', s_sub1: 'Subtitle', s_link: 'Link',
     active: 'Active', inactive: 'Inactive', reorder_hint: 'Drag a row to reorder.',
-    del_slide_title: 'Delete slide', del_slide_confirm: 'Delete this slide? This is irreversible.',
+    del_slide_title: 'Delete slide', del_slide_confirm: 'Delete the slide “{n}”? This is irreversible.',
     new_slide_title: 'New slide', edit_slide_title: 'Edit slide',
     f_status: 'Active', f_title: 'Title', f_sub1: 'Subtitle 1', f_sub2: 'Description 1 (HTML)', f_sub3: 'Description 2 (HTML)',
     f_link: 'Link', f_image: 'Image', f_image_hint: 'JPG, PNG, GIF or WebP.', uploading: 'Uploading…', remove_img: 'Remove image', choose_img: 'Choose an image',

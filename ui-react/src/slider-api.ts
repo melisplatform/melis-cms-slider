@@ -15,6 +15,7 @@ export interface SliderItem {
   id: number
   name: string
   pageId: number | null
+  pageTitle?: string | null
   slideCount: number
 }
 export interface SliderStats { sliders: number; slides: number; active: number }

@@ -47,6 +47,7 @@
 	    'tr_MelisCmsSliderDetails_list_col_desc2' => 'Description 2',
 	    'tr_MelisCmsSliderDetails_list_col_desc2 tooltip' => 'Description 2 of the slide',
 	    'tr_MelisCmsSliderDetails_list_col_link' => 'Link',
+	    'tr_MelisCmsSliderDetails_link_invalid' => 'Invalid link: only http, https, mailto, tel or a relative URL are allowed',
 	    'tr_MelisCmsSliderDetails_list_col_link tooltip' => ' Link to which redirect the slide',
 	    'tr_MelisCmsSliderDetails_list_col_image' => 'Image',
 	    'tr_MelisCmsSliderDetails_list_col_image tooltip' => 'Slide picture',

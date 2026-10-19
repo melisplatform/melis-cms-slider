@@ -470,8 +470,11 @@ class MelisCmsSliderDetailsController extends MelisAbstractActionController
                 } else {
                     $errors = $form->getMessages();
                     foreach ($errors as $keyError => $valueError) {
-                        foreach ($appConfigForm as $keyForm => $valueForm) {
-                            if ($valueForm['spec']['name'] == $keyError &&
+                        // The field specs are under 'elements': looping over the whole form config read
+                        // ['spec'] on 'attributes'/'input_filter' and failed with a 500 on any invalid field
+                        // (e.g. the link refused since Mantis #0011249)
+                        foreach ($appConfigForm['elements'] ?? [] as $keyForm => $valueForm) {
+                            if (($valueForm['spec']['name'] ?? null) == $keyError &&
                                 !empty($valueForm['spec']['options']['label']))
                                 $errors[$keyError]['label'] = $valueForm['spec']['options']['label'];
                         }

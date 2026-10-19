@@ -27,7 +27,8 @@ export default function SlideEditor({ sliderId, slideId, onBack, onSaved }: {
   const isEdit = slideId !== 'new'
   const fileRef = useRef<HTMLInputElement>(null)
 
-  const [status, setStatus] = useState(1)
+  // A new slide starts inactive, as in the legacy form: it was online on the site as soon as saved (Mantis #0011251)
+  const [status, setStatus] = useState(0)
   const [title, setTitle] = useState('')
   const [sub1, setSub1] = useState('')
   const [sub2, setSub2] = useState('')

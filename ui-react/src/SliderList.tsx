@@ -277,7 +277,8 @@ function SliderModal({ slider, onClose, onSaved }: { slider: SliderItem | null; 
   const isEdit = !!slider
   const [name, setName] = useState(slider?.name ?? '')
   const [pageId, setPageId] = useState<number>(slider?.pageId ?? 0)
-  const [pageTitle, setPageTitle] = useState('')
+  // Same "id - title" label as the page tree: the rename modal showed "Page #2151" (Mantis #0011251)
+  const [pageTitle, setPageTitle] = useState(slider?.pageId && slider.pageTitle ? `${slider.pageId} - ${slider.pageTitle}` : '')
   const [saving, setSaving] = useState(false)
   // Bannière d'erreur unifiée : `title` = en-tête traduit, `issues` = liste des champs fautifs
   // (validation client) OU l'erreur serveur (string), normalisée par collectIssues.
@@ -315,7 +316,11 @@ function SliderModal({ slider, onClose, onSaved }: { slider: SliderItem | null; 
           {err && <FormErrorBanner title={err.title} issues={err.issues} />}
           <div>
             <label style={label}>{t('f_name')}</label>
-            <input style={{ ...inputCss, ...(nameInvalid ? { borderColor: '#ef4444' } : {}) }} value={name} onChange={(e) => setName(e.target.value)} placeholder={t('f_name_ph')} maxLength={255} autoFocus />
+            <input style={{ ...inputCss, ...(nameInvalid ? { borderColor: '#ef4444' } : {}) }} value={name} onChange={(e) => {
+              setName(e.target.value)
+              // The "required fields" banner went on showing after the name was typed (Mantis #0011251)
+              if (e.target.value.trim() && err?.title === t('check_fields')) setErr(null)
+            }} placeholder={t('f_name_ph')} maxLength={255} autoFocus />
           </div>
           <div>
             <label style={label}>{t('f_page')}</label>

@@ -57,6 +57,10 @@ class MelisReactApiCmsSliderController extends MelisAbstractActionController
 
     private const IMG_EXT = ['jpg', 'jpeg', 'gif', 'png', 'webp'];
 
+    /** Title of the linked page (working version first, then the published one), on alias `s` = melis_cms_slider. */
+    private const PAGE_TITLE_SQL = 'COALESCE((SELECT page_name FROM melis_cms_page_saved WHERE page_id = s.mcslide_page_id),'
+        . ' (SELECT page_name FROM melis_cms_page_published WHERE page_id = s.mcslide_page_id)) AS page_title';
+
     /**
      * Équivalent des filtres `StripTags` + `StringTrim` que le formulaire legacy
      * (`MelisTechnologySlider_details_form` / `_slider_form`, cf. config/app.forms.php) applique aux
@@ -114,7 +118,7 @@ class MelisReactApiCmsSliderController extends MelisAbstractActionController
             [$rows, $total, $next] = $this->keysetList([
                 'db'           => $db,
                 'from'         => 'melis_cms_slider s',
-                'selectCols'   => "s.mcslide_id, s.mcslide_name, s.mcslide_page_id, $slideCountExpr AS slide_count",
+                'selectCols'   => "s.mcslide_id, s.mcslide_name, s.mcslide_page_id, $slideCountExpr AS slide_count, " . self::PAGE_TITLE_SQL,
                 'filterWhere'  => $filterWhere,
                 'filterParams' => $filterParams,
                 'sortMap'      => $sortMap,
@@ -181,7 +185,7 @@ class MelisReactApiCmsSliderController extends MelisAbstractActionController
         try {
             $db = $this->getServiceManager()->get('Laminas\Db\Adapter\AdapterInterface');
             $rows = iterator_to_array($db->query(
-                'SELECT mcslide_id, mcslide_name, mcslide_page_id FROM melis_cms_slider WHERE mcslide_id = ?',
+                'SELECT s.mcslide_id, s.mcslide_name, s.mcslide_page_id, ' . self::PAGE_TITLE_SQL . ' FROM melis_cms_slider s WHERE s.mcslide_id = ?',
                 [$id]
             ));
             if (!$rows) {
@@ -203,9 +207,8 @@ class MelisReactApiCmsSliderController extends MelisAbstractActionController
             $id   = isset($body['id']) && $body['id'] ? (int) $body['id'] : null;
             if ($denyCap = $this->denyUnlessCan($id ? 'edit' : 'create')) { return $denyCap; }
 
-            $name   = $this->stripTags((string) ($body['name'] ?? ''));
-            $pageId = isset($body['pageId']) && $body['pageId'] !== '' && $body['pageId'] !== null
-                ? (int) $body['pageId'] : null;
+            $name    = $this->stripTags((string) ($body['name'] ?? ''));
+            $rawPage = $body['pageId'] ?? null;
 
             if ($name === '') {
                 return $this->jsonResponse(['success' => false, 'error' => 'Le nom du slider est obligatoire.'], 400);
@@ -215,6 +218,19 @@ class MelisReactApiCmsSliderController extends MelisAbstractActionController
             }
 
             $db = $this->getServiceManager()->get('Laminas\Db\Adapter\AdapterInterface');
+
+            // Linked page: digits only and an existing page. "abc" was saved as 0 and an unknown id as is
+            // (Mantis #0011252); the legacy form already refuses non-digits.
+            $pageId = null;
+            if ($rawPage !== null && $rawPage !== '') {
+                if (!preg_match('/^\d+$/', trim((string) $rawPage)) || (int) $rawPage <= 0) {
+                    return $this->jsonResponse(['success' => false, 'error' => 'La page liée doit être un identifiant de page (chiffres uniquement).'], 400);
+                }
+                $pageId = (int) $rawPage;
+                if (!iterator_to_array($db->query('SELECT tree_page_id FROM melis_cms_page_tree WHERE tree_page_id = ?', [$pageId]))) {
+                    return $this->jsonResponse(['success' => false, 'error' => 'La page liée n’existe pas.'], 400);
+                }
+            }
 
             if ($id) {
                 if (!iterator_to_array($db->query('SELECT mcslide_id FROM melis_cms_slider WHERE mcslide_id = ?', [$id]))) {
@@ -262,8 +278,15 @@ class MelisReactApiCmsSliderController extends MelisAbstractActionController
             foreach ($slides as $s) {
                 $this->deleteImageFile((string) ($s['mcsdetail_img'] ?? ''));
             }
+            // The folder belongs to this slider only: also remove what no slide refers to any more (images
+            // replaced before Mantis #0011248, uploads never saved), otherwise rmdir() failed and it all stayed.
             $dir = $this->publicRoot() . '/media/sliders/' . $id;
-            if (is_dir($dir)) { @rmdir($dir); }
+            if (is_dir($dir)) {
+                foreach (glob($dir . '/*') ?: [] as $file) {
+                    if (is_file($file)) { @unlink($file); }
+                }
+                @rmdir($dir);
+            }
 
             $db->query('DELETE FROM melis_cms_slider_details WHERE mcsdetail_mcslider_id = ?', [$id]);
             $db->query('DELETE FROM melis_cms_slider WHERE mcslide_id = ?', [$id]);
@@ -403,9 +426,11 @@ class MelisReactApiCmsSliderController extends MelisAbstractActionController
             }
 
             if ($id) {
-                if (!iterator_to_array($db->query('SELECT mcsdetail_id FROM melis_cms_slider_details WHERE mcsdetail_id = ?', [$id]))) {
+                $current = iterator_to_array($db->query('SELECT mcsdetail_id, mcsdetail_img FROM melis_cms_slider_details WHERE mcsdetail_id = ?', [$id]));
+                if (!$current) {
                     return $this->jsonResponse(['success' => false, 'error' => 'Not found'], 404);
                 }
+                $previousImg = trim((string) (((array) $current[0])['mcsdetail_img'] ?? ''));
                 $db->query(
                     'UPDATE melis_cms_slider_details
                      SET mcsdetail_status = ?, mcsdetail_title = ?, mcsdetail_sub1 = ?, mcsdetail_sub2 = ?,
@@ -413,6 +438,12 @@ class MelisReactApiCmsSliderController extends MelisAbstractActionController
                      WHERE mcsdetail_id = ?',
                     [$status, $title, $sub1, $sub2, $sub3, $link, $img, $id]
                 );
+                // Image replaced or removed: delete the previous file, as the legacy form does. It stayed on
+                // disk and was still served (Mantis #0011248). Kept if another slide still uses it.
+                if ($previousImg !== '' && $previousImg !== $img
+                    && !iterator_to_array($db->query('SELECT mcsdetail_id FROM melis_cms_slider_details WHERE mcsdetail_img = ? LIMIT 1', [$previousImg]))) {
+                    $this->deleteImageFile($previousImg);
+                }
                 return $this->jsonResponse(['success' => true, 'data' => ['id' => $id]]);
             }
 
@@ -550,6 +581,8 @@ class MelisReactApiCmsSliderController extends MelisAbstractActionController
             'id'         => (int) $r['mcslide_id'],
             'name'       => (string) ($r['mcslide_name'] ?? ''),
             'pageId'     => isset($r['mcslide_page_id']) && $r['mcslide_page_id'] !== null ? (int) $r['mcslide_page_id'] : null,
+            // Page title, so the rename modal shows "2151 - Commerce Demo" and not "Page #2151" (Mantis #0011251)
+            'pageTitle'  => isset($r['page_title']) && $r['page_title'] !== null ? (string) $r['page_title'] : null,
             'slideCount' => isset($r['slide_count']) ? (int) $r['slide_count'] : 0,
         ];
     }
@@ -604,10 +637,11 @@ class MelisReactApiCmsSliderController extends MelisAbstractActionController
     {
         $webPath = trim($webPath);
         if ($webPath === '') { return; }
-        $abs = $this->publicRoot() . '/' . ltrim($webPath, '/');
-        // Garde-fou : rester sous public/media/sliders/
-        $base = $this->publicRoot() . '/media/sliders/';
-        if (strpos($abs, $base) !== 0) { return; }
+        // Garde-fou : rester sous public/media/sliders/. Chemins RÉSOLUS : le chemin vient de la base, écrit par
+        // le client à l'enregistrement — un préfixe seul laissait passer « /media/sliders/../../… ».
+        $abs  = realpath($this->publicRoot() . '/' . ltrim($webPath, '/'));
+        $base = realpath($this->publicRoot() . '/media/sliders');
+        if ($abs === false || $base === false || strpos($abs, $base . DIRECTORY_SEPARATOR) !== 0) { return; }
         if (is_file($abs)) { @chmod($abs, 0777); @unlink($abs); }
     }
 
