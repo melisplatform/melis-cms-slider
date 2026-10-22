@@ -4,7 +4,9 @@
     }
 </style>
 
-<div id="<?php echo $this->pluginId?>">
+<?php // SECURITY (audit SL-H2): pluginId is overridable from the request (GET/POST→config
+      // merge) and the front XSS listener does not sanitize POST — escape the attribute. ?>
+<div id="<?php echo $this->escapeHtmlAttr($this->pluginId)?>">
     <?php if (!empty($this->showSlider)){?>
     	<div class="container">
             <!-- data-bs-ride="carousel" -->
