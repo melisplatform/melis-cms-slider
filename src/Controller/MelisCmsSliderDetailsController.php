@@ -21,10 +21,50 @@ use Laminas\View\Model\ViewModel;
 
 class MelisCmsSliderDetailsController extends MelisAbstractActionController
 {
+    /**
+     * SECURITY (audit SL-M2): read by MelisCoreAuthorizationListener (EVENT_ROUTE) —
+     * every direct HTTP hit on this controller now requires the Slider tool right.
+     * Without it the gate logged UNMAPPED and any authenticated account could read
+     * every slide (renderModalForm with an arbitrary detailId) and even news/blog
+     * data via the renderSelectSlider actions.
+     */
+    const MELIS_KEY = 'meliscms_slider_tools_section';
+
     /** @INFO: Tool access check (CWE-862). */
     private function hasAccess($key)
     {
         return $this->getServiceManager()->get('MelisCoreRights')->canAccess($key);
+    }
+
+    /**
+     * SECURITY (audit SL-M4): same semantics as MelisReactApiCmsSliderController::isSafeUrl —
+     * relative URLs OK, explicit scheme restricted to http/https/mailto/tel, hidden
+     * control characters in the scheme neutralised ("java\tscript:").
+     */
+    private function isSafeLinkUrl($url)
+    {
+        $url = trim((string) $url);
+        if ($url === '') {
+            return true;
+        }
+        $probe = preg_replace('/[\s\x00-\x1F\x7F]+/', '', $url);
+        if (!preg_match('#^([a-zA-Z][a-zA-Z0-9+.\-]*):#', (string) $probe, $m)) {
+            return true;
+        }
+        return in_array(strtolower($m[1]), ['http', 'https', 'mailto', 'tel'], true);
+    }
+
+    /**
+     * SECURITY (audit SL-H4): true when the DB-derived image path stays inside the
+     * public webroot once resolved — mcsdetail_img can be attacker-shaped (it was
+     * storable verbatim through the React API), so every unlink must be contained.
+     */
+    private function isDeletableUploadPath($path)
+    {
+        $real = realpath($path);
+        $publicRoot = realpath('public');
+        return $real !== false && $publicRoot !== false
+            && strpos($real, $publicRoot . DIRECTORY_SEPARATOR) === 0;
     }
 
     /**
@@ -424,6 +464,21 @@ class MelisCmsSliderDetailsController extends MelisAbstractActionController
             ];
             $postValues = array_merge($postValues, $melisTool->sanitizePost($sanitize));
 
+            // SECURITY (audit SL-M4): parity with the React API (isSafeUrl) — the slide
+            // link is the canonical clickable URL of the slide; without this check a
+            // "javascript:" URL was storable through the legacy form (stored XSS on any
+            // site template rendering it as href).
+            $linkToCheck = trim((string) ($postValues['mcsdetail_link'] ?? ''));
+            if ($linkToCheck !== '' && !$this->isSafeLinkUrl($linkToCheck)) {
+                return new JsonModel([
+                    'success' => 0,
+                    'textTitle' => $textTitle,
+                    'textMessage' => $textMessage,
+                    'errors' => ['mcsdetail_link' => ['invalidUrl' => 'Invalid URL scheme (http, https, mailto, tel or relative only)', 'label' => 'Link']],
+                    'chunk' => [],
+                ]);
+            }
+
             if (empty($postValues['mcsdetail_id'])) {
                 $logTypeCode = 'CMS_SLIDER_DETAILS_ADD';
             }
@@ -564,8 +619,11 @@ class MelisCmsSliderDetailsController extends MelisAbstractActionController
                                 if ($sliderDetailsId) {
                                     if (!empty($sliderDetailsData)) {
                                         // if the file exists, delete the file after update
-                                        if ($sliderDetailsData->mcsdetail_img && file_exists('public' . $sliderDetailsData->mcsdetail_img)) {
-                                            unlink('public' . $sliderDetailsData->mcsdetail_img);
+                                        // SECURITY (audit SL-H4): containment check before unlink
+                                        $oldImg = 'public' . $sliderDetailsData->mcsdetail_img;
+                                        if ($sliderDetailsData->mcsdetail_img && file_exists($oldImg)
+                                            && $this->isDeletableUploadPath($oldImg)) {
+                                            unlink($oldImg);
                                         }
                                     }
                                     $success = 1;
@@ -636,10 +694,13 @@ class MelisCmsSliderDetailsController extends MelisAbstractActionController
                 $textMessage = 'tr_MelisCmsSliderDetails_delete_success';
                 $fileUploadPath = 'public'.$tmp->mcsdetail_img;
 
-                if(file_exists($fileUploadPath) && !empty($tmp->mcsdetail_img) ) {
+                // SECURITY (audit SL-H4): containment check before unlink (mcsdetail_img
+                // can be attacker-shaped) ; no chmod 0777 — unlink only needs the parent
+                // directory to be writable.
+                if(file_exists($fileUploadPath) && !empty($tmp->mcsdetail_img)
+                    && $this->isDeletableUploadPath($fileUploadPath)) {
 
-                    if(is_readable($fileUploadPath) && is_writable($fileUploadPath)) {
-                        chmod($fileUploadPath, 0777);
+                    if(is_writable($fileUploadPath)) {
                         unlink($fileUploadPath);
                     }
                 }
@@ -706,12 +767,18 @@ class MelisCmsSliderDetailsController extends MelisAbstractActionController
                     $status = '<span class="text-danger"><i class="fa fa-fw fa-circle"></i></span>';
                 }
 
-                $title =  !empty($details->mcsdetail_title)? $this->getTool()->limitedText($details->mcsdetail_title, 30) : '&nbsp;';
-                $sub1  =  !empty($details->mcsdetail_sub1)? $this->getTool()->limitedText($details->mcsdetail_sub1, 30): '&nbsp;';
-                $sub2  =  !empty($details->mcsdetail_sub2)? $this->getTool()->limitedText($details->mcsdetail_sub2, 30): '&nbsp;';
-                $sub3  =  !empty($details->mcsdetail_sub3)? $this->getTool()->limitedText($details->mcsdetail_sub3, 30): '&nbsp;';
-                $link  =  !empty($details->mcsdetail_link)? $this->getTool()->limitedText($details->mcsdetail_link, 30): '&nbsp;';
-                $image  =  !empty($details->mcsdetail_img)? sprintf($img, $details->mcsdetail_img): '&nbsp;';
+                // SECURITY (audit SL-H5/SL-M6): escape at emission — DataTables renders
+                // these cells as HTML; limitedText() escapes nothing, and the stored
+                // values only relied on write-time StripTags (img had no filter at all).
+                $esc = function ($v, $len = 30) {
+                    return $this->getTool()->limitedText($this->getTool()->escapeHtml($v), $len);
+                };
+                $title =  !empty($details->mcsdetail_title)? $esc($details->mcsdetail_title) : '&nbsp;';
+                $sub1  =  !empty($details->mcsdetail_sub1)? $esc($details->mcsdetail_sub1): '&nbsp;';
+                $sub2  =  !empty($details->mcsdetail_sub2)? $esc($details->mcsdetail_sub2): '&nbsp;';
+                $sub3  =  !empty($details->mcsdetail_sub3)? $esc($details->mcsdetail_sub3): '&nbsp;';
+                $link  =  !empty($details->mcsdetail_link)? $esc($details->mcsdetail_link): '&nbsp;';
+                $image  =  !empty($details->mcsdetail_img)? sprintf($img, htmlspecialchars($details->mcsdetail_img, ENT_QUOTES, 'UTF-8')): '&nbsp;';
 
                 $tableData[$c]['DT_RowId']          = $details->mcsdetail_id;
                 $tableData[$c]['DT_RowAttr']        = array('data-sliderid' => $sliderId);

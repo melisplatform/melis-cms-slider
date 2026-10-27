@@ -176,7 +176,9 @@ class MelisReactApiCmsSliderController extends MelisAbstractActionController
     public function getAction(): HttpResponse
     {
         if ($deny = $this->denyUnlessAccess()) { return $deny; }
-        if ($denyCap = $this->denyUnlessCan('edit')) { return $denyCap; }
+        // SECURITY (audit SL-M1): 'open' is the declared capability for entering a slider
+        // ('edit' is not declared at this level → default-allow, the check was a no-op).
+        if ($denyCap = $this->denyUnlessCan('open')) { return $denyCap; }
 
         $id = (int) $this->params()->fromRoute('id', 0);
         if ($id <= 0) {
@@ -200,12 +202,15 @@ class MelisReactApiCmsSliderController extends MelisAbstractActionController
     /** POST /sliders/save */
     public function saveAction(): HttpResponse
     {
+        if ($deny = $this->denyUnlessVerb(['POST'])) { return $deny; }
         if ($deny = $this->denyUnlessAccess()) { return $deny; }
 
         try {
             $body = json_decode($this->getRequest()->getContent(), true) ?? [];
             $id   = isset($body['id']) && $body['id'] ? (int) $body['id'] : null;
-            if ($denyCap = $this->denyUnlessCan($id ? 'edit' : 'create')) { return $denyCap; }
+            // SECURITY (audit SL-M1): editing a slider here only renames it — the declared
+            // capability is 'rename' ('edit' does not exist at this level → default-allow).
+            if ($denyCap = $this->denyUnlessCan($id ? 'rename' : 'create')) { return $denyCap; }
 
             $name    = $this->stripTags((string) ($body['name'] ?? ''));
             $rawPage = $body['pageId'] ?? null;
@@ -257,6 +262,7 @@ class MelisReactApiCmsSliderController extends MelisAbstractActionController
     /** DELETE /sliders/delete/:id */
     public function deleteAction(): HttpResponse
     {
+        if ($deny = $this->denyUnlessVerb(['POST', 'DELETE'])) { return $deny; }
         if ($deny = $this->denyUnlessAccess()) { return $deny; }
         if ($denyCap = $this->denyUnlessCan('delete')) { return $denyCap; }
 
@@ -303,7 +309,9 @@ class MelisReactApiCmsSliderController extends MelisAbstractActionController
     public function slidesAction(): HttpResponse
     {
         if ($deny = $this->denyUnlessAccess()) { return $deny; }
-        if ($denyCap = $this->denyUnlessCan('list')) { return $denyCap; }
+        // SECURITY (audit SL-M1): this lists the SLIDES of a slider → 'slides.list'
+        // (the flat 'list' capability only covers the slider list).
+        if ($denyCap = $this->denyUnlessCan('slides.list')) { return $denyCap; }
 
         $sliderId = (int) $this->params()->fromRoute('id', 0);
         if ($sliderId <= 0) {
@@ -333,8 +341,10 @@ class MelisReactApiCmsSliderController extends MelisAbstractActionController
     /** POST /sliders/slides/reorder  body: { sliderId, ids:[id,...] } */
     public function reorderAction(): HttpResponse
     {
+        if ($deny = $this->denyUnlessVerb(['POST'])) { return $deny; }
         if ($deny = $this->denyUnlessAccess()) { return $deny; }
-        if ($denyCap = $this->denyUnlessCan('edit')) { return $denyCap; }
+        // SECURITY (audit SL-M1): reordering mutates the slides → 'slides.edit'.
+        if ($denyCap = $this->denyUnlessCan('slides.edit')) { return $denyCap; }
 
         try {
             $body     = json_decode($this->getRequest()->getContent(), true) ?? [];
@@ -364,7 +374,8 @@ class MelisReactApiCmsSliderController extends MelisAbstractActionController
     public function slideGetAction(): HttpResponse
     {
         if ($deny = $this->denyUnlessAccess()) { return $deny; }
-        if ($denyCap = $this->denyUnlessCan('edit')) { return $denyCap; }
+        // SECURITY (audit SL-M1): reading one slide = slides-level read access.
+        if ($denyCap = $this->denyUnlessCan('slides.list')) { return $denyCap; }
 
         $id = (int) $this->params()->fromRoute('id', 0);
         if ($id <= 0) {
@@ -391,12 +402,14 @@ class MelisReactApiCmsSliderController extends MelisAbstractActionController
     /** POST /sliders/slide/save */
     public function slideSaveAction(): HttpResponse
     {
+        if ($deny = $this->denyUnlessVerb(['POST'])) { return $deny; }
         if ($deny = $this->denyUnlessAccess()) { return $deny; }
 
         try {
             $body     = json_decode($this->getRequest()->getContent(), true) ?? [];
             $id       = isset($body['id']) && $body['id'] ? (int) $body['id'] : null;
-            if ($denyCap = $this->denyUnlessCan($id ? 'edit' : 'create')) { return $denyCap; }
+            // SECURITY (audit SL-M1): slides have their own capability branch.
+            if ($denyCap = $this->denyUnlessCan($id ? 'slides.edit' : 'slides.create')) { return $denyCap; }
 
             $sliderId = (int) ($body['sliderId'] ?? 0);
             if ($sliderId <= 0) {
@@ -417,6 +430,16 @@ class MelisReactApiCmsSliderController extends MelisAbstractActionController
             $sub3   = mb_substr((string) ($body['sub3'] ?? ''), 0, 65535);
             $link   = $this->stripTags((string) ($body['link'] ?? ''));
             $img    = trim((string) ($body['img'] ?? ''));
+
+            // SECURITY (audit SL-H4/SL-H5): img must be a path produced by slideUploadAction.
+            // Stored verbatim, it reached unlink() on deletion (arbitrary file deletion via
+            // traversal) and raw HTML sinks in the legacy datatable (stored XSS).
+            if ($img !== '' && !$this->isValidSlideImagePath($img)) {
+                return $this->jsonResponse([
+                    'success' => false,
+                    'error'   => "Chemin d'image invalide : utilisez l'upload (/media/sliders/<id>/<fichier>).",
+                ], 400);
+            }
 
             if ($link !== '' && !$this->isSafeUrl($link)) {
                 return $this->jsonResponse([
@@ -472,8 +495,11 @@ class MelisReactApiCmsSliderController extends MelisAbstractActionController
     /** DELETE /sliders/slide/delete/:id */
     public function slideDeleteAction(): HttpResponse
     {
+        if ($deny = $this->denyUnlessVerb(['POST', 'DELETE'])) { return $deny; }
         if ($deny = $this->denyUnlessAccess()) { return $deny; }
-        if ($denyCap = $this->denyUnlessCan('delete')) { return $denyCap; }
+        // SECURITY (audit SL-M1): deleting a SLIDE is gated by 'slides.delete', not by the
+        // slider-level 'delete'.
+        if ($denyCap = $this->denyUnlessCan('slides.delete')) { return $denyCap; }
 
         $id = (int) $this->params()->fromRoute('id', 0);
         if ($id <= 0) {
@@ -517,8 +543,10 @@ class MelisReactApiCmsSliderController extends MelisAbstractActionController
     /** POST /sliders/slide/upload  (multipart: field "image", query/post sliderId) → { path } */
     public function slideUploadAction(): HttpResponse
     {
+        if ($deny = $this->denyUnlessVerb(['POST'])) { return $deny; }
         if ($deny = $this->denyUnlessAccess()) { return $deny; }
-        if ($denyCap = $this->denyUnlessCan('edit')) { return $denyCap; }
+        // SECURITY (audit SL-M1): uploading a slide image → 'slides.image.create'.
+        if ($denyCap = $this->denyUnlessCan('slides.image.create')) { return $denyCap; }
 
         try {
             $sliderId = (int) ($this->params()->fromQuery('sliderId', 0) ?: $this->params()->fromPost('sliderId', 0));
@@ -637,12 +665,45 @@ class MelisReactApiCmsSliderController extends MelisAbstractActionController
     {
         $webPath = trim($webPath);
         if ($webPath === '') { return; }
-        // Garde-fou : rester sous public/media/sliders/. Chemins RÉSOLUS : le chemin vient de la base, écrit par
-        // le client à l'enregistrement — un préfixe seul laissait passer « /media/sliders/../../… ».
-        $abs  = realpath($this->publicRoot() . '/' . ltrim($webPath, '/'));
+        $abs = $this->publicRoot() . '/' . ltrim($webPath, '/');
+        // SECURITY (audit SL-H4): resolve the REAL path before the containment check —
+        // the previous textual strpos() prefix check was bypassable with
+        // /media/sliders/../../x (the string matched, unlink() resolved the traversal).
+        $real = realpath($abs);
         $base = realpath($this->publicRoot() . '/media/sliders');
-        if ($abs === false || $base === false || strpos($abs, $base . DIRECTORY_SEPARATOR) !== 0) { return; }
-        if (is_file($abs)) { @chmod($abs, 0777); @unlink($abs); }
+        if ($real === false || $base === false
+            || strpos($real, $base . DIRECTORY_SEPARATOR) !== 0) {
+            return;
+        }
+        if (is_file($real)) { @unlink($real); }
+    }
+
+    /**
+     * SECURITY (audit SL-H4): a slide image path must be exactly what slideUploadAction
+     * produces — anything else (traversal, scheme, markup) was stored verbatim in
+     * mcsdetail_img and later reached unlink() on deletion and raw HTML sinks in the
+     * legacy datatable (stored XSS).
+     */
+    private function isValidSlideImagePath(string $img): bool
+    {
+        return (bool) preg_match('#^/media/sliders/\d+/[A-Za-z0-9_\-]+\.[A-Za-z0-9]+$#', $img);
+    }
+
+    /**
+     * SECURITY (audit SL-H3): mutating endpoints must not be reachable in GET — the core
+     * CSRF listener exempts safe verbs, so a GET write bypassed CSRF entirely (a simple
+     * link deleted a slider). Returns the 405 response or null.
+     */
+    private function denyUnlessVerb(array $verbs): ?HttpResponse
+    {
+        $method = strtoupper($this->getRequest()->getMethod());
+        if (!in_array($method, $verbs, true)) {
+            return $this->jsonResponse(
+                ['success' => false, 'error' => implode(' or ', $verbs) . ' required'],
+                405
+            );
+        }
+        return null;
     }
 
     private function isAuthenticated(): bool

@@ -63,12 +63,37 @@ class MelisCmsSliderShowSliderPlugin extends MelisTemplatingPlugin
     public function front()
     {
         // Get the parameters and config from $this->pluginFrontConfig (default > hardcoded > get > post)
-        $id   = isset($this->pluginFrontConfig['sliderId']) ? $this->pluginFrontConfig['sliderId'] : null;
+        $id   = isset($this->pluginFrontConfig['sliderId']) ? (int) $this->pluginFrontConfig['sliderId'] : null;
 
         // Retrieving the Slider Data from Slider Service
         $sliderSrv = $this->getServiceManager()->get('MelisCmsSliderService');
         $sliderEntity = $sliderSrv->getSlider($id, 1);
-        
+
+        // SECURITY (audit SL-M5): sliderId is overridable from the query string by an
+        // anonymous visitor (GET/POST→config merge of MelisTemplatingPlugin) — without
+        // this check the (active) slides of ANY slider of the platform could be rendered
+        // on any page, across sites. Best-effort containment: when both the current page
+        // and the slider's recorded page resolve to a site, they must match. Anything
+        // unresolvable stays allowed (the schema has no site column — fail-open keeps
+        // legacy setups working).
+        if (!empty($sliderEntity)) {
+            try {
+                $currentPageId = (int) $this->getController()->params()->fromRoute('idpage', 0);
+                $sliderPageId  = (int) ($sliderEntity->getSlider()->mcslide_page_id ?? 0);
+                if ($currentPageId > 0 && $sliderPageId > 0 && $currentPageId !== $sliderPageId) {
+                    $tree    = $this->getServiceManager()->get('MelisEngineTree');
+                    $curSite = $tree->getSiteByPageId($currentPageId);
+                    $sldSite = $tree->getSiteByPageId($sliderPageId);
+                    if (!empty($curSite->site_id) && !empty($sldSite->site_id)
+                        && (int) $curSite->site_id !== (int) $sldSite->site_id) {
+                        $sliderEntity = null;
+                    }
+                }
+            } catch (\Throwable $ex) {
+                // best-effort: keep rendering if the site resolution fails
+            }
+        }
+
         // Getting the Slider details from Slider Entity
         $sliderDetails = (!empty($sliderEntity)) ? $sliderEntity->getSliderDetails() : '';
         
@@ -221,16 +246,32 @@ class MelisCmsSliderShowSliderPlugin extends MelisTemplatingPlugin
 
         // template_path is mendatory for all plugins
         if (!empty($parameters['template_path']))
-            $xmlValueFormatted .= "\t\t" . '<template_path><![CDATA[' . $parameters['template_path'] . ']]></template_path>';
+            $xmlValueFormatted .= "\t\t" . '<template_path>' . $this->xmlCdata($parameters['template_path']) . '</template_path>';
 
         if(!empty($parameters['sliderId']))
-            $xmlValueFormatted .= "\t\t" . '<sliderId><![CDATA[' . $parameters['sliderId'] . ']]></sliderId>';
+            $xmlValueFormatted .= "\t\t" . '<sliderId>' . $this->xmlCdata($parameters['sliderId']) . '</sliderId>';
 
         // Something has been saved, let's generate an XML for DB
-        $xmlValueFormatted = "\t" . '<' . $this->pluginXmlDbKey . ' id="' . $parameters['melisPluginId'] . '">' .
+        $xmlValueFormatted = "\t" . '<' . $this->pluginXmlDbKey . ' id="' . $this->xmlAttr($parameters['melisPluginId']) . '">' .
             $xmlValueFormatted .
             "\t" . '</' . $this->pluginXmlDbKey . '>' . "\n";
 
         return $xmlValueFormatted;
+    }
+
+    /**
+     * SECURITY (audit SL-M3): a literal "]]>" in a parameter closed the CDATA section
+     * and injected arbitrary XML nodes into the page document (same fix as melis-cms-news
+     * audit CN-M7).
+     */
+    private function xmlCdata($value)
+    {
+        return '<![CDATA[' . str_replace(']]>', ']]]]><![CDATA[>', (string) $value) . ']]>';
+    }
+
+    /** SECURITY (audit SL-M3): escape for an XML attribute context. */
+    private function xmlAttr($value)
+    {
+        return htmlspecialchars((string) $value, ENT_QUOTES | ENT_XML1, 'UTF-8');
     }
 }
