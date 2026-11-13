@@ -15,6 +15,9 @@ use MelisCore\Controller\MelisAbstractActionController;
 
 class MelisCmsSliderListController extends MelisAbstractActionController
 {
+    // Action rights (capabilities) also enforced in the legacy views (Mantis #0011501)
+    use SliderCapabilityTrait;
+
     const LOG_DELETE = 'CMS_SLIDER_DELETE';
 
     /**
@@ -98,6 +101,7 @@ class MelisCmsSliderListController extends MelisAbstractActionController
      */
     public function renderTableListHeaderRightAddAction()
     {
+        if (!$this->capAllowed('create')) { return $this->capHiddenView(); }
         $view = new ViewModel();
         $melisKey = $this->params()->fromRoute('melisKey', '');
         $view->melisKey = $melisKey;
@@ -170,15 +174,18 @@ class MelisCmsSliderListController extends MelisAbstractActionController
      */
     public function renderTableListContentActionEditAction()
     {
+        // The edit button opens the slider: 'open' capability (as GET /sliders/:id in the React API)
+        if (!$this->capAllowed('open')) { return $this->capHiddenView(); }
         return new ViewModel();
     }
-    
+
     /**
      * renders the coupon list content table action edit
      * @return \Laminas\View\Model\ViewModel
      */
     public function renderTableListContentActionDeleteAction()
     {
+        if (!$this->capAllowed('delete')) { return $this->capHiddenView(); }
         return new ViewModel();
     }
     
@@ -245,6 +252,7 @@ class MelisCmsSliderListController extends MelisAbstractActionController
         if (! $this->hasAccess('meliscms_slider_tools_section')) {
             return new JsonModel(['draw' => (int) $this->getRequest()->getPost('draw', 0), 'recordsTotal' => 0, 'recordsFiltered' => 0, 'data' => []]);
         }
+        if (!$this->capAllowed('list')) { return $this->capDeniedTable(); }
         $success = 0;
         $colId = array();
         $dataCount = 0;
@@ -318,10 +326,15 @@ class MelisCmsSliderListController extends MelisAbstractActionController
         $textTitle = 'tr_MelisCmsSliderDetails_slider_save_Title';
         
         $sliderSvc = $this->getServiceManager()->get('MelisCmsSliderService');
-        
+
         if($this->getRequest()->isPost()){
             $postValues = $this->getRequest()->getPost()->toArray();
-            
+
+            // Action rights: new slider → 'create', existing one → 'rename' (as the React API)
+            if (!$this->capAllowed(empty($postValues['mcslide_id']) ? 'create' : 'rename')) {
+                return $this->capDeniedJson($textTitle);
+            }
+
             // Preparing Log type code
             if (!empty($postValues['mcslide_id'])){
                 $logTypeCode = 'CMS_SLIDER_UPDATE';
@@ -391,6 +404,9 @@ class MelisCmsSliderListController extends MelisAbstractActionController
         $data = [];
         $textMessage = 'tr_MelisCmsSliderDetails_slider_delete_fail';
         $textTitle = 'tr_MelisCmsSliderDetails_slider_save_Title';
+        if (!$this->capAllowed('delete')) {
+            return $this->capDeniedJson($textTitle);
+        }
 
         $melisSliderSvc = $this->getServiceManager()->get('MelisCmsSliderService');
         $sliderDetailsTable = $this->getServiceManager()->get('MelisCmsSliderDetailTable');

@@ -30,6 +30,9 @@ class MelisCmsSliderDetailsController extends MelisAbstractActionController
      */
     const MELIS_KEY = 'meliscms_slider_tools_section';
 
+    // Action rights (capabilities) also enforced in the legacy views (Mantis #0011501)
+    use SliderCapabilityTrait;
+
     /** @INFO: Tool access check (CWE-862). */
     private function hasAccess($key)
     {
@@ -216,6 +219,7 @@ class MelisCmsSliderDetailsController extends MelisAbstractActionController
      */
     public function renderSliderTabsContentHeaderAddAction()
     {
+        if (!$this->capAllowed('slides.create')) { return $this->capHiddenView(); }
         $view = new ViewModel();
         $melisKey = $this->params()->fromRoute('melisKey', '');
         $sliderId = (int) $this->params()->fromQuery('sliderId', '');
@@ -250,6 +254,7 @@ class MelisCmsSliderDetailsController extends MelisAbstractActionController
 
     public function renderSliderContentActionDeleteAction()
     {
+        if (!$this->capAllowed('slides.delete')) { return $this->capHiddenView(); }
         $view = new ViewModel();
         $melisKey = $this->params()->fromRoute('melisKey', '');
         $sliderId = (int) $this->params()->fromQuery('sliderId', '');
@@ -479,6 +484,14 @@ class MelisCmsSliderDetailsController extends MelisAbstractActionController
                 ]);
             }
 
+            // Action rights: new slide → 'slides.create', existing one → 'slides.edit'; a new image
+            // file → 'slides.image.create' (same mapping as the React API)
+            $capNeeded = empty($postValues['mcsdetail_id']) ? 'slides.create' : 'slides.edit';
+            $newImage  = $this->getRequest()->getFiles()->toArray()['mcsdetail_img']['name'] ?? '';
+            if (!$this->capAllowed($capNeeded) || ($newImage !== '' && !$this->capAllowed('slides.image.create'))) {
+                return $this->capDeniedJson($textTitle);
+            }
+
             if (empty($postValues['mcsdetail_id'])) {
                 $logTypeCode = 'CMS_SLIDER_DETAILS_ADD';
             }
@@ -682,6 +695,9 @@ class MelisCmsSliderDetailsController extends MelisAbstractActionController
         $data = array();
         $textMessage = 'tr_MelisCmsSliderDetails_delete_fail';
         $textTitle = 'tr_MelisCmsSliderDetails_delete_Title';
+        if (!$this->capAllowed('slides.delete')) {
+            return $this->capDeniedJson($textTitle);
+        }
         $melisSliderSvc = $this->getServiceManager()->get('MelisCmsSliderService');
 
         if($this->getRequest()->isPost()) {
@@ -724,6 +740,7 @@ class MelisCmsSliderDetailsController extends MelisAbstractActionController
         if (! $this->hasAccess('meliscms_slider_tools_section')) {
             return new JsonModel(['draw' => (int) $this->getRequest()->getPost('draw', 0), 'recordsTotal' => 0, 'recordsFiltered' => 0, 'data' => []]);
         }
+        if (!$this->capAllowed('slides.list')) { return $this->capDeniedTable(); }
         $success = 0;
         $colId = array();
         $dataCount = 0;
@@ -810,6 +827,10 @@ class MelisCmsSliderDetailsController extends MelisAbstractActionController
         /** @INFO: Access check (tool right) — CWE-862 */
         if (! $this->hasAccess('meliscms_slider_tools_section')) {
             return new JsonModel(['success' => 0, 'textTitle' => '', 'textMessage' => 'tr_meliscore_microservice_api_key_no_access', 'errors' => [], 'datas' => []]);
+        }
+        // Action rights: reordering changes the slides → 'slides.edit' (as the React API)
+        if (!$this->capAllowed('slides.edit')) {
+            return $this->capDeniedJson('tr_MelisCmsSliderDetails_save_title');
         }
         $request = $this->getRequest();
         // Default Values
