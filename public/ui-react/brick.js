@@ -2273,7 +2273,7 @@
 	var colStore$1 = makeColStore("melis-slider-cols-v1", [
 		{
 			id: "id",
-			visible: false
+			visible: true
 		},
 		{
 			id: "name",

@@ -33,8 +33,9 @@ const CAPS_KEY = 'meliscms_slider_tools_section'
 const can = makeCan(CAPS_KEY)
 
 const COL_LABEL: Record<string, string> = { id: 'col_id', name: 'col_name', page: 'col_page', slides: 'col_slides' }
+// ID shown by default, first, like the legacy list: it is what the Slider plugin asks for (Mantis #0011500).
 const DEFAULT_COLS: ColDef[] = [
-  { id: 'id', visible: false }, { id: 'name', visible: true }, { id: 'page', visible: true }, { id: 'slides', visible: true },
+  { id: 'id', visible: true }, { id: 'name', visible: true }, { id: 'page', visible: true }, { id: 'slides', visible: true },
 ]
 const colStore = makeColStore('melis-slider-cols-v1', DEFAULT_COLS)
 
