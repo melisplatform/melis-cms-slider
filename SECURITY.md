@@ -36,9 +36,7 @@ If you would like a CVE, tell us and we will request one on your behalf.
 We thank the following researchers for privately and responsibly disclosing
 security issues in this module:
 
-- **Arpit Jain** ([@arpitjain099](https://github.com/arpitjain099)) — path
-  traversal in the slider image upload handler (CWE-22) and stored XSS via the
-  uploaded filename rendered in the slider template (CWE-79).
+- **Arpit Jain** ([@arpitjain099](https://github.com/arpitjain099))
 
 ---
 

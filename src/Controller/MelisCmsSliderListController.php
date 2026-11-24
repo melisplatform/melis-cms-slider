@@ -25,7 +25,7 @@ class MelisCmsSliderListController extends MelisAbstractActionController
      */
     const MELIS_KEY = 'meliscms_slider_tools_section';
 
-    /** @INFO: Tool access check (CWE-862). */
+    /** @INFO: Tool access check. */
     private function hasAccess($key)
     {
         return $this->getServiceManager()->get('MelisCoreRights')->canAccess($key);
@@ -303,7 +303,7 @@ class MelisCmsSliderListController extends MelisAbstractActionController
     
     public function saveSliderAction()
     {
-        /** @INFO: Access check (tool right) — CWE-862 */
+        /** @INFO: Access check (tool right) */
         if (! $this->hasAccess('meliscms_slider_tools_section')) {
             return new JsonModel(['success' => 0, 'textTitle' => '', 'textMessage' => 'tr_meliscore_microservice_api_key_no_access', 'errors' => [], 'datas' => []]);
         }
@@ -380,7 +380,7 @@ class MelisCmsSliderListController extends MelisAbstractActionController
      */
     public function deleteSliderAction()
     {
-        /** @INFO: Access check (tool right) — CWE-862 */
+        /** @INFO: Access check (tool right) */
         if (! $this->hasAccess('meliscms_slider_tools_section')) {
             return new JsonModel(['success' => 0, 'textTitle' => '', 'textMessage' => 'tr_meliscore_microservice_api_key_no_access', 'errors' => [], 'datas' => []]);
         }

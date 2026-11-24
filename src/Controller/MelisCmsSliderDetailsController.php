@@ -30,7 +30,7 @@ class MelisCmsSliderDetailsController extends MelisAbstractActionController
      */
     const MELIS_KEY = 'meliscms_slider_tools_section';
 
-    /** @INFO: Tool access check (CWE-862). */
+    /** @INFO: Tool access check. */
     private function hasAccess($key)
     {
         return $this->getServiceManager()->get('MelisCoreRights')->canAccess($key);
@@ -437,7 +437,7 @@ class MelisCmsSliderDetailsController extends MelisAbstractActionController
      */
     public function saveDetailsFormAction()
     {
-        /** @INFO: Access check (tool right) — CWE-862 */
+        /** @INFO: Access check (tool right) */
         if (! $this->hasAccess('meliscms_slider_tools_section')) {
             return new JsonModel(['success' => 0, 'textTitle' => '', 'textMessage' => 'tr_meliscore_microservice_api_key_no_access', 'errors' => [], 'datas' => []]);
         }
@@ -580,10 +580,9 @@ class MelisCmsSliderDetailsController extends MelisAbstractActionController
                             if (!in_array($safeExt, $allowedExt, true)) {
                                 $safeExt = 'jpg';
                             }
-                            // Sécurité : le nom stocké (mcsdetail_img) est rendu dans un attribut src du
-                            // template public (showslider.phtml) → on assainit la base côté stockage
-                            // ([A-Za-z0-9_-], comme l'uploader React) pour qu'aucun guillemet/chevron ne
-                            // puisse porter du markup, en plus de l'échappement escapeHtmlAttr côté vue.
+                            // Le nom stocké (mcsdetail_img) est rendu dans un attribut src du template
+                            // public (showslider.phtml) : base restreinte à [A-Za-z0-9_-] (comme l'uploader
+                            // React), en plus de escapeHtmlAttr côté vue.
                             $safeBase = preg_replace('/[^A-Za-z0-9_\-]/', '', pathinfo($fileName, PATHINFO_FILENAME));
                             if ($safeBase === '' || $safeBase === null) {
                                 $safeBase = 'image';
@@ -667,7 +666,7 @@ class MelisCmsSliderDetailsController extends MelisAbstractActionController
 
     public function deleteDetailsAction()
     {
-        /** @INFO: Access check (tool right) — CWE-862 */
+        /** @INFO: Access check (tool right) */
         if (! $this->hasAccess('meliscms_slider_tools_section')) {
             return new JsonModel(['success' => 0, 'textTitle' => '', 'textMessage' => 'tr_meliscore_microservice_api_key_no_access', 'errors' => [], 'datas' => []]);
         }
@@ -804,7 +803,7 @@ class MelisCmsSliderDetailsController extends MelisAbstractActionController
 
     public function reOrderSliderDetailsAction()
     {
-        /** @INFO: Access check (tool right) — CWE-862 */
+        /** @INFO: Access check (tool right) */
         if (! $this->hasAccess('meliscms_slider_tools_section')) {
             return new JsonModel(['success' => 0, 'textTitle' => '', 'textMessage' => 'tr_meliscore_microservice_api_key_no_access', 'errors' => [], 'datas' => []]);
         }
@@ -899,8 +898,7 @@ class MelisCmsSliderDetailsController extends MelisAbstractActionController
      */
     private function createFolder($id)
     {
-        // Garde ultime : cet id est interpolé dans un chemin mkdir() → toujours (int),
-        // jamais une chaîne de traversée de répertoire, quel que soit l'appelant.
+        // Cet id est interpolé dans un chemin mkdir() : toujours (int).
         $id = (int) $id;
         $status = false;
         $path = 'public/media/sliders/'.$id.'/';
