@@ -18,10 +18,8 @@ class MelisCmsSliderListController extends MelisAbstractActionController
     const LOG_DELETE = 'CMS_SLIDER_DELETE';
 
     /**
-     * SECURITY (audit SL-M2): read by MelisCoreAuthorizationListener (EVENT_ROUTE) —
-     * every direct HTTP hit on this controller now requires the Slider tool right
-     * (without it the gate logged UNMAPPED and the render* read actions were open
-     * to any authenticated account).
+     * Read by MelisCoreAuthorizationListener: direct HTTP requests to this
+     * controller require the Slider tool right.
      */
     const MELIS_KEY = 'meliscms_slider_tools_section';
 
@@ -32,9 +30,7 @@ class MelisCmsSliderListController extends MelisAbstractActionController
     }
 
     /**
-     * SECURITY (audit SL-H4): true when the DB-derived image path stays inside the
-     * public webroot once resolved — mcsdetail_img can be attacker-shaped, so every
-     * unlink must be contained.
+     * True when the resolved image path stays inside the public webroot.
      */
     private function isDeletableUploadPath($path)
     {
@@ -400,15 +396,14 @@ class MelisCmsSliderListController extends MelisAbstractActionController
 
         if ($this->getRequest()->isPost()) {
             $postValues = $this->getRequest()->getPost()->toArray();
-            // SECURITY (audit SL-H4): the id ends up in filesystem paths (rmdir) — force int.
+            // The id is used in filesystem paths (rmdir): cast to int.
             $sliderId = (int) $postValues['sliderId'];
             $fileUploadPath = null;
             //attempt to delete files first before deleting db data
             $details = $sliderDetailsTable->getEntryByField('mcsdetail_mcslider_id', $sliderId);
             foreach ($details as $detail) {
                 $fileUploadPath = 'public' . $detail->mcsdetail_img;
-                // SECURITY (audit SL-H4): containment check before unlink (mcsdetail_img
-                // can be attacker-shaped — it was storable verbatim through the React API).
+                // Containment check before unlink.
                 if (file_exists($fileUploadPath) && $this->isDeletableUploadPath($fileUploadPath)) {
                     if (is_readable($fileUploadPath) && is_writable($fileUploadPath)) {
                         unlink($fileUploadPath);

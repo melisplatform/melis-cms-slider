@@ -172,8 +172,7 @@ class MelisReactApiCmsSliderController extends MelisAbstractActionController
     public function getAction(): HttpResponse
     {
         if ($deny = $this->denyUnlessAccess()) { return $deny; }
-        // SECURITY (audit SL-M1): 'open' is the declared capability for entering a slider
-        // ('edit' is not declared at this level → default-allow, the check was a no-op).
+        // 'open' is the declared capability for entering a slider.
         if ($denyCap = $this->denyUnlessCan('open')) { return $denyCap; }
 
         $id = (int) $this->params()->fromRoute('id', 0);
@@ -204,8 +203,7 @@ class MelisReactApiCmsSliderController extends MelisAbstractActionController
         try {
             $body = json_decode($this->getRequest()->getContent(), true) ?? [];
             $id   = isset($body['id']) && $body['id'] ? (int) $body['id'] : null;
-            // SECURITY (audit SL-M1): editing a slider here only renames it — the declared
-            // capability is 'rename' ('edit' does not exist at this level → default-allow).
+            // Editing a slider here only renames it → 'rename' (or 'create' for a new one).
             if ($denyCap = $this->denyUnlessCan($id ? 'rename' : 'create')) { return $denyCap; }
 
             $name   = $this->stripTags((string) ($body['name'] ?? ''));
@@ -286,7 +284,7 @@ class MelisReactApiCmsSliderController extends MelisAbstractActionController
     public function slidesAction(): HttpResponse
     {
         if ($deny = $this->denyUnlessAccess()) { return $deny; }
-        // SECURITY (audit SL-M1): this lists the SLIDES of a slider → 'slides.list'
+        // Lists the slides of a slider → 'slides.list'
         // (the flat 'list' capability only covers the slider list).
         if ($denyCap = $this->denyUnlessCan('slides.list')) { return $denyCap; }
 
@@ -320,7 +318,7 @@ class MelisReactApiCmsSliderController extends MelisAbstractActionController
     {
         if ($deny = $this->denyUnlessVerb(['POST'])) { return $deny; }
         if ($deny = $this->denyUnlessAccess()) { return $deny; }
-        // SECURITY (audit SL-M1): reordering mutates the slides → 'slides.edit'.
+        // Reordering mutates the slides → 'slides.edit'.
         if ($denyCap = $this->denyUnlessCan('slides.edit')) { return $denyCap; }
 
         try {
@@ -351,7 +349,7 @@ class MelisReactApiCmsSliderController extends MelisAbstractActionController
     public function slideGetAction(): HttpResponse
     {
         if ($deny = $this->denyUnlessAccess()) { return $deny; }
-        // SECURITY (audit SL-M1): reading one slide = slides-level read access.
+        // Reading one slide = slides-level read access.
         if ($denyCap = $this->denyUnlessCan('slides.list')) { return $denyCap; }
 
         $id = (int) $this->params()->fromRoute('id', 0);
@@ -385,7 +383,7 @@ class MelisReactApiCmsSliderController extends MelisAbstractActionController
         try {
             $body     = json_decode($this->getRequest()->getContent(), true) ?? [];
             $id       = isset($body['id']) && $body['id'] ? (int) $body['id'] : null;
-            // SECURITY (audit SL-M1): slides have their own capability branch.
+            // Slides have their own capability branch.
             if ($denyCap = $this->denyUnlessCan($id ? 'slides.edit' : 'slides.create')) { return $denyCap; }
 
             $sliderId = (int) ($body['sliderId'] ?? 0);
@@ -408,9 +406,7 @@ class MelisReactApiCmsSliderController extends MelisAbstractActionController
             $link   = $this->stripTags((string) ($body['link'] ?? ''));
             $img    = trim((string) ($body['img'] ?? ''));
 
-            // SECURITY (audit SL-H4/SL-H5): img must be a path produced by slideUploadAction.
-            // Stored verbatim, it reached unlink() on deletion (arbitrary file deletion via
-            // traversal) and raw HTML sinks in the legacy datatable (stored XSS).
+            // img must be a path produced by slideUploadAction.
             if ($img !== '' && !$this->isValidSlideImagePath($img)) {
                 return $this->jsonResponse([
                     'success' => false,
@@ -466,7 +462,7 @@ class MelisReactApiCmsSliderController extends MelisAbstractActionController
     {
         if ($deny = $this->denyUnlessVerb(['POST', 'DELETE'])) { return $deny; }
         if ($deny = $this->denyUnlessAccess()) { return $deny; }
-        // SECURITY (audit SL-M1): deleting a SLIDE is gated by 'slides.delete', not by the
+        // Deleting a slide is gated by 'slides.delete', not by the
         // slider-level 'delete'.
         if ($denyCap = $this->denyUnlessCan('slides.delete')) { return $denyCap; }
 
@@ -514,7 +510,7 @@ class MelisReactApiCmsSliderController extends MelisAbstractActionController
     {
         if ($deny = $this->denyUnlessVerb(['POST'])) { return $deny; }
         if ($deny = $this->denyUnlessAccess()) { return $deny; }
-        // SECURITY (audit SL-M1): uploading a slide image → 'slides.image.create'.
+        // Uploading a slide image → 'slides.image.create'.
         if ($denyCap = $this->denyUnlessCan('slides.image.create')) { return $denyCap; }
 
         try {
@@ -631,9 +627,7 @@ class MelisReactApiCmsSliderController extends MelisAbstractActionController
         $webPath = trim($webPath);
         if ($webPath === '') { return; }
         $abs = $this->publicRoot() . '/' . ltrim($webPath, '/');
-        // SECURITY (audit SL-H4): resolve the REAL path before the containment check —
-        // the previous textual strpos() prefix check was bypassable with
-        // /media/sliders/../../x (the string matched, unlink() resolved the traversal).
+        // Resolve the real path before the containment check.
         $real = realpath($abs);
         $base = realpath($this->publicRoot() . '/media/sliders');
         if ($real === false || $base === false
@@ -644,10 +638,7 @@ class MelisReactApiCmsSliderController extends MelisAbstractActionController
     }
 
     /**
-     * SECURITY (audit SL-H4): a slide image path must be exactly what slideUploadAction
-     * produces — anything else (traversal, scheme, markup) was stored verbatim in
-     * mcsdetail_img and later reached unlink() on deletion and raw HTML sinks in the
-     * legacy datatable (stored XSS).
+     * A slide image path must be exactly what slideUploadAction produces.
      */
     private function isValidSlideImagePath(string $img): bool
     {
@@ -655,9 +646,8 @@ class MelisReactApiCmsSliderController extends MelisAbstractActionController
     }
 
     /**
-     * SECURITY (audit SL-H3): mutating endpoints must not be reachable in GET — the core
-     * CSRF listener exempts safe verbs, so a GET write bypassed CSRF entirely (a simple
-     * link deleted a slider). Returns the 405 response or null.
+     * Restricts a mutating endpoint to the given HTTP verbs (405 otherwise).
+     * Returns the 405 response or null.
      */
     private function denyUnlessVerb(array $verbs): ?HttpResponse
     {

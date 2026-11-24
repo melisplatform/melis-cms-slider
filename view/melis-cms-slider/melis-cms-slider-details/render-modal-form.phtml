@@ -39,9 +39,7 @@ if (!empty($this->zoneconfig['conf']['id']))
                                     ?>
                                     <script type="text/javascript">
                                         <?php
-                                        // SECURITY (audit SL-H5): mcsdetail_img feeds this JS string — str_replace
-                                        // escaped neither backslashes nor "</script>" ; json_encode with HEX flags
-                                        // produces a safe JS string literal in every case.
+                                        // mcsdetail_img escaped for this JS string (json_encode with HEX flags).
                                         $filePlaceholder = ($this->file != null)
                                             ? json_encode((string) $this->file, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP)
                                             : "''";

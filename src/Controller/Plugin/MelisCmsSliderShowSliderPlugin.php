@@ -69,13 +69,8 @@ class MelisCmsSliderShowSliderPlugin extends MelisTemplatingPlugin
         $sliderSrv = $this->getServiceManager()->get('MelisCmsSliderService');
         $sliderEntity = $sliderSrv->getSlider($id, 1);
 
-        // SECURITY (audit SL-M5): sliderId is overridable from the query string by an
-        // anonymous visitor (GET/POST→config merge of MelisTemplatingPlugin) — without
-        // this check the (active) slides of ANY slider of the platform could be rendered
-        // on any page, across sites. Best-effort containment: when both the current page
-        // and the slider's recorded page resolve to a site, they must match. Anything
-        // unresolvable stays allowed (the schema has no site column — fail-open keeps
-        // legacy setups working).
+        // Only sliders of the current site are rendered: when both the current page and
+        // the slider's recorded page resolve to a site, they must match.
         if (!empty($sliderEntity)) {
             try {
                 $currentPageId = (int) $this->getController()->params()->fromRoute('idpage', 0);
@@ -260,16 +255,14 @@ class MelisCmsSliderShowSliderPlugin extends MelisTemplatingPlugin
     }
 
     /**
-     * SECURITY (audit SL-M3): a literal "]]>" in a parameter closed the CDATA section
-     * and injected arbitrary XML nodes into the page document (same fix as melis-cms-news
-     * audit CN-M7).
+     * Neutralises "]]>" in content placed in a CDATA section.
      */
     private function xmlCdata($value)
     {
         return '<![CDATA[' . str_replace(']]>', ']]]]><![CDATA[>', (string) $value) . ']]>';
     }
 
-    /** SECURITY (audit SL-M3): escape for an XML attribute context. */
+    /** Escape for an XML attribute context. */
     private function xmlAttr($value)
     {
         return htmlspecialchars((string) $value, ENT_QUOTES | ENT_XML1, 'UTF-8');
