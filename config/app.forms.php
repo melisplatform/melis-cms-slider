@@ -150,10 +150,8 @@ return [
                                 ['name' => 'StringTrim'],
                             ],
                         ],
-                        // Sécurité : l'id du slider parent construit le chemin du dossier d'upload
-                        // (createFolder/setDestination). Sans ce filtre il arrivait BRUT du POST →
-                        // traversée de répertoire (mkdir hors media root). IsInt + required le rejette
-                        // avant le contrôleur ; le contrôleur re-caste en (int) par défense en profondeur.
+                        // L'id du slider parent construit le chemin du dossier d'upload
+                        // (createFolder/setDestination) : IsInt + required ; le contrôleur re-caste en (int).
                         'mcsdetail_mcslider_id' => [
                             'name'     => 'mcsdetail_mcslider_id',
                             'required' => true,
