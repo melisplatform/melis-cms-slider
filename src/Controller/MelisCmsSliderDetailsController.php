@@ -475,11 +475,17 @@ class MelisCmsSliderDetailsController extends MelisAbstractActionController
             // site template rendering it as href).
             $linkToCheck = trim((string) ($postValues['mcsdetail_link'] ?? ''));
             if ($linkToCheck !== '' && !$this->isSafeLinkUrl($linkToCheck)) {
+                // Message and label in the back-office language, like the other form errors
+                // (Mantis #0011249: was hardcoded English "Link: Invalid URL scheme…").
+                $translator = $this->getServiceManager()->get('translator');
                 return new JsonModel([
                     'success' => 0,
                     'textTitle' => $textTitle,
                     'textMessage' => $textMessage,
-                    'errors' => ['mcsdetail_link' => ['invalidUrl' => 'Invalid URL scheme (http, https, mailto, tel or relative only)', 'label' => 'Link']],
+                    'errors' => ['mcsdetail_link' => [
+                        'invalidUrl' => $translator->translate('tr_MelisCmsSliderDetails_link_invalid'),
+                        'label' => $translator->translate('tr_MelisCmsSliderDetails_list_col_link'),
+                    ]],
                     'chunk' => [],
                 ]);
             }
